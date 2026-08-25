@@ -1,0 +1,5 @@
+﻿name = "hyu-man"
+compatibility_date = "2026-08-16"
+
+[assets]
+directory = "./public"

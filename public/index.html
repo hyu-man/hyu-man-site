@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ひゅーまん</title>
+<meta name="description" content="決まっているのに、わからない。">
+<link rel="canonical" href="https://hyu-man.com/">
+<meta property="og:type" content="music.musician">
+<meta property="og:site_name" content="ひゅーまん">
+<meta property="og:title" content="ひゅーまん">
+<meta property="og:description" content="決まっているのに、わからない。">
+<meta property="og:url" content="https://hyu-man.com/">
+<meta property="og:image" content="https://hyu-man.com/og/hyu-man.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="ja_JP">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'><rect width='8' height='8' fill='%23fff'/><rect x='2' y='0' width='1' height='2' fill='%23111'/><rect x='5' y='0' width='1' height='2' fill='%23111'/><rect x='1' y='2' width='6' height='5' fill='%23111'/><rect x='2' y='3' width='1' height='1' fill='%23fff'/><rect x='5' y='3' width='1' height='1' fill='%23fff'/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Hachi+Maru+Pop&family=DotGothic16&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink:#111; --bg:#fff; --sub:#9a9a9a; --line:#e8e8e6; --cheek:#ff96aa;
+    --dot:'Press Start 2P','DotGothic16','Courier New',monospace;
+    --maru:'Hachi Maru Pop','DotGothic16',sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --ink:#f2f2f2; --bg:#0a0a0a; --sub:#777; --line:#222; }
+  }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body {
+    background:var(--bg); color:var(--ink); font-family:var(--maru);
+    display:flex; flex-direction:column; align-items:center;
+    padding:0 18px 70px;
+  }
+
+  /* ── 1枚目 ───────────────────────────── */
+  .top {
+    min-height:100dvh; display:flex; flex-direction:column;
+    align-items:center; justify-content:center; gap:0;
+  }
+  h1 { font-family:var(--dot); font-size:14px; font-weight:400;
+       letter-spacing:.42em; text-indent:.42em; margin-bottom:8px; }
+  .ask { font-size:13px; color:var(--sub); letter-spacing:.06em;
+         margin-bottom:16px; min-height:1.5em; }
+  .ask b { font-family:var(--dot); font-size:13px; color:var(--ink);
+           font-variant-numeric:tabular-nums; letter-spacing:.02em; }
+  .ask.done, .ask.done b { color:var(--cheek); }
+  .stage { width:min(420px, 84vw, 48vh); }
+  canvas { image-rendering:pixelated; display:block; aspect-ratio:1/1;
+           width:100%; height:auto; }
+  .tvrow { display:flex; justify-content:center; margin-top:14px; }
+  .albums { margin-top:26px; display:flex; flex-direction:column;
+            align-items:center; gap:13px; }
+  .albums a {
+    color:var(--ink); text-decoration:none; letter-spacing:.1em;
+    border-bottom:1px solid var(--ink); padding-bottom:3px;
+  }
+  .albums a:hover { background:var(--ink); color:var(--bg); border-color:transparent; }
+  .albums .new  { font-size:19px; letter-spacing:.14em; border-bottom-width:2px;
+                  padding-bottom:5px; }
+  .albums .past { display:flex; gap:20px; font-size:11px; }
+  .albums .past a { color:var(--sub); border-bottom-color:var(--line); }
+  .albums .past a:hover { background:var(--sub); color:var(--bg); border-color:transparent; }
+  .listen a { display:inline-flex; align-items:center; gap:7px;
+              text-decoration:none; color:var(--sub);
+              font-size:11px; letter-spacing:.1em; }
+  .listen a:hover { color:var(--ink); }
+  .listen svg { display:block; transition:transform .18s ease; }
+  .listen .ec { display:none; }
+  .listen a:hover .eo { display:none; }
+  .listen a:hover .ec { display:block; }   /* svg の g には inline が効かない */
+  .listen a:hover svg { transform:rotate(-4deg); }
+  .scroll { margin-top:34px; font-size:11px; color:var(--sub); letter-spacing:.14em; }
+
+  /* ── 規則ごとの部屋 ───────────────────── */
+  .rules { width:100%; max-width:660px; }
+  .grp { border-top:1px solid var(--line); padding:26px 0 22px; }
+  .grp:first-child { border-top:none; }
+  .rule { font-size:13px; line-height:1.95; color:var(--sub); letter-spacing:.04em; }
+  .rule b { color:var(--ink); font-weight:400; }
+  .out { margin-top:14px; display:flex; gap:20px; flex-wrap:wrap; }
+  .out a { display:flex; flex-direction:column; gap:2px;
+           text-decoration:none; color:var(--sub); line-height:1.3; }
+  .out .jp { font-size:14px; letter-spacing:.05em; }
+  .out .en { font-family:var(--dot); font-size:7px; letter-spacing:.06em; opacity:.7; }
+  .out a:hover .jp { color:var(--cheek); }
+  .out a:hover .en { color:var(--ink); }
+
+  footer { margin-top:44px; font-family:var(--dot); font-size:9px;
+           color:var(--sub); letter-spacing:.2em; text-align:center; }
+
+  @media (max-width:600px) {
+    .rule { font-size:12px; }
+    .out { gap:15px; } .out .jp { font-size:12px; }
+    .albums .new { font-size:17px; }
+    .albums .past { gap:16px; font-size:10px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="top">
+  <h1>ひゅーまん</h1>
+  <p class="ask" id="ask">いま、なんぽ？ <b id="n">000000</b></p>
+  <div class="stage">
+    <canvas id="cv" width="486" height="486" aria-label="ラングトンの蟻"></canvas>
+    <div class="tvrow listen">
+      <a href="https://www.youtube.com/channel/UCikGQBWSycl2tmNfkiu00MA"
+         target="_blank" rel="noopener" aria-label="YouTube でぜんぶ聴けます">
+        <svg width="22" height="20" viewBox="0 0 22 20" aria-hidden="true">
+          <rect x="5"  y="0" width="1" height="4" fill="currentColor"/>
+          <rect x="16" y="0" width="1" height="4" fill="currentColor"/>
+          <rect x="2" y="4" width="18" height="15" rx="2" fill="currentColor"/>
+          <g class="eo">
+            <rect x="6"  y="8" width="3" height="3" fill="var(--bg)"/>
+            <rect x="13" y="8" width="3" height="3" fill="var(--bg)"/>
+          </g>
+          <g class="ec">
+            <rect x="6"  y="9" width="3" height="2" fill="var(--bg)"/>
+            <rect x="13" y="9" width="3" height="2" fill="var(--bg)"/>
+          </g>
+          <rect x="3"  y="12" width="3" height="2" fill="var(--cheek)"/>
+          <rect x="16" y="12" width="3" height="2" fill="var(--cheek)"/>
+          <rect x="10" y="12" width="1" height="5" fill="var(--bg)"/>
+          <rect x="11" y="13" width="1" height="3" fill="var(--bg)"/>
+          <rect x="12" y="14" width="1" height="1" fill="var(--bg)"/>
+        </svg>
+        ぜんぶ聴けます
+      </a>
+    </div>
+  </div>
+  <div class="albums">
+    <a class="new" href="https://hyu-man.bandcamp.com/album/collatz">Collatz</a>
+    <div class="past">
+      <a href="https://hyu-man.bandcamp.com/album/not-yet">(not yet)</a>
+      <a href="https://hyu-man.bandcamp.com/album/life">LIFE</a>
+    </div>
+  </div>
+  <div class="scroll">↓　規則が、ぜんぶ作っています</div>
+</div>
+
+<div class="rules">
+
+  <div class="grp">
+    <p class="rule">
+      白なら右。黒なら左。踏んだ色を裏返して、一歩。<br>
+      <b>この蟻から、5つ出ています。</b>
+    </p>
+    <div class="out">
+      <a href="/ant/"><span class="jp">ひとり</span><span class="en">/ant/</span></a>
+      <a href="/read/"><span class="jp">よむ</span><span class="en">/read/</span></a>
+      <a href="/play/"><span class="jp">かなでる</span><span class="en">/play/</span></a>
+      <a href="/loop/"><span class="jp">まわす</span><span class="en">/loop/</span></a>
+      <a href="/chop/"><span class="jp">きざむ</span><span class="en">/chop/</span></a>
+    </div>
+  </div>
+
+  <div class="grp">
+    <p class="rule">
+      隣が2か3ならいきる。ちょうど3でうまれる。それ以外はきえる。<br>
+      <b>規則の中に、最初からカエルがいました。</b>
+    </p>
+    <div class="out">
+      <a href="/life/"><span class="jp">いきる</span><span class="en">/life/</span></a>
+      <a href="/toad/"><span class="jp">かえる</span><span class="en">/toad/</span></a>
+    </div>
+  </div>
+
+  <div class="grp">
+    <p class="rule">
+      偶数なら半分。奇数なら3倍して1を足す。<br>
+      <b>ぜんぶ 1 にかえります。たぶん。</b>
+    </p>
+    <div class="out">
+      <a href="/collatz/"><span class="jp">1にかえる</span><span class="en">/collatz/</span></a>
+    </div>
+  </div>
+
+  <div class="grp">
+    <p class="rule">
+      テープの上を、きまった規則どおりに歩くだけ。<br>
+      <b>とまるかどうかは、調べる方法がありません。</b>
+    </p>
+    <div class="out">
+      <a href="/halt/"><span class="jp">とまる</span><span class="en">/halt/</span></a>
+      <a href="/count/"><span class="jp">かぞえる</span><span class="en">/count/</span></a>
+      <a href="/liar/"><span class="jp">うそつき</span><span class="en">/liar/</span></a>
+    </div>
+  </div>
+
+  <div class="grp">
+    <p class="rule">
+      規則が出した答えを、そのまま置いてあります。
+    </p>
+    <div class="out">
+      <a href="/film/"><span class="jp">うごく</span><span class="en">/film/</span></a>
+    </div>
+  </div>
+
+  <div class="grp">
+    <p class="rule">
+      ここから、外に持ち出せます。
+    </p>
+    <div class="out">
+      <a href="/midi/"><span class="jp">かきだす</span><span class="en">/midi/</span></a>
+      <a href="/canvas/"><span class="jp">うつす</span><span class="en">/canvas/</span></a>
+    </div>
+  </div>
+
+</div>
+
+<footer>決まっているのに、わからない</footer>
+
+<script>
+(() => {
+  "use strict";
+  const N = 81, S = 6, M = 12, PER = 16;
+  const W = N * S;
+  const DX = [0,1,0,-1], DY = [-1,0,1,0];          // 上 右 下 左
+
+  const cv  = document.getElementById("cv");
+  const ctx = cv.getContext("2d", { alpha:false });
+  const img = ctx.createImageData(W, W), px = img.data;
+  for (let p = 3; p < px.length; p += 4) px[p] = 255;
+  const base = new Uint8ClampedArray(px.length);
+
+  const hex = s => { s = s.trim();
+    if (s.length === 4) s = "#"+s[1]+s[1]+s[2]+s[2]+s[3]+s[3];
+    return [parseInt(s.slice(1,3),16), parseInt(s.slice(3,5),16), parseInt(s.slice(5,7),16)]; };
+  let INK, BG, CHEEK;
+  function readTheme() {
+    const cs = getComputedStyle(document.documentElement);
+    INK = hex(cs.getPropertyValue("--ink"));
+    BG  = hex(cs.getPropertyValue("--bg"));
+    CHEEK = hex(cs.getPropertyValue("--cheek"));
+  }
+  readTheme();
+
+  const grid = new Uint8Array(N*N);
+  let x, y, dir, steps, shifts, recent, onHighway;
+
+  function cell(cx, cy, col) {
+    const x0 = cx*S, y0 = cy*S;
+    for (let r = 0; r < S; r++) {
+      let p = ((y0+r)*W + x0)*4;
+      for (let c = 0; c < S; c++, p += 4) {
+        base[p] = col[0]; base[p+1] = col[1]; base[p+2] = col[2]; base[p+3] = 255;
+      }
+    }
+  }
+  function rebuild() {
+    for (let cy = 0; cy < N; cy++) for (let cx = 0; cx < N; cx++)
+      cell(cx, cy, grid[cy*N+cx] ? INK : BG);
+  }
+  function shift(dx, dy) {                         // 外に出たぶんは捨てる
+    if (dy === 1)       { grid.copyWithin(N, 0, N*(N-1)); grid.fill(0, 0, N); }
+    else if (dy === -1) { grid.copyWithin(0, N, N*N);     grid.fill(0, N*(N-1)); }
+    if (dx === 1) { for (let r = 0; r < N; r++) { const b = r*N; grid.copyWithin(b+1, b, b+N-1); grid[b] = 0; } }
+    else if (dx === -1) { for (let r = 0; r < N; r++) { const b = r*N; grid.copyWithin(b, b+1, b+N); grid[b+N-1] = 0; } }
+    shifts++; recent++;
+    rebuild();
+  }
+  function reset() {
+    grid.fill(0);
+    x = y = N >> 1; dir = 0; steps = 0; shifts = 0; recent = 0; onHighway = false;
+    rebuild();
+  }
+  function step() {
+    const i = y*N + x;
+    const on = grid[i] ^ 1;
+    grid[i] = on;
+    dir = on ? (dir + 1) & 3 : (dir + 3) & 3;
+    cell(x, y, on ? INK : BG);
+    x += DX[dir]; y += DY[dir];
+    if (x >= N-M) { shift(-1,0); x--; }
+    if (x <  M)   { shift( 1,0); x++; }
+    if (y >= N-M) { shift(0,-1); y--; }
+    if (y <  M)   { shift(0, 1); y++; }
+    steps++;
+    if (steps % 600 === 0) {
+      if (!onHighway && recent >= 10) {
+        onHighway = true;
+        const a = document.getElementById("ask");
+        a.classList.add("done");
+        a.childNodes[0].nodeValue = "ハイウェイに のった ";
+      }
+      recent = 0;
+    }
+  }
+  function box(cx, cy, w, h, col) {
+    const x0 = Math.max(0,cx), y0 = Math.max(0,cy);
+    const x1 = Math.min(W,cx+w), y1 = Math.min(W,cy+h);
+    for (let yy = y0; yy < y1; yy++) {
+      let p = (yy*W + x0)*4;
+      for (let xx = x0; xx < x1; xx++, p += 4) { px[p]=col[0]; px[p+1]=col[1]; px[p+2]=col[2]; }
+    }
+  }
+  function rot(t) {
+    const [a,b,w,h] = t;
+    if (dir === 0) return [a,b,w,h];
+    if (dir === 1) return [-b-h, a, h, w];
+    if (dir === 2) return [-a-w, -b-h, w, h];
+    return [b, -a-w, h, w];
+  }
+  function drawAnt() {
+    const ox = x*S + (S>>1), oy = y*S + (S>>1);
+    box(ox-6, oy-7, 13, 15, INK);
+    box(ox-7, oy-5, 15, 11, INK);
+    for (const t of [[-4,-12,1,5],[3,-12,1,5]]) { const [a,b,w,h] = rot(t); box(ox+a, oy+b, w, h, INK); }
+    for (const t of [[-6,-1,4,3],[3,-1,4,3]])   { const [a,b,w,h] = rot(t); box(ox+a, oy+b, w, h, CHEEK); }
+    for (const t of [[-4,-6,3,3],[2,-6,3,3]])   { const [a,b,w,h] = rot(t); box(ox+a, oy+b, w, h, BG); }
+  }
+  function paint() {
+    px.set(base); drawAnt(); ctx.putImageData(img, 0, 0);
+    document.getElementById("n").textContent = String(steps).padStart(6, "0");
+  }
+  function frame() { for (let k = 0; k < PER; k++) step(); paint(); requestAnimationFrame(frame); }
+
+  if (window.matchMedia) {
+    const mq = window.matchMedia("(prefers-color-scheme: dark)");
+    const oc = () => { readTheme(); rebuild(); paint(); };
+    mq.addEventListener ? mq.addEventListener("change", oc) : mq.addListener(oc);
+  }
+
+  reset();
+  if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    for (let k = 0; k < 14000; k++) step();
+    paint();
+  } else {
+    requestAnimationFrame(frame);
+  }
+})();
+</script>
+</body>
+</html>

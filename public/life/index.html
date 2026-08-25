@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Life — ひゅーまん</title>
+<meta name="description" content="いきる / ふえる / きえる">
+<link rel="canonical" href="https://hyu-man.com/life/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="ひゅーまん">
+<meta property="og:title" content="Life — ひゅーまん">
+<meta property="og:description" content="いきる / ふえる / きえる">
+<meta property="og:url" content="https://hyu-man.com/life/">
+<meta property="og:image" content="https://hyu-man.com/og/life.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="ライフゲームの盤面">
+<meta property="og:locale" content="ja_JP">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'><rect width='8' height='8' fill='%23f5f3f0'/><rect x='2' y='2' width='4' height='4' fill='%231a1a1a'/></svg>">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=DotGothic16&family=Hachi+Maru+Pop&display=swap" rel="stylesheet">
+
+<style>
+  * { box-sizing:border-box; margin:0; padding:0; }
+  :root {
+    --bg:#f5f3f0; --ink:#1a1a1a; --sub:#b0a8a0; --life:#2a1a1a;
+    --born:#ff6b8a; --gone:#f2d6dc;
+    --dot:'Press Start 2P','DotGothic16','Courier New',monospace;
+    --maru:'Hachi Maru Pop','DotGothic16',sans-serif;
+  }
+  html,body { width:100%; height:100%; overflow:hidden; background:var(--bg); }
+  body { display:flex; align-items:center; justify-content:center; }
+
+  .stage { position:relative; width:min(72vw,72vh,700px); aspect-ratio:1/1; }
+  canvas {
+    width:100%; height:100%; display:block; background:var(--bg);
+    image-rendering:pixelated; image-rendering:crisp-edges;
+    cursor:crosshair; touch-action:none;
+  }
+  .title {
+    position:absolute; inset:0; z-index:20;
+    display:flex; align-items:center; justify-content:center;
+    font-family:var(--dot); font-size:clamp(36px,9vw,88px);
+    letter-spacing:.08em; text-indent:.08em; line-height:1;
+    color:var(--life); opacity:.16; user-select:none; pointer-events:none;
+    animation:breathe 3s ease-in-out infinite;
+  }
+  @keyframes breathe { 0%,100%{opacity:.16} 50%{opacity:.34} }
+
+  .gen, .pop {
+    position:fixed; top:28px; z-index:10;
+    color:var(--sub); user-select:none; pointer-events:none; line-height:1.7;
+  }
+  .gen { right:28px; text-align:right; }
+  .pop { left:28px; }
+  .num { display:block; font-family:var(--dot); font-size:22px;
+         color:var(--ink); font-variant-numeric:tabular-nums; }
+  .pop .num { color:var(--born); }
+  .ask { display:block; font-family:var(--maru); font-size:12px;
+         letter-spacing:.08em; margin-top:6px; }
+
+  .sub {
+    position:fixed; bottom:28px; left:28px; z-index:10;
+    font-family:var(--maru); font-size:12px; letter-spacing:.08em;
+    color:var(--sub); line-height:2.1; user-select:none; pointer-events:none;
+  }
+  .sub .k { margin-right:14px; }
+  .sub .sw { display:inline-block; width:9px; height:9px; margin-right:5px;
+             vertical-align:-1px; border-radius:1px; }
+  .sw.b { background:var(--born); }
+  .sw.l { background:var(--ink); }
+  .sw.g { background:var(--gone); }
+  .sub a {
+    pointer-events:auto; display:inline-block; text-decoration:none;
+    padding-bottom:2px; font-family:var(--dot); font-size:9px; letter-spacing:.12em;
+    background:linear-gradient(90deg,#ff0040,#ff8a00,#ffe600,#3ddc4a,#00b7ff,#8a4bff,#ff0040);
+    background-size:300% 100%; -webkit-background-clip:text; background-clip:text;
+    color:transparent; animation:flow 4s linear infinite;
+  }
+  @keyframes flow { from{background-position:0% 0} to{background-position:300% 0} }
+  .sub a:hover { animation-duration:1s; }
+
+  .hint {
+    position:fixed; bottom:28px; right:28px; z-index:10; text-align:right;
+    font-family:var(--maru); font-size:11px; letter-spacing:.06em;
+    color:var(--sub); line-height:1.9; opacity:.75;
+    user-select:none; pointer-events:none;
+  }
+
+  @media (max-width:600px) {
+    .stage { width:min(94vw,66vh); }
+    .gen,.pop { top:14px; }
+    .gen { right:16px; } .pop { left:16px; }
+    .num { font-size:15px; }
+    .ask { font-size:10px; }
+    .title { font-size:clamp(28px,10vw,52px); opacity:.14; }
+  .hint { display:none; }
+    .sub { font-size:10px; bottom:16px; left:16px; }
+  }
+  @media (prefers-reduced-motion:reduce) {
+    .title { animation:none; opacity:.24; }
+    .sub a { animation:none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="stage">
+  <canvas id="cv" width="121" height="121" aria-label="ライフゲームの盤面"></canvas>
+  <div class="title">Life</div>
+</div>
+
+<div class="pop"><span class="num" id="popNum">0000</span><span class="ask">いま、なんびき？</span></div>
+<div class="gen"><span class="num" id="genNum">000000</span><span class="ask">なんせだいめ？</span></div>
+
+<div class="sub">
+  <span class="k"><span class="sw b"></span>ふえる</span>
+  <span class="k"><span class="sw l"></span>いきる</span>
+  <span class="k"><span class="sw g"></span>きえる</span><br>
+  <a href="https://hyu-man.bandcamp.com/album/life" target="_blank" rel="noopener">→ MUSIC</a>
+</div>
+
+
+<div class="hint">
+  さわると ♡ が ふえる<br>
+  スペースで とまる / R で さいしょから
+</div>
+
+<script>
+(() => {
+  "use strict";
+  const N = 121, SIZE = N*N, SPEED = 85;
+  const SEED = 20260818;          // 種は日付。同じ種なら何度でも同じ絵
+
+  const cv  = document.getElementById('cv');
+  const ctx = cv.getContext('2d', { alpha:false });
+  ctx.imageSmoothingEnabled = false;
+  const genNum = document.getElementById('genNum');
+  const popNum = document.getElementById('popNum');
+
+  const BG   = [245,243,240];
+  const INK  = [ 26, 26, 26];     // いきる
+  const BORN = [255,107,138];     // ふえる
+  const GONE = [242,214,220];     // きえる（3世代かけて紙にもどる）
+
+  const img = ctx.createImageData(N, N), px = img.data;
+  for (let p = 3; p < px.length; p += 4) px[p] = 255;
+
+  let grid = new Uint8Array(SIZE);
+  let next = new Uint8Array(SIZE);
+  let prev = new Uint8Array(SIZE);
+  const ghost = new Uint8Array(SIZE);
+  let gen = 0, pop = 0, running = true, last = 0, still = 0, lastPop = -1;
+  let dropped = false;                // ♡ を落としたかどうか
+
+  const idx = (x,y) => y*N + x;
+  const mulberry32 = a => () => {
+    a |= 0; a = a + 0x6D2B79F5 | 0;
+    let t = Math.imul(a ^ a >>> 15, 1 | a);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+
+  // ハートの内側かどうか  (x²+y²-1)³ - x²y³ ≤ 0
+  function inHeart(cx, cy, w) {
+    const x = (cx - w/2)/(w*0.42), y = -(cy - w/2)/(w*0.42) + 0.25;
+    const a = x*x + y*y - 1;
+    return a*a*a - x*x*y*y*y <= 0;
+  }
+
+  const BRUSH = [".##.##.","#######","#######",".#####.","..###..","...#..."];
+  function stampHeart(cx, cy) {
+    const h = BRUSH.length, w = BRUSH[0].length;
+    for (let r = 0; r < h; r++) for (let c = 0; c < w; c++) {
+      if (BRUSH[r][c] !== "#") continue;
+      const gx = ((cx - (w>>1) + c) % N + N) % N;
+      const gy = ((cy - (h>>1) + r) % N + N) % N;
+      grid[gy*N + gx] = 1;
+    }
+  }
+
+  const GLIDER = [[0,1],[1,2],[2,0],[2,1],[2,2]];
+  function seedGlider(x, y) {
+    for (let dy = -3; dy <= 5; dy++) for (let dx = -3; dx <= 5; dx++)
+      grid[idx((x+dx+N)%N, (y+dy+N)%N)] = 0;      // 先に空ける（でないと食われる）
+    for (const [dx,dy] of GLIDER) grid[idx((x+dx+N)%N, (y+dy+N)%N)] = 1;
+  }
+
+  function reset() {
+    grid.fill(0); next.fill(0); prev.fill(0); ghost.fill(0);
+    const rnd = mulberry32(SEED), W = 76, o = (N - W) >> 1;
+    for (let r = 0; r < W; r++) for (let c = 0; c < W; c++)
+      if (inHeart(c, r, W) && rnd() < 0.38) grid[idx(o+c, o+r)] = 1;
+    seedGlider(6, 6); seedGlider(110, 6); seedGlider(6, 110); seedGlider(110, 110);
+    gen = 0; still = 0; lastPop = -1; dropped = false;
+    draw();
+  }
+
+  function step() {
+    prev.set(grid);
+    for (let y = 0; y < N; y++) {
+      const up = ((y-1+N)%N)*N, mid = y*N, dn = ((y+1)%N)*N;
+      for (let x = 0; x < N; x++) {
+        const l = (x-1+N)%N, r = (x+1)%N;
+        const n = grid[up+l]+grid[up+x]+grid[up+r]
+                + grid[mid+l]          +grid[mid+r]
+                + grid[dn+l]+grid[dn+x]+grid[dn+r];
+        next[mid+x] = grid[mid+x] ? (n===2||n===3 ? 1:0) : (n===3 ? 1:0);
+      }
+    }
+    const t = grid; grid = next; next = t;
+    gen++;
+
+    // さみしくなったら ♡ が落ちてくる（灰にならないように）
+    pop = 0; for (let i = 0; i < SIZE; i++) pop += grid[i];
+    still = (pop === lastPop) ? still + 1 : 0;
+    lastPop = pop;
+    // 150世代で いちど。そのあとは しずかになったら
+    if ((gen === 150 && !dropped) || still > 40) {
+      const rnd = mulberry32(SEED + gen);
+      const hx = 12 + ((rnd()*97)|0), hy = 12 + ((rnd()*97)|0);
+      stampHeart(hx, hy);
+      dropped = true; still = 0;
+    }
+  }
+
+  function draw() {
+    for (let i = 0, p = 0; i < SIZE; i++, p += 4) {
+      const a = grid[i], b = prev[i];
+      let c;
+      if (a && !b)      { c = BORN;  ghost[i] = 0; }
+      else if (a)       { c = INK;   ghost[i] = 0; }
+      else if (b)       { ghost[i] = 3; c = GONE; }
+      else if (ghost[i]) {
+        const k = ghost[i]-- / 4;                    // 紙へフェード
+        c = [BG[0]+(GONE[0]-BG[0])*k, BG[1]+(GONE[1]-BG[1])*k, BG[2]+(GONE[2]-BG[2])*k];
+      } else c = BG;
+      px[p] = c[0]; px[p+1] = c[1]; px[p+2] = c[2];
+    }
+    ctx.putImageData(img, 0, 0);                     // 転送は1回だけ
+    genNum.textContent = String(gen).padStart(6,'0');
+    popNum.textContent = String(pop).padStart(4,'0');
+  }
+
+  // ---- さわると ♡ ----
+  function cellAt(e) {
+    const b = cv.getBoundingClientRect();
+    const x = Math.floor((e.clientX - b.left)/b.width  * N);
+    const y = Math.floor((e.clientY - b.top )/b.height * N);
+    return (x<0||x>=N||y<0||y>=N) ? null : {x,y};
+  }
+  let drawing = false, pending = false;
+  function paint(e) {
+    const p = cellAt(e); if (!p) return;
+    stampHeart(p.x, p.y);
+    if (!pending) { pending = true; requestAnimationFrame(() => { draw(); pending = false; }); }
+  }
+  cv.style.cursor = 'crosshair';
+  cv.addEventListener('pointerdown', e => { drawing = true; cv.setPointerCapture(e.pointerId); paint(e); });
+  cv.addEventListener('pointermove', e => { if (drawing) paint(e); });
+  cv.addEventListener('pointerup',     () => { drawing = false; });
+  cv.addEventListener('pointercancel', () => { drawing = false; });
+
+  document.addEventListener('keydown', e => {
+    if (e.code === 'Space') { e.preventDefault(); running = !running; }
+    else if (e.key && e.key.toLowerCase() === 'r') reset();
+  });
+
+  function frame(t) {
+    if (running && t - last > SPEED) { step(); draw(); last = t; }
+    requestAnimationFrame(frame);
+  }
+
+  reset();
+  if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    running = false;
+  }
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

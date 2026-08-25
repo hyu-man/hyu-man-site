@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ω — ひゅーまん</title>
+<meta name="description" content="完全に決まっている。永遠に計算できない。">
+<link rel="canonical" href="https://hyu-man.com/omega-ep/">
+<meta property="og:type" content="music.album">
+<meta property="og:site_name" content="ひゅーまん">
+<meta property="og:title" content="ω — ひゅーまん">
+<meta property="og:description" content="完全に決まっている。永遠に計算できない。">
+<meta property="og:url" content="https://hyu-man.com/omega-ep/">
+<meta property="og:locale" content="ja_JP">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'><rect width='8' height='8' fill='%23faf9f7'/><rect x='2' y='3' width='1' height='1' fill='%23141414'/><rect x='4' y='2' width='1' height='1' fill='%23ff96aa'/><rect x='5' y='5' width='1' height='1' fill='%23141414'/><rect x='3' y='5' width='1' height='1' fill='%23ff96aa'/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Hachi+Maru+Pop&family=DotGothic16&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing:border-box; margin:0; padding:0; }
+  :root{
+    --bg:#faf9f7; --ink:#141414; --sub:#a8a29c; --line:#eae7e3; --cheek:#ff96aa;
+    --dot:'Press Start 2P','DotGothic16','Courier New',monospace;
+    --maru:'Hachi Maru Pop','DotGothic16',sans-serif;
+  }
+  body{
+    background:var(--bg); color:var(--ink); font-family:var(--maru);
+    display:flex; flex-direction:column; align-items:center; padding:0 18px 80px;
+  }
+
+  .top{ min-height:100dvh; display:flex; flex-direction:column;
+        align-items:center; justify-content:center; }
+  h1{ font-family:var(--dot); font-size:34px; font-weight:400;
+      letter-spacing:.1em; margin-bottom:10px; }
+  .say{ font-size:13px; color:var(--sub); letter-spacing:.08em;
+        text-align:center; line-height:2; margin-bottom:22px; }
+
+  canvas{ width:min(560px, 86vw, 62vh); height:auto; aspect-ratio:1/1;
+          display:block; }
+  .meter{ margin-top:16px; text-align:center; }
+  .meter .n{ font-family:var(--dot); font-size:15px; letter-spacing:.04em;
+             font-variant-numeric:tabular-nums; }
+  .meter .n em{ font-style:normal; color:var(--sub); font-size:11px; }
+  .meter .lb{ margin-top:6px; font-size:11px; color:var(--sub); letter-spacing:.08em; }
+  .scroll{ margin-top:30px; font-size:11px; color:var(--sub); letter-spacing:.14em; }
+
+  .body{ width:100%; max-width:620px; }
+  .sec{ border-top:1px solid var(--line); padding:28px 0 24px; }
+  .sec:first-child{ border-top:none; }
+  .h{ font-family:var(--dot); font-size:9px; letter-spacing:.18em;
+      color:var(--sub); margin-bottom:14px; }
+
+  ol{ list-style:none; }
+  ol li{ display:flex; align-items:baseline; gap:12px; padding:7px 0;
+         font-size:14px; letter-spacing:.05em; }
+  ol li .no{ font-family:var(--dot); font-size:8px; color:var(--sub); width:16px; }
+  ol li .ti{ flex:1; }
+  ol li .tm{ font-family:var(--dot); font-size:9px; color:var(--sub);
+             font-variant-numeric:tabular-nums; }
+  ol li .memo{ display:block; font-size:11.5px; color:var(--sub);
+               margin-top:2px; letter-spacing:.04em; }
+
+  .txt{ font-size:13px; line-height:2.1; color:var(--sub); }
+  .txt b{ color:var(--ink); font-weight:400; }
+
+  .digits{ font-family:var(--dot); font-size:12px; letter-spacing:.34em;
+           line-height:2.3; color:var(--ink); word-break:break-all; }
+  .end{ margin-top:18px; font-size:14px; line-height:2.1; letter-spacing:.06em; }
+
+  footer{ margin-top:46px; font-family:var(--dot); font-size:9px;
+          color:var(--sub); letter-spacing:.2em; text-align:center; }
+  nav{ margin-top:20px; font-family:var(--dot); font-size:9px;
+       letter-spacing:.1em; color:var(--sub); text-align:center; }
+  nav a{ color:var(--sub); text-decoration:none; margin-right:12px; }
+  nav a:hover{ color:var(--ink); }
+</style>
+</head>
+<body>
+
+<div class="top">
+  <h1>ω</h1>
+  <p class="say">完全に決まっている。<br>永遠に計算できない。</p>
+
+  <canvas id="cv" width="800" height="800" aria-label="広がりつづける観測窓"></canvas>
+
+  <div class="meter">
+    <div class="n" id="n">0.<em>…</em></div>
+    <div class="lb" id="lb"></div>
+  </div>
+
+  <div class="scroll">↓</div>
+</div>
+
+<div class="body">
+
+  <div class="sec">
+    <div class="h">4 TRACKS</div>
+    <ol>
+      <li><span class="no">01</span><span class="ti">ω<span class="memo">いる。届かない。</span></span><span class="tm">1:46</span></li>
+      <li><span class="no">02</span><span class="ti">Eventually<span class="memo">いる。間に合わない。</span></span><span class="tm">1:19</span></li>
+      <li><span class="no">03</span><span class="ti">H — The Decider<span class="memo">いない。</span></span><span class="tm">0:53</span></li>
+      <li><span class="no">04</span><span class="ti">Still<span class="memo">いないと知ってから、まだ数えている。</span></span><span class="tm">2:11</span></li>
+    </ol>
+  </div>
+
+  <div class="sec">
+    <div class="h">WHAT IS Ω</div>
+    <p class="txt">
+      でたらめに書いたプログラムが、いつか止まる確率。<br>
+      <b>ひとつの実数として、完全に決まっています。</b>
+      0.007875… のように、桁が全部ある。<br><br>
+      でも、その桁を求める方法は<b>存在しません。</b>
+      速い計算機を持ってきても、無限に時間をかけても、届きません。
+      1975年に、チャイティンがそれを示しました。<br><br>
+      下からしか近づけません。止まるものを見つけるたびに、下限が上がる。
+      <b>上限は、永遠にわかりません。</b>
+    </p>
+  </div>
+
+  <div class="sec">
+    <div class="h">ABOVE</div>
+    <p class="txt">
+      上で動いているのは、ちいさなチューリング機械です。<br>
+      <b>ほんとうに走らせています。</b>乱数は使っていません。<br><br>
+      止まったものだけ、点が置かれます。
+      すぐ止まったものは黒、手間どったものはピンク。
+      止まらなかったところは、白いまま。<br><br>
+      窓は広がりつづけます。<b>広がるほど、ひとつずつは小さくなります。</b>
+      終わりません。
+    </p>
+  </div>
+
+  <div class="sec">
+    <div class="h">UNUSED</div>
+    <p class="digits">
+      0 1 8 5 7 4 2 1 7 6 2 5 9 8 3 4 1 6
+    </p>
+    <p class="end">
+      No I.<br>
+      No You.<br>
+      No question.<br>
+      No answer.
+    </p>
+    <p class="txt" style="margin-top:16px">
+      5曲目になるはずだった歌詞。曲が来なかったので、ここに置いてあります。
+    </p>
+  </div>
+
+</div>
+
+<footer>決まっているのに、わからない</footer>
+<nav>
+  <a href="/">ひゅーまん</a><a href="/liar/">/liar/</a><a href="/halt/">/halt/</a><a href="/count/">/count/</a><a href="/film/">/film/</a>
+</nav>
+
+<script>
+(() => {
+  "use strict";
+  const S = 800;
+  const $ = id => document.getElementById(id);
+  const cv = $("cv"), ctx = cv.getContext("2d");
+  const cs = () => getComputedStyle(document.documentElement);
+  let BG, INK, PINK;
+  const theme = () => { const c = cs();
+    BG=c.getPropertyValue('--bg').trim(); INK=c.getPropertyValue('--ink').trim();
+    PINK=c.getPropertyValue('--cheek').trim(); };
+  theme();
+
+  /* ---- ちいさな機械。4状態2記号。ほんとうに走らせる ------------------ */
+  const NS = 4, HALT = NS, OPT = [];
+  for (let n=0;n<=NS;n++) for (const w of [0,1]) for (const d of [-1,1]) OPT.push([w,d,n]);
+  function pick(idx, cell) {
+    let h = (idx * 0x9E3779B1 + cell * 0x85EBCA77) >>> 0;
+    h ^= h >>> 15; h = Math.imul(h, 0x2C1B3C6D) >>> 0;
+    h ^= h >>> 12; h = Math.imul(h, 0x297A2D39) >>> 0;
+    h = (h ^ (h >>> 15)) >>> 0;                 // 符号付きにしない
+    return OPT[h % OPT.length];
+  }
+  const tape = new Uint8Array(4096);
+  // 止まったら歩数、止まらなければ 0
+  function steps(idx, budget) {
+    const t = []; for (let c=0;c<NS*2;c++) t.push(pick(idx,c));
+    tape.fill(0);
+    let p = 2048, st = 0;
+    for (let i=0;i<budget;i++) {
+      const s = tape[p], a = t[st*2+s];
+      tape[p] = a[0]; p += a[1];
+      if (p < 2 || p > 4093) return 0;
+      if (a[2] === HALT) return i+1;
+      st = a[2];
+    }
+    return 0;
+  }
+
+  /* ---- 覗いた結果をためておく（同じ機械は二度走らせない） -------------- */
+  const BUDGET = 12;
+  const res = [];                 // 0=止まらない 1=はやい 2=おそい
+  let seen = 0, halted = 0;
+  function observe(upto) {
+    while (res.length < upto) {
+      const i = res.length + 1;
+      const s = steps(1000003*i + 7, BUDGET);
+      res.push(s === 0 ? 0 : (s <= 2 ? 1 : 2));
+      seen++; if (s) halted++;
+    }
+  }
+
+  /* ---- 歪み。ジャケットと同じ式 --------------------------------------- */
+  function warp(x, y, amp) {
+    const u = x/S, v = y/S;
+    const r = Math.hypot(u-0.5, v-0.5) * 2;
+    const a = amp * (0.35 + r);
+    return [ x + a*(Math.sin(v*6.1+0.7) + 0.55*Math.sin(v*13.3+2.1)),
+             y + a*(Math.sin(u*5.3+1.9) + 0.55*Math.sin(u*11.7+0.4)) ];
+  }
+
+  /* ---- 窓は広がりつづける。広がるほど、ひとつずつは小さくなる ---------- */
+  let N = 4, t = 0;
+  const GROW = 150;               // 5秒ごとに ひとまわり大きく
+  const AMP  = S * 0.050;
+
+  function draw() {
+    ctx.fillStyle = BG; ctx.fillRect(0,0,S,S);
+    const box = S * 0.78, o = (S-box)/2, c = box/N;
+    for (let r=0;r<N;r++) for (let k=0;k<N;k++) {
+      const v = res[r*N + k];
+      if (!v) continue;
+      ctx.fillStyle = v === 1 ? INK : PINK;
+      ctx.beginPath();
+      const q = [[0,0],[1,0],[1,1],[0,1]];
+      for (let j=0;j<4;j++) {
+        const [dx,dy] = q[j];
+        const [wx,wy] = warp(o + (k+dx)*c, o + (r+dy)*c, AMP);
+        j ? ctx.lineTo(wx,wy) : ctx.moveTo(wx,wy);
+      }
+      ctx.closePath(); ctx.fill();
+    }
+  }
+
+  function frame() {
+    t++;
+    if (t % GROW === 0 && N < 240) N += 2;
+    observe(N*N);
+    draw();
+    const rr = seen ? halted/seen : 0;
+    $("n").innerHTML = "0." + rr.toFixed(6).slice(2) + "<em>…</em>";
+    $("lb").textContent = "のぞいた " + seen.toLocaleString("ja-JP") +
+                          "　とまった " + halted.toLocaleString("ja-JP");
+    requestAnimationFrame(frame);
+  }
+
+  if (window.matchMedia) {
+    const mq = window.matchMedia("(prefers-color-scheme: dark)");
+    const oc = () => theme();
+    mq.addEventListener ? mq.addEventListener("change", oc) : mq.addListener(oc);
+  }
+  observe(N*N); draw();
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

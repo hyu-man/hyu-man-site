@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Collatz — ひゅーまん</title>
+<link rel="canonical" href="https://hyu-man.com/collatz/">
+<meta name="description" content="偶数なら半分。奇数なら3倍して1を足す。ぜんぶ 1 にかえる。">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="ひゅーまん">
+<meta property="og:title" content="Collatz — ひゅーまん">
+<meta property="og:description" content="反例は、まだ見つかっていない。">
+<meta property="og:url" content="https://hyu-man.com/collatz/">
+<meta property="og:image" content="https://hyu-man.com/og/collatz.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="ja_JP">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'><rect width='8' height='8' fill='%23f5f3f0'/><rect x='4' y='1' width='1' height='5' fill='%23111'/><rect x='3' y='2' width='1' height='1' fill='%23111'/><rect x='3' y='6' width='3' height='1' fill='%23111'/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=DotGothic16&family=Hachi+Maru+Pop&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing:border-box; margin:0; padding:0; }
+  :root{
+    --bg:#f5f3f0; --ink:#1a1a1a; --sub:#b0a8a0; --ghost:#2a1a1a; --cheek:#ff96aa;
+    --dot:'Press Start 2P','DotGothic16','Courier New',monospace;
+    --maru:'Hachi Maru Pop','DotGothic16',sans-serif;
+  }
+  html,body{ width:100%; height:100%; overflow:hidden; background:var(--bg); }
+  body{ display:flex; align-items:center; justify-content:center; font-family:var(--maru); }
+
+  .stage{ position:relative; width:min(72vw,72vh,700px); aspect-ratio:1/1; }
+  canvas{ width:100%; height:100%; display:block; image-rendering:pixelated; background:var(--bg); }
+  .now{
+    position:absolute; inset:0; z-index:20;
+    display:flex; align-items:center; justify-content:center;
+    pointer-events:none; user-select:none;
+  }
+  .plate{
+    display:flex; flex-direction:column; align-items:center; gap:7px;
+    background:rgba(245,243,240,.9);
+    padding:16px 26px 14px; border-radius:3px;
+  }
+  .now .v{
+    font-family:var(--dot); letter-spacing:.04em;
+    font-size:clamp(20px,4.6vw,46px); color:var(--ink);
+    font-variant-numeric:tabular-nums; line-height:1;
+  }
+  .now .v.small{ font-size:clamp(13px,3vw,29px); }
+  .now .from{ font-size:12px; color:var(--sub); letter-spacing:.08em; }
+  .now.home .v{ color:var(--cheek); }
+  .now.home .plate{ background:rgba(245,243,240,.96); }
+
+  .found,.counter{
+    position:fixed; top:26px; z-index:10; color:var(--sub);
+    user-select:none; pointer-events:none; line-height:1.8;
+  }
+  .found{ left:26px; } .counter{ right:26px; text-align:right; }
+  .n{ display:block; font-family:var(--dot); font-size:20px; color:var(--ink);
+      font-variant-numeric:tabular-nums; }
+  .lb{ font-size:8px; font-family:var(--dot); letter-spacing:.14em; }
+  .ask{ display:block; font-size:12px; letter-spacing:.06em; margin-top:5px; }
+  .q{
+    position:fixed; left:26px; bottom:96px; z-index:10; max-width:44vw;
+    font-size:12.5px; letter-spacing:.05em; line-height:1.95;
+    color:var(--sub); pointer-events:none; user-select:none;
+  }
+  .q b{ display:block; color:var(--cheek); font-weight:400; margin-top:2px; }
+
+  .panel{
+    position:fixed; bottom:26px; left:50%; transform:translateX(-50%); z-index:12;
+    display:flex; gap:8px; align-items:center;
+  }
+  .panel input{
+    font-family:var(--dot); font-size:12px; width:150px; padding:6px 9px;
+    background:var(--bg); color:var(--ink); border:1px solid var(--ink);
+    border-radius:2px; text-align:right;
+  }
+  .panel button{
+    font-family:var(--maru); font-size:13px; letter-spacing:.06em;
+    background:var(--bg); color:var(--ink); border:1px solid var(--ink);
+    padding:6px 14px; cursor:pointer; border-radius:2px;
+  }
+  .panel button:hover{ background:var(--ink); color:var(--bg); }
+  .panel .snd{ padding:6px 11px; }
+  .panel .snd.on{ background:var(--cheek); border-color:var(--cheek); color:var(--bg); }
+
+  .sub{
+    position:fixed; bottom:26px; left:26px; z-index:10;
+    font-size:12px; letter-spacing:.06em; color:var(--sub);
+    line-height:2.1; pointer-events:none; user-select:none;
+  }
+  .sub a{
+    pointer-events:auto; display:inline-block; text-decoration:none; padding-bottom:2px;
+    font-family:var(--dot); font-size:9px; letter-spacing:.12em;
+    background:linear-gradient(90deg,#ff0040,#ff8a00,#ffe600,#3ddc4a,#00b7ff,#8a4bff,#ff0040);
+    background-size:300% 100%; -webkit-background-clip:text; background-clip:text;
+    color:transparent; animation:flow 4s linear infinite;
+  }
+  @keyframes flow{ from{background-position:0% 0} to{background-position:300% 0} }
+  .hint{
+    position:fixed; bottom:26px; right:26px; z-index:10; text-align:right;
+    font-size:11px; letter-spacing:.05em; color:var(--sub);
+    line-height:1.9; opacity:.75; pointer-events:none; user-select:none;
+  }
+
+  @media (max-width:700px){
+    .stage{ width:min(94vw,52vh); }
+    .found,.counter{ top:12px; } .found{ left:14px; } .counter{ right:14px; }
+    .n{ font-size:14px; } .ask{ font-size:10px; }
+    .hint,.sub,.q{ display:none; }
+    .panel{ bottom:16px; }
+    .panel input{ width:118px; font-size:11px; }
+  }
+  @media (prefers-reduced-motion:reduce){ .sub a{ animation:none; } }
+</style>
+</head>
+<body>
+
+<div class="stage">
+  <canvas id="cv" width="256" height="256"></canvas>
+  <div class="now" id="nowBox">
+    <div class="plate">
+      <span class="v" id="nowV">27</span>
+      <span class="from" id="nowFrom">27 から 0 ほめ</span>
+    </div>
+  </div>
+</div>
+
+<div class="found">
+  <span class="n" id="found">0</span>
+  <span class="lb">COUNTEREXAMPLES</span>
+  <span class="ask">まだ ひとつも ない</span>
+</div>
+
+<div class="q">
+  Did I arrive?<br>
+  <b>Or did I only stop?</b>
+</div>
+
+<div class="counter">
+  <span class="n" id="checked">0</span>
+  <span class="lb">CHECKED</span>
+  <span class="ask">ぜんぶ 1 にかえった</span>
+</div>
+
+<div class="panel">
+  <input id="seed" type="number" min="1" step="1" placeholder="すきな数" aria-label="すきな数">
+  <button id="go">うたって</button>
+  <button id="snd" class="snd" title="おと">♪</button>
+</div>
+
+<div class="sub">
+  偶数なら半分 / 奇数なら3倍して1を足す<br>
+  <a href="https://hyu-man.bandcamp.com" target="_blank" rel="noopener">→ MUSIC</a>
+</div>
+
+<div class="hint">たんじょうびを いれてみて<br>ぜんぶ 1 にかえります</div>
+
+<script>
+(() => {
+  "use strict";
+  const N = 256, PER_FRAME = 220, NOTE_MS = 115, REST_MS = 1100;
+  const cv = document.getElementById("cv");
+  const ctx = cv.getContext("2d", { alpha:false });
+  const $ = id => document.getElementById(id);
+
+  const BG = [245,243,240];
+  const TONE = [[212,208,202],[152,145,133],[88,82,74],[26,26,26]];   // 歩数で濃さ
+  const img = ctx.createImageData(N, N), px = img.data;
+  for (let p = 3; p < px.length; p += 4) px[p] = 255;
+
+  // ---- 走査（背景） -------------------------------------------------
+  let n = 1, checked = 0, found = 0, col = 0;
+  function clear() {
+    for (let i = 0, p = 0; i < N*N; i++, p += 4) { px[p]=BG[0]; px[p+1]=BG[1]; px[p+2]=BG[2]; }
+  }
+  function steps(x) {                       // Number で足りる（2^53 まで余裕）
+    let s = 0;
+    while (x !== 1) { x = (x % 2) ? 3*x + 1 : x/2; s++; if (s > 100000) return null; }
+    return s;
+  }
+  function scrollUp() {                     // 消さずに1行送る。下へ行くほど大きい数
+    px.copyWithin(0, N*4);
+    const last = (N-1)*N*4;
+    for (let p = last; p < px.length; p += 4) { px[p]=BG[0]; px[p+1]=BG[1]; px[p+2]=BG[2]; }
+  }
+  function plot(s) {
+    const p = ((N-1)*N + col) * 4;
+    const t = TONE[s < 60 ? 0 : s < 110 ? 1 : s < 180 ? 2 : 3];
+    px[p]=t[0]; px[p+1]=t[1]; px[p+2]=t[2];
+    if (++col >= N) { col = 0; scrollUp(); }
+  }
+
+  // ---- おと ---------------------------------------------------------
+  // n/2 は ちょうど1オクターブ下（同じ音）。3n+1 は 19.02半音上（オクターブ+完全五度）。
+  // どんな数でも 終わりは 8→4→2→1 ＝ おなじ音の、オクターブちがいの下降。
+  const SND = { on:false, ac:null };
+  const ROOT = 110;                                     // A2
+  const pitchOf = v => ROOT * Math.pow(2, (((Math.log2(v) * 12) % 36) + 36) % 36 / 12);
+  function note(hz, len, vol, type) {
+    if (!SND.on) return;
+    const t = SND.ac.currentTime;
+    const o = SND.ac.createOscillator(), g = SND.ac.createGain();
+    o.type = type || "triangle"; o.frequency.value = hz;
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(vol, t + 0.012);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + len);
+    o.connect(g).connect(SND.ac.destination);
+    o.start(t); o.stop(t + len + 0.02);
+  }
+
+  // ---- うたう子（前景） ----------------------------------------------
+  let seed = 27, cur = 27, step = 0, resting = 0;
+  function setSeed(v) {
+    seed = Math.max(1, Math.floor(v) || 1);
+    cur = seed; step = 0; resting = 0;
+    $("nowBox").classList.remove("home");
+  }
+  function sing() {
+    if (cur === 1) {                                   // 帰った
+      note(ROOT, 1.8, 0.10, "sine");
+      $("nowBox").classList.add("home");
+      resting = REST_MS;
+      return;
+    }
+    cur = (cur % 2) ? 3*cur + 1 : cur/2;
+    step++;
+    note(pitchOf(cur), 0.26, cur % 2 ? 0.075 : 0.055);
+  }
+  function drawNow() {
+    const s = cur.toLocaleString("ja-JP");
+    const el = $("nowV");
+    el.textContent = s;
+    el.classList.toggle("small", s.length > 9);
+    $("nowFrom").textContent = cur === 1
+      ? seed.toLocaleString("ja-JP") + " は " + step + " ほで 1 にかえった"
+      : seed.toLocaleString("ja-JP") + " から " + step + " ほめ";
+  }
+
+  // ---- ループ --------------------------------------------------------
+  let prev = 0, acc = 0;
+  function frame(t) {
+    if (!prev) prev = t;
+    const dt = Math.min(t - prev, 250);
+    prev = t;
+
+    for (let k = 0; k < PER_FRAME; k++) {
+      const s = steps(n);
+      if (s === null) found++; else plot(s);
+      n++; checked++;
+    }
+    ctx.putImageData(img, 0, 0);
+    $("checked").textContent = checked.toLocaleString("ja-JP");
+    $("found").textContent   = found.toLocaleString("ja-JP");
+
+    if (resting > 0) {
+      resting -= dt;
+      if (resting <= 0) { setSeed(seed + 1); drawNow(); acc = 0; }
+    } else {
+      acc += dt;
+      while (acc >= NOTE_MS) {
+        acc -= NOTE_MS;
+        sing(); drawNow();
+        if (resting > 0) break;
+      }
+    }
+    requestAnimationFrame(frame);
+  }
+
+  $("go").onclick = () => {
+    const v = parseInt($("seed").value, 10);
+    if (v > 0) { setSeed(v); drawNow(); }
+  };
+  $("seed").addEventListener("keydown", e => { if (e.key === "Enter") $("go").click(); });
+  $("snd").onclick = e => {
+    if (!SND.ac) SND.ac = new (window.AudioContext || window.webkitAudioContext)();
+    if (SND.ac.state === "suspended") SND.ac.resume();
+    SND.on = !SND.on;
+    e.currentTarget.classList.toggle("on", SND.on);
+  };
+
+  clear(); setSeed(27); drawNow();
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>とまる — ひゅーまん</title>
+<meta name="description" content="この子は とまる？ ── 決まっているのに、わからない。">
+<link rel="canonical" href="https://hyu-man.com/halt/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="ひゅーまん">
+<meta property="og:title" content="とまる — ひゅーまん">
+<meta property="og:description" content="この子は とまる？ ── 決まっているのに、わからない。">
+<meta property="og:url" content="https://hyu-man.com/halt/">
+<meta property="og:locale" content="ja_JP">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'><rect width='8' height='8' fill='%23f5f3f0'/><rect x='1' y='2' width='6' height='4' rx='1' fill='%23111'/><rect x='2' y='4' width='2' height='1' fill='%23f5f3f0'/><rect x='5' y='4' width='1' height='1' fill='%23f5f3f0'/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Hachi+Maru+Pop&family=DotGothic16&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing:border-box; margin:0; padding:0; }
+  :root {
+    --bg:#f5f3f0; --ink:#1a1a1a; --sub:#b0a8a0; --line:#e2ded9; --cheek:#ff96aa;
+    --dot:'Press Start 2P','DotGothic16','Courier New',monospace;
+    --maru:'Hachi Maru Pop','DotGothic16',sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#0f0f0e; --ink:#efefec; --sub:#6e6a66; --line:#262624; }
+  }
+  body {
+    background:var(--bg); color:var(--ink); font-family:var(--maru);
+    display:flex; flex-direction:column; align-items:center;
+    padding:36px 16px 64px;
+  }
+  h1 { font-family:var(--dot); font-size:13px; font-weight:400;
+       letter-spacing:.3em; text-indent:.3em; margin-bottom:6px; }
+  .lead { font-size:14px; color:var(--sub); letter-spacing:.05em; margin-bottom:26px; }
+
+  .wrap { width:100%; max-width:760px; }
+  .lane { border-top:1px solid var(--line); padding:14px 0 12px; }
+  .lane:last-of-type { border-bottom:1px solid var(--line); }
+  .head { display:flex; align-items:baseline; gap:10px; margin-bottom:6px; }
+  .name { font-size:14px; letter-spacing:.05em; }
+  .spacer { flex:1 }
+  .st { font-size:12px; color:var(--sub); letter-spacing:.04em; }
+  .st b { font-family:var(--dot); font-size:11px; color:var(--ink);
+          font-variant-numeric:tabular-nums; }
+  .lane.done .st, .lane.done .st b { color:var(--cheek); }
+  canvas { width:100%; height:auto; display:block; aspect-ratio:480 / 46;
+           image-rendering:pixelated; }
+
+  .bar { display:flex; flex-wrap:wrap; gap:9px; align-items:center; margin:20px 0 4px; }
+  button {
+    font-family:var(--maru); font-size:13px; letter-spacing:.06em;
+    background:var(--bg); color:var(--ink); border:1px solid var(--ink);
+    padding:5px 15px; cursor:pointer; border-radius:2px;
+  }
+  button:hover { background:var(--ink); color:var(--bg); }
+  input[type=range] { width:150px; accent-color:var(--ink); }
+  .rate { font-family:var(--dot); font-size:9px; color:var(--sub);
+          font-variant-numeric:tabular-nums; }
+
+  .note { margin-top:22px; font-size:12.5px; line-height:2.05; color:var(--sub); }
+  .note b { color:var(--ink); font-weight:400; }
+  .note .q { color:var(--cheek); }
+  nav { margin-top:36px; font-family:var(--dot); font-size:9px;
+        letter-spacing:.1em; color:var(--sub); }
+  nav a { color:var(--sub); text-decoration:none; margin-right:13px; }
+  nav a:hover { color:var(--ink); }
+</style>
+</head>
+<body>
+
+<h1>とまる</h1>
+<p class="lead">この子は とまる？</p>
+
+<div class="wrap">
+  <div id="lanes"></div>
+
+  <div class="bar">
+    <button id="play">とめる</button>
+    <button id="reset">さいしょから</button>
+    <input type="range" id="speed" min="0" max="1000" value="130" aria-label="はやさ">
+    <span class="rate" id="rate">8 /f</span>
+  </div>
+
+  <p class="note">
+    テープの上を、きまった規則どおりに歩くだけの子たちです。<br>
+    <b>2・3・4じょうたい</b>の子は、すぐ とまります。<br>
+    <b>5じょうたい</b>の子は <b>47,176,870ほ</b> あるいて とまります。
+    それが証明されたのは <b>2024年</b>。<br>
+    いちばん下の子は とまりません。おなじところを 行ったり来たりしています。<br>
+    <span class="q">6じょうたいの子が とまるかどうかは、まだ だれも しりません。</span><br>
+    しらべる方法が ない、というところまでは わかっています。
+  </p>
+
+  <nav>
+    <a href="/">ひゅーまん</a><a href="/ant/">/ant/</a><a href="/life/">/life/</a><a href="/toad/">/toad/</a><a href="/collatz/">/collatz/</a><a href="/film/">/film/</a>
+  </nav>
+</div>
+
+<script>
+(() => {
+  "use strict";
+  const CELL = 8, VIEW = 60, CW = VIEW*CELL, CH = 46;
+  const SIZE = 1 << 16, ORG = SIZE >> 1;          // テープ ±32768
+
+  // 検算済み: 6 / 14 / 107 / 47,176,870 歩。最後の子は周期2で無限ループ
+  const MACHINES = [
+    { name:"2じょうたい", halt:6,
+      t:{ A:[[1,1,"B"],[1,-1,"B"]], B:[[1,-1,"A"],[1,1,"H"]] } },
+    { name:"3じょうたい", halt:14,
+      t:{ A:[[1,1,"B"],[1,1,"H"]], B:[[0,1,"C"],[1,1,"B"]], C:[[1,-1,"C"],[1,-1,"A"]] } },
+    { name:"4じょうたい", halt:107,
+      t:{ A:[[1,1,"B"],[1,-1,"B"]], B:[[1,-1,"A"],[0,-1,"C"]],
+          C:[[1,1,"H"],[1,-1,"D"]], D:[[1,1,"D"],[0,1,"A"]] } },
+    { name:"5じょうたい", halt:47176870,
+      t:{ A:[[1,1,"B"],[1,-1,"C"]], B:[[1,1,"C"],[1,1,"B"]], C:[[1,1,"D"],[0,-1,"E"]],
+          D:[[1,-1,"A"],[1,-1,"D"]], E:[[1,1,"H"],[0,-1,"A"]] } },
+    { name:"とまらない子", halt:null,
+      t:{ A:[[1,1,"B"],[1,-1,"B"]], B:[[1,-1,"A"],[1,1,"A"]] } },
+  ];
+
+  const cs = getComputedStyle(document.documentElement);
+  const C = k => cs.getPropertyValue(k).trim();
+  let INK, BG, SUB, CHEEK, LINE;
+  const readTheme = () => { INK=C('--ink'); BG=C('--bg'); SUB=C('--sub');
+                            CHEEK=C('--cheek'); LINE=C('--line'); };
+  readTheme();
+
+  const lanes = MACHINES.map(m => {
+    const el = document.createElement("div");
+    el.className = "lane";
+    el.innerHTML = '<div class="head"><span class="name">' + m.name + '</span>' +
+                   '<span class="spacer"></span><span class="st"></span></div>' +
+                   '<canvas width="' + CW + '" height="' + CH + '"></canvas>';
+    document.getElementById("lanes").appendChild(el);
+    return { m, el, st: el.querySelector(".st"),
+             ctx: el.querySelector("canvas").getContext("2d"),
+             tape:new Uint8Array(SIZE), pos:0, state:"A", n:0, halted:false };
+  });
+
+  function reset() {
+    lanes.forEach(L => {
+      L.tape.fill(0); L.pos = 0; L.state = "A"; L.n = 0; L.halted = false;
+      L.el.classList.remove("done");
+    });
+  }
+
+  function stepLane(L, k) {
+    if (L.halted) return;
+    const t = L.m.t;
+    let { pos, state, n } = L, tape = L.tape;
+    for (let i = 0; i < k; i++) {
+      const a = t[state][tape[ORG + pos]];
+      tape[ORG + pos] = a[0];
+      pos += a[1]; n++;
+      if (a[2] === "H") { L.halted = true; break; }
+      state = a[2];
+    }
+    L.pos = pos; L.state = state; L.n = n;
+  }
+
+  function drawLane(L) {
+    const g = L.ctx, tape = L.tape, mid = VIEW >> 1;
+    g.fillStyle = BG; g.fillRect(0, 0, CW, CH);
+    g.fillStyle = LINE; g.fillRect(0, 38, CW, 1);          // 地面
+    g.fillStyle = INK;
+    for (let i = 0; i < VIEW; i++) {                        // テープ
+      if (tape[ORG + L.pos + i - mid]) g.fillRect(i*CELL, 30, CELL, 8);
+    }
+    // 子
+    const cx = mid*CELL + (CELL>>1);
+    g.fillStyle = INK;
+    g.fillRect(cx-9, 12, 18, 18);
+    g.fillRect(cx-11, 16, 22, 11);
+    g.fillStyle = CHEEK;                                    // ほお
+    g.fillRect(cx-10, 22, 4, 3); g.fillRect(cx+6, 22, 4, 3);
+    g.fillStyle = BG;                                       // め
+    if (L.halted) { g.fillRect(cx-7, 20, 5, 1); g.fillRect(cx+2, 20, 5, 1); }
+    else          { g.fillRect(cx-7, 18, 4, 4); g.fillRect(cx+3, 18, 4, 4); }
+    if (L.halted) {                                         // zzz
+      g.fillStyle = CHEEK;
+      g.fillRect(cx+12, 8, 4, 1); g.fillRect(cx+14, 9, 2, 1);
+      g.fillRect(cx+12, 10, 4, 1);
+    }
+    const nf = L.n.toLocaleString("ja-JP");
+    L.st.innerHTML = L.halted
+      ? 'とまった。<b>' + nf + '</b> ほ。'
+      : 'あるいてる <b>' + nf + '</b>';
+    if (L.halted) L.el.classList.add("done");
+  }
+
+  let run = true, rate = 8;
+  const $ = id => document.getElementById(id);
+  const speedOf = v => Math.max(1, Math.round(Math.pow(10, v/1000 * 4.6)));  // 1〜40000
+
+  function frame() {
+    if (run) for (const L of lanes) stepLane(L, L.m.halt === null ? Math.min(rate, 24) : rate);
+    for (const L of lanes) drawLane(L);
+    requestAnimationFrame(frame);
+  }
+
+  $("play").onclick = e => { run = !run; e.target.textContent = run ? "とめる" : "あるかせる"; };
+  $("reset").onclick = () => reset();
+  $("speed").oninput = e => { rate = speedOf(+e.target.value); $("rate").textContent = rate + " /f"; };
+  if (window.matchMedia) {
+    const mq = window.matchMedia("(prefers-color-scheme: dark)");
+    const oc = () => readTheme();
+    mq.addEventListener ? mq.addEventListener("change", oc) : mq.addListener(oc);
+  }
+
+  rate = speedOf(+$("speed").value); $("rate").textContent = rate + " /f";
+  reset();
+  if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    run = false; $("play").textContent = "あるかせる";
+  }
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

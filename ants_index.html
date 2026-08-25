@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ふたり — ひゅーまん</title>
+<meta name="description" content="決まっているのに、いつ会うかわからない。">
+<link rel="canonical" href="https://hyu-man.com/ants/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="ひゅーまん">
+<meta property="og:title" content="ふたり — ひゅーまん">
+<meta property="og:description" content="決まっているのに、いつ会うかわからない。">
+<meta property="og:url" content="https://hyu-man.com/ants/">
+<meta property="og:locale" content="ja_JP">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'><rect width='8' height='8' fill='%23f5f3f0'/><rect x='1' y='2' width='2' height='1' fill='%23ff6b8a'/><rect x='5' y='2' width='2' height='1' fill='%23ff6b8a'/><rect x='1' y='3' width='6' height='2' fill='%23ff6b8a'/><rect x='2' y='5' width='4' height='1' fill='%23ff6b8a'/><rect x='3' y='6' width='2' height='1' fill='%23ff6b8a'/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=DotGothic16&family=Hachi+Maru+Pop&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing:border-box; margin:0; padding:0; }
+  :root {
+    --bg:#f5f3f0; --ink:#1a1a1a; --sub:#b0a8a0; --ghost:#2a1a1a;
+    --heart:#ff6b8a; --grey:#9a9490;
+    --dot:'Press Start 2P','DotGothic16','Courier New',monospace;
+    --maru:'Hachi Maru Pop','DotGothic16',sans-serif;
+  }
+  html,body { width:100%; height:100%; overflow:hidden; background:var(--bg); }
+  body { display:flex; align-items:center; justify-content:center; }
+
+  .stage { position:relative; width:min(72vw,72vh,700px); aspect-ratio:1/1; }
+  canvas { width:100%; height:100%; display:block; image-rendering:pixelated;
+           background:var(--bg); cursor:pointer; }
+  .title {
+    position:absolute; inset:0; z-index:20;
+    display:flex; align-items:center; justify-content:center;
+    font-family:var(--dot); font-size:clamp(30px,7.5vw,72px);
+    letter-spacing:.08em; text-indent:.08em;
+    color:var(--ghost); opacity:.15; pointer-events:none; user-select:none;
+    animation:breathe 3s ease-in-out infinite;
+  }
+  @keyframes breathe { 0%,100%{opacity:.15} 50%{opacity:.32} }
+
+  .steps, .pair {
+    position:fixed; top:28px; z-index:10;
+    color:var(--sub); user-select:none; pointer-events:none; line-height:1.7;
+  }
+  .steps { right:28px; text-align:right; }
+  .pair  { left:28px; }
+  .num { display:block; font-family:var(--dot); font-size:22px;
+         color:var(--ink); font-variant-numeric:tabular-nums; }
+  .ask { display:block; font-family:var(--maru); font-size:12px;
+         letter-spacing:.08em; margin-top:6px; }
+
+  /* (♡  ♡) — すきまが実際の距離。会うと 0 になる */
+  .hh { display:block; font-size:20px; color:var(--heart); line-height:1;
+        white-space:nowrap; }
+  .hh #gap { display:inline-block; width:0; transition:width .25s ease-out; }
+  .h1, .h2 { display:inline-block; animation:beat .9s ease-in-out infinite; }
+  .h2 { animation-delay:.45s; }                 /* ふたりは逆位相 */
+  @keyframes beat { 0%,100%{transform:scale(1)} 50%{transform:scale(1.3)} }
+
+  .met .num { color:var(--heart); }
+  .met .ask { color:var(--heart); }
+
+  #say {
+    position:fixed; bottom:76px; left:0; right:0; z-index:15; text-align:center;
+    font-family:var(--maru); font-size:16px; letter-spacing:.18em;
+    color:var(--heart); opacity:0; transform:translateY(6px);
+    transition:opacity 1.2s ease, transform 1.2s ease;
+    pointer-events:none; user-select:none;
+  }
+  #say.on { opacity:1; transform:translateY(0); }
+
+  .sub {
+    position:fixed; bottom:28px; left:28px; z-index:10;
+    font-family:var(--maru); font-size:12px; letter-spacing:.08em;
+    color:var(--sub); line-height:2.1; pointer-events:none; user-select:none;
+  }
+  .sub a {
+    pointer-events:auto; display:inline-block; text-decoration:none;
+    padding-bottom:2px; font-family:var(--dot); font-size:9px; letter-spacing:.12em;
+    background:linear-gradient(90deg,#ff0040,#ff8a00,#ffe600,#3ddc4a,#00b7ff,#8a4bff,#ff0040);
+    background-size:300% 100%; -webkit-background-clip:text; background-clip:text;
+    color:transparent; animation:flow 4s linear infinite;
+  }
+  @keyframes flow { from{background-position:0% 0} to{background-position:300% 0} }
+  .sub a:hover { animation-duration:1s; }
+
+  .hint {
+    position:fixed; bottom:28px; right:28px; z-index:10; text-align:right;
+    font-family:var(--maru); font-size:11px; letter-spacing:.06em;
+    color:var(--sub); line-height:1.9; opacity:.75;
+    pointer-events:none; user-select:none;
+  }
+
+  @media (max-width:600px) {
+    .stage { width:min(94vw,62vh); }
+    .steps,.pair { top:14px; }
+    .steps { right:16px; } .pair { left:16px; }
+    .num { font-size:15px; } .ask { font-size:10px; } .hh { font-size:16px; }
+    .title { font-size:clamp(24px,9vw,44px); opacity:.13; }
+    .hint { display:none; }
+    .sub { font-size:10px; bottom:16px; left:16px; }
+    #say { bottom:58px; font-size:13px; }
+  }
+  @media (prefers-reduced-motion:reduce) {
+    .title,.h1,.h2 { animation:none; }
+    .sub a { animation:none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="stage">
+  <canvas id="cv" width="121" height="121" aria-label="二匹のラングトンの蟻"></canvas>
+  <div class="title">ふたり</div>
+</div>
+
+<div class="pair" id="pairBox">
+  <span class="hh">(<span class="h1">♡</span><span id="gap"></span><span class="h2">♡</span>)</span>
+  <span class="ask" id="pairAsk">まだ、はなれてる</span>
+</div>
+
+<div class="steps" id="stepBox">
+  <span class="num" id="steps">000000</span>
+  <span class="ask" id="stepAsk">二人が出会う歩数は？</span>
+</div>
+
+<div id="say">♡　会った　♡</div>
+
+<div class="sub">
+  白なら右 / 黒なら左 / 裏返して一歩<br>
+  <a href="https://hyu-man.bandcamp.com" target="_blank" rel="noopener">→ MUSIC</a>
+</div>
+
+<div class="hint">
+  さわると とまる<br>
+  R で さいしょから
+</div>
+
+<script>
+(() => {
+  "use strict";
+  const N = 121, PER_FRAME = 16, MEET = 8;
+  const DX = [0,1,0,-1], DY = [-1,0,1,0];
+
+  const cv  = document.getElementById("cv");
+  const ctx = cv.getContext("2d", { alpha:false });
+  const img = ctx.createImageData(N, N), px = img.data;
+  for (let p = 3; p < px.length; p += 4) px[p] = 255;
+
+  const BG=[245,243,240], INK=[26,26,26], HEART=[255,107,138], GREY=[154,148,144];
+
+  const BIG = [".##.##.","#######","#######",".#####.","..###..","...#..."];
+  const SML = [".#.#.","#####",".###.","..#.."];
+  const mk  = a => a.map(r => [...r].map(c => c === "#" ? 1 : 0));
+  const HB = mk(BIG), HS = mk(SML);
+  const BLOOM = ["..###...###..",".#####.#####.","#############","#############",
+                 "#############",".###########.","..#########..","...#######...",
+                 "....#####....",".....###.....","......#......"].map(r => [...r].map(c => c==="#"?1:0));
+
+  const grid = new Uint8Array(N*N);
+  const $ = id => document.getElementById(id);
+  let A, B, steps, met, beat, bloom, bx, by, run = true;
+
+  function reset() {
+    grid.fill(0);
+    A = {x:40, y:60, d:0}; B = {x:80, y:60, d:0};
+    steps = 0; met = 0; beat = 0; bloom = 0;
+    $("say").classList.remove("on");
+    $("stepBox").classList.remove("met");
+    $("pairBox").classList.remove("met");
+    $("stepAsk").textContent = "二人が出会う歩数は？";
+    $("pairAsk").textContent = "まだ、はなれてる";
+  }
+
+  const walk = P => {
+    const i = P.y*N + P.x, on = grid[i] ^ 1;
+    grid[i] = on;
+    P.d = on ? (P.d+1)&3 : (P.d+3)&3;
+    P.x = (P.x + DX[P.d] + N) % N;
+    P.y = (P.y + DY[P.d] + N) % N;
+  };
+  const gap = () => {
+    const dx = Math.abs(A.x-B.x), dy = Math.abs(A.y-B.y);
+    return Math.max(Math.min(dx, N-dx), Math.min(dy, N-dy));
+  };
+
+  function step() {
+    walk(A); walk(B); steps++;
+    if (!met && gap() <= MEET) {
+      met = steps; bloom = 110;
+      bx = (A.x + B.x) >> 1; by = (A.y + B.y) >> 1;
+      $("say").classList.add("on");
+      $("stepBox").classList.add("met");
+      $("pairBox").classList.add("met");
+      $("stepAsk").textContent = "二人が出会った歩数";
+      $("pairAsk").textContent = "くっついた";
+    }
+  }
+
+  function blit() {
+    for (let i = 0, p = 0; i < N*N; i++, p += 4) {
+      const c = grid[i] ? INK : BG;
+      px[p] = c[0]; px[p+1] = c[1]; px[p+2] = c[2];
+    }
+  }
+  function stamp(m, cx, cy, col, k) {
+    const h = m.length, w = m[0].length;
+    for (let r = 0; r < h; r++) for (let c = 0; c < w; c++) {
+      if (!m[r][c]) continue;
+      const gx = ((cx-(w>>1)+c)%N+N)%N, gy = ((cy-(h>>1)+r)%N+N)%N, p = (gy*N+gx)*4;
+      px[p]   = px[p]   + (col[0]-px[p]  )*k;
+      px[p+1] = px[p+1] + (col[1]-px[p+1])*k;
+      px[p+2] = px[p+2] + (col[2]-px[p+2])*k;
+    }
+  }
+
+  function paint() {
+    blit();
+    if (bloom > 0) { stamp(BLOOM, bx, by, HEART, Math.min(1, bloom/110)); bloom--; }
+    const big = ((beat >> 4) & 1) === 0;
+    stamp(big ? HB : HS, B.x, B.y, met ? HEART : GREY, 1);
+    stamp(big ? HS : HB, A.x, A.y, HEART, 1);          // ふたりは逆位相
+    ctx.putImageData(img, 0, 0);
+    $("steps").textContent = String(met || steps).padStart(6, "0");
+    const g = met ? 0 : gap();
+    $("gap").style.width = Math.round(Math.min(g, 60) * 1.1) + "px";
+  }
+
+  function frame() {
+    if (run) { for (let k = 0; k < PER_FRAME; k++) step(); beat++; }
+    paint();
+    requestAnimationFrame(frame);
+  }
+
+  document.addEventListener("keydown", e => {
+    if (e.code === "Space") { e.preventDefault(); run = !run; }
+    else if (e.key && e.key.toLowerCase() === "r") { reset(); paint(); }
+  });
+  cv.addEventListener("click", () => { run = !run; });
+
+  reset();
+  if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    run = false;
+    for (let k = 0; k < 16502; k++) step();
+    bloom = 110; paint();
+  } else {
+    requestAnimationFrame(frame);
+  }
+})();
+</script>
+</body>
+</html>

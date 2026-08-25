@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>まわす — ひゅーまん</title>
+<meta name="description" content="鳴っているあいだに、蟻がつぎのループを書いています。E major / 140 BPM。">
+<link rel="canonical" href="https://hyu-man.com/loop/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="ひゅーまん">
+<meta property="og:title" content="まわす — ひゅーまん">
+<meta property="og:description" content="鳴っているあいだに、蟻がつぎのループを書いています。">
+<meta property="og:url" content="https://hyu-man.com/loop/">
+<meta property="og:locale" content="ja_JP">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'><rect width='8' height='8' fill='%23f5f3f0'/><circle cx='4' cy='4' r='3' fill='none' stroke='%23111' stroke-width='1'/><rect x='3' y='3' width='2' height='2' fill='%23111'/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Hachi+Maru+Pop&family=DotGothic16&display=swap" rel="stylesheet">
+<script src="/js/dmg.js"></script>
+<style>
+  * { box-sizing:border-box; margin:0; padding:0; }
+  :root {
+    --bg:#f5f3f0; --ink:#1a1a1a; --sub:#b0a8a0; --line:#e2ded9; --cheek:#ff96aa;
+    --dot:'Press Start 2P','DotGothic16','Courier New',monospace;
+    --maru:'Hachi Maru Pop','DotGothic16',sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#0f0f0e; --ink:#efefec; --sub:#6e6a66; --line:#262624; }
+  }
+  body {
+    background:var(--bg); color:var(--ink); font-family:var(--maru);
+    display:flex; flex-direction:column; align-items:center;
+    padding:32px 16px 56px;
+  }
+  h1 { font-family:var(--dot); font-size:13px; font-weight:400;
+       letter-spacing:.3em; text-indent:.3em; margin-bottom:6px; }
+  .lead { font-size:14px; color:var(--sub); letter-spacing:.05em; margin-bottom:18px; }
+  .wrap { width:100%; max-width:780px; }
+
+  canvas { width:100%; height:auto; aspect-ratio:720 / 460;
+           image-rendering:pixelated; border:1px solid var(--line); display:block; }
+
+  .bar { display:flex; flex-wrap:wrap; gap:9px; align-items:center; margin-top:14px; }
+  button {
+    font-family:var(--maru); font-size:13px; letter-spacing:.06em;
+    background:var(--bg); color:var(--ink); border:1px solid var(--ink);
+    padding:5px 15px; cursor:pointer; border-radius:2px;
+  }
+  button:hover { background:var(--ink); color:var(--bg); }
+  button.on { background:var(--cheek); border-color:var(--cheek); color:var(--bg); }
+  button.rec { border-style:dashed; }
+  button:disabled { opacity:.35; cursor:default; }
+  button:disabled:hover { background:var(--bg); color:var(--ink); }
+  button.ready { border-color:var(--cheek); color:var(--cheek); }
+  input[type=range] { width:110px; accent-color:var(--ink); }
+  .rate { font-family:var(--dot); font-size:9px; color:var(--sub);
+          font-variant-numeric:tabular-nums; }
+  #dl { display:none; font-size:12px; margin-top:10px; }
+  #dl a { color:var(--cheek); }
+
+  .note { margin-top:20px; font-size:12.5px; line-height:2.05; color:var(--sub); }
+  .note b { color:var(--ink); font-weight:400; }
+  nav { margin-top:30px; font-family:var(--dot); font-size:9px;
+        letter-spacing:.1em; color:var(--sub); }
+  nav a { color:var(--sub); text-decoration:none; margin-right:12px; }
+  nav a:hover { color:var(--ink); }
+  @media (max-width:620px) { .note { font-size:12px; } nav a { margin-right:9px; } }
+</style>
+</head>
+<body>
+
+<h1>まわす</h1>
+<p class="lead">鳴っているあいだに、蟻がつぎのループを書いています。</p>
+
+<div class="wrap">
+  <canvas id="cv" width="720" height="460" aria-label="蟻と4小節のループ"></canvas>
+
+  <div class="bar">
+    <button id="run">まわす</button>
+    <button id="swap" disabled>のりかえる</button>
+    <button id="auto">じどう</button>
+    <button id="rec" class="rec" disabled>ろくおん</button>
+    <input type="range" id="bpm" min="100" max="160" value="140" aria-label="BPM">
+    <span class="rate" id="rateT">140 BPM</span>
+  </div>
+  <div id="dl"></div>
+
+  <p class="note">
+    <b>4小節 = 64歩。</b>1歩が16分音符。140 BPM で 6.86秒。<br>
+    いま鳴っているループを回しながら、蟻は歩きつづけて<b>つぎの64歩</b>を書いています。
+    書き終わると「のりかえる」が光ります。<br>
+    <b>骨組みは拍。中身は蟻。</b>
+    キックは白を踏んだ8分、スネアは黒を踏んだ2拍目と4拍目、
+    ベースは4分でその瞬間の向き、ギターは裏拍で16通りの読み取り。<br>
+    音は<b>ゲームボーイ（DMG）</b>と同じ作りです。矩形波2本、波形メモリ1本、ノイズ1本。
+    フィルタなし。音量は4bitの階段。同時に4音まで。<br>
+    キックは波形メモリを急降下させて出します。<b>だから鳴るたびにベースが切れます。</b>
+    サイドチェインを別に作る必要がありません。実機がそうなっている。<br>
+    E major。打ち込んでいません。
+  </p>
+
+  <nav>
+    <a href="/">ひゅーまん</a><a href="/ant/">/ant/</a><a href="/play/">/play/</a><a href="/read/">/read/</a><a href="/count/">/count/</a><a href="/life/">/life/</a><a href="/collatz/">/collatz/</a>
+  </nav>
+</div>
+
+<script>
+(() => {
+  "use strict";
+  const COLS = 90, ROWS = 35, S = 8, MG = 7;
+  const GW = COLS*S, GH = ROWS*S;                 // 720 x 280
+  const W = 720, H = 460, LEN = 64;
+  const DX = [0,1,0,-1], DY = [-1,0,1,0];
+
+  const $ = id => document.getElementById(id);
+  const cv = $("cv"), ctx = cv.getContext("2d", { alpha:false });
+  const cssv = k => getComputedStyle(document.documentElement).getPropertyValue(k).trim();
+  let INK, BG, SUB, LINE, CHEEK;
+  const theme = () => { INK=cssv('--ink'); BG=cssv('--bg'); SUB=cssv('--sub');
+                        LINE=cssv('--line'); CHEEK=cssv('--cheek'); };
+  theme();
+
+  // ---- 蟻 --------------------------------------------------------------
+  const grid = new Uint8Array(COLS*ROWS);
+  let ax = COLS>>1, ay = ROWS>>1, ad = 0, walked = 0;
+  function shift(dx, dy) {
+    if (dy === 1)       { grid.copyWithin(COLS, 0, COLS*(ROWS-1)); grid.fill(0, 0, COLS); }
+    else if (dy === -1) { grid.copyWithin(0, COLS, COLS*ROWS);     grid.fill(0, COLS*(ROWS-1)); }
+    if (dx === 1) { for (let r=0;r<ROWS;r++){ const b=r*COLS; grid.copyWithin(b+1,b,b+COLS-1); grid[b]=0; } }
+    else if (dx === -1) { for (let r=0;r<ROWS;r++){ const b=r*COLS; grid.copyWithin(b,b+1,b+COLS); grid[b+COLS-1]=0; } }
+  }
+  const at = (cx,cy) => (cx<0||cx>=COLS||cy<0||cy>=ROWS) ? 0 : grid[cy*COLS+cx];
+
+  function antStep() {
+    const i = ay*COLS + ax, on = grid[i] ^ 1;     // 踏んだ色を裏返す
+    grid[i] = on;
+    ad = on ? (ad + 1) & 3 : (ad + 3) & 3;        // 白なら右、黒なら左
+    ax += DX[ad]; ay += DY[ad];
+    if (ax >= COLS-MG) { shift(-1,0); ax--; }
+    if (ax <  MG)      { shift( 1,0); ax++; }
+    if (ay >= ROWS-MG) { shift(0,-1); ay--; }
+    if (ay <  MG)      { shift(0, 1); ay++; }
+    walked++;
+    const gt = at(ax,ay-1) | (at(ax+1,ay)<<1) | (at(ax,ay+1)<<2) | (at(ax-1,ay)<<3);
+    return { white: !!on, dir: ad, gt: gt };
+  }
+
+  let cur = [], next = [], pending = false, loops = 0;
+  function fill(arr) { arr.length = 0; for (let i = 0; i < LEN; i++) arr.push(antStep()); }
+
+  // ---- 音 --------------------------------------------------------------
+  const E3 = 164.8138, E2 = 82.4069, MAJ = [0,2,4,5,7,9,11];
+  const GT_HZ = [], BA_HZ = [0,4,7,9].map(s => E2 * Math.pow(2, s/12));   // E G# B C#
+  for (let i = 0; i < 16; i++) GT_HZ.push(E3 * Math.pow(2, (MAJ[i%7] + 12*((i/7)|0))/12));
+
+  let ac = null, dest = null;
+
+  function initAudio() {
+    if (ac) return;
+    ac = new (window.AudioContext || window.webkitAudioContext)();
+    dest = ac.createMediaStreamDestination();
+    DMG.init(ac, ac.destination);
+    DMG.master().connect(dest);
+  }
+
+  // 音は全部 DMG（ゲームボーイ）。フィルタなし、音量は4bitの階段。
+  // キックは CH3 を使うので、鳴るたびにベースが切れる。実機がそうなっている。
+  const kick  = t => DMG.kick(t);
+  const snare = t => DMG.snare(t);
+  const hat   = (t, acc) => DMG.hat(t, acc);
+  function bass(t, dir, dur) {
+    DMG.wave({ t:t, hz:BA_HZ[dir]/2, dur:dur, vol:0.85, decay:0, table:"bass" });
+  }
+  function guitar(t, i, dur) {                      // CH1。裏拍のリード
+    DMG.pulse("p1", { t:t, hz:GT_HZ[i], dur:dur, vol:0.42,
+                      duty:0.25, decay:0.018 });
+  }
+  function chord(t, i, dur) {                       // CH2。和音のかわりにアルペジオ
+    DMG.pulse("p2", { t:t, hz:GT_HZ[i % 8], dur:dur, vol:0.22,
+                      duty:0.125, decay:0.03, arp:[0,4,7] });
+  }
+
+  // ---- 進行 ------------------------------------------------------------
+  let bpm = 140, playing = false, i16 = 0, nextT = 0, barT = 0, timer = null, auto = false;
+  const dur16 = () => 60 / bpm / 4;
+
+  function playStep(i, t) {
+    const e = cur[i]; if (!e) return;
+    const d = dur16();
+    if (e.white && i % 2 === 0) kick(t);              // 白 → キック（8分）
+    if (!e.white && i % 8 === 4) snare(t);            // 黒 → 2拍4拍だけ
+    hat(t, i % 4 === 0);
+    if (i % 4 === 0) bass(t, e.dir, d*4*0.92);        // 4分
+    if (i % 2 === 1) guitar(t, e.gt, d*1.6);          // 裏拍
+    if (i % 16 === 0) chord(t, e.gt, d*8);            // 1小節あたま
+  }
+
+  function sched() {
+    while (nextT < ac.currentTime + 0.12) {
+      if (i16 === 0) barT = nextT;
+      playStep(i16, nextT);
+      const w = antStep(); next.push(w);              // 鳴らしながら次を書く
+      if (next.length >= LEN && !pending) {
+        pending = true;
+        $("swap").disabled = false; $("swap").classList.add("ready");
+      }
+      nextT += dur16();
+      i16++;
+      if (i16 >= LEN) {
+        i16 = 0; loops++;
+        if (auto && pending) doSwap();
+      }
+    }
+  }
+  function doSwap() {
+    if (!pending) return;
+    cur = next.slice(0, LEN); next = [];
+    pending = false;
+    $("swap").disabled = true; $("swap").classList.remove("ready");
+  }
+
+  function start() {
+    initAudio();
+    if (ac.state === "suspended") ac.resume();
+    if (!cur.length) fill(cur);
+    playing = true; i16 = 0; next = []; pending = false;
+    nextT = ac.currentTime + 0.08; barT = nextT;
+    timer = setInterval(sched, 25);
+    $("run").textContent = "とめる"; $("run").classList.add("on");
+    $("rec").disabled = false;
+  }
+  function stop() {
+    playing = false;
+    if (timer) clearInterval(timer); timer = null;
+    $("run").textContent = "まわす"; $("run").classList.remove("on");
+  }
+
+  // ---- 描く ------------------------------------------------------------
+  const OX = 56, CW = 10, LY = [294, 324, 354, 384], LH = 26;
+  function rot(t) {
+    const [a,b,w,h] = t;
+    if (ad === 0) return [a,b,w,h];
+    if (ad === 1) return [-b-h, a, h, w];
+    if (ad === 2) return [-a-w, -b-h, w, h];
+    return [b, -a-w, h, w];
+  }
+  function render() {
+    ctx.fillStyle = BG; ctx.fillRect(0,0,W,H);
+    ctx.fillStyle = INK;
+    for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++)
+      if (grid[r*COLS+c]) ctx.fillRect(c*S, r*S, S, S);
+    const ox = ax*S + (S>>1), oy = ay*S + (S>>1);
+    ctx.fillRect(ox-7, oy-8, 15, 17); ctx.fillRect(ox-8, oy-6, 17, 13);
+    for (const t of [[-5,-14,1,6],[4,-14,1,6]]) { const [a,b,w,h]=rot(t); ctx.fillRect(ox+a,oy+b,w,h); }
+    ctx.fillStyle = CHEEK;
+    for (const t of [[-7,-1,4,3],[4,-1,4,3]])   { const [a,b,w,h]=rot(t); ctx.fillRect(ox+a,oy+b,w,h); }
+    ctx.fillStyle = BG;
+    for (const t of [[-5,-7,3,3],[3,-7,3,3]])   { const [a,b,w,h]=rot(t); ctx.fillRect(ox+a,oy+b,w,h); }
+
+    ctx.fillStyle = LINE; ctx.fillRect(0, GH, W, 1);
+    ctx.font = "10px monospace"; ctx.fillStyle = SUB;
+    ["KC","SN","BA","GT"].forEach((s,l) => ctx.fillText(s, 8, LY[l]+16));
+
+    for (let b = 0; b <= 4; b++) {                    // 小節線
+      ctx.fillStyle = LINE;
+      ctx.fillRect(OX + b*16*CW, LY[0]-6, 1, LY[3]+LH - LY[0] + 12);
+    }
+    for (let i = 0; i < LEN; i++) {
+      const e = cur[i]; if (!e) continue;
+      const x = OX + i*CW;
+      ctx.fillStyle = INK;
+      if (e.white && i % 2 === 0)   ctx.fillRect(x+1, LY[0]+6, CW-3, 14);
+      if (!e.white && i % 8 === 4)  ctx.fillRect(x+1, LY[1]+6, CW-3, 14);
+      if (i % 4 === 0) ctx.fillRect(x+1, LY[2]+2 + (3-e.dir)*6, CW-3, 5);
+      if (i % 2 === 1) ctx.fillRect(x+1, LY[3]+1 + (15-e.gt)*1.5, CW-3, 4);
+    }
+    if (playing && ac) {                              // 再生位置
+      const p = Math.max(0, Math.min(LEN-0.01, (ac.currentTime - barT)/dur16() + i16 - ((nextT-barT)/dur16() - i16 >= 0 ? 0 : 0)));
+      const ph = ((ac.currentTime - barT) / dur16());
+      const pos = Math.max(0, Math.min(LEN, ph));
+      ctx.fillStyle = CHEEK;
+      ctx.fillRect(OX + pos*CW, LY[0]-6, 2, LY[3]+LH - LY[0] + 12);
+      void p;
+    }
+    // つぎのループの書きぐあい
+    ctx.fillStyle = LINE; ctx.fillRect(OX, 424, LEN*CW, 6);
+    ctx.fillStyle = pending ? CHEEK : SUB;
+    ctx.fillRect(OX, 424, Math.min(LEN, next.length)*CW, 6);
+    ctx.fillStyle = SUB;
+    ctx.fillText("NEXT", 8, 432);
+    ctx.fillText("LOOP " + String(loops).padStart(3,"0") + "   " +
+                 String(walked).padStart(6,"0") + " steps", OX + LEN*CW - 210, 446);
+    requestAnimationFrame(render);
+  }
+
+  // ---- ろくおん --------------------------------------------------------
+  let rec=null, chunks=[], recording=false;
+  const pickMime = () => ["video/mp4","video/webm;codecs=vp9,opus",
+                          "video/webm;codecs=vp8,opus","video/webm"]
+      .find(m => window.MediaRecorder && MediaRecorder.isTypeSupported(m)) || "";
+  $("rec").onclick = () => {
+    if (recording) {
+      if (rec && rec.state !== "inactive") rec.stop();
+      recording = false;
+      $("rec").classList.remove("on"); $("rec").textContent = "ろくおん";
+      return;
+    }
+    if (!ac) return;
+    const vs = cv.captureStream(30);
+    const mixed = new MediaStream([...vs.getVideoTracks(), ...dest.stream.getAudioTracks()]);
+    const mime = pickMime();
+    rec = new MediaRecorder(mixed, mime ? { mimeType: mime } : undefined);
+    chunks = [];
+    rec.ondataavailable = e => { if (e.data && e.data.size) chunks.push(e.data); };
+    rec.onstop = () => {
+      const type = (rec.mimeType || mime || "video/webm").split(";")[0];
+      const ext = type.indexOf("mp4") >= 0 ? "mp4" : "webm";
+      const url = URL.createObjectURL(new Blob(chunks, { type }));
+      const d = $("dl"); d.style.display = "block";
+      d.innerHTML = '<a href="' + url + '" download="loop_' + loops + '.' + ext +
+                    '">loop_' + loops + '.' + ext + ' をダウンロード</a>';
+    };
+    rec.start(); recording = true;
+    $("rec").classList.add("on"); $("rec").textContent = "ろくおん中";
+  };
+
+  $("run").onclick = () => { playing ? stop() : start(); };
+  $("swap").onclick = () => doSwap();
+  $("auto").onclick = e => { auto = !auto; e.target.classList.toggle("on", auto); };
+  $("bpm").oninput = e => { bpm = +e.target.value; $("rateT").textContent = bpm + " BPM"; };
+  if (window.matchMedia) {
+    const mq = window.matchMedia("(prefers-color-scheme: dark)");
+    const oc = () => theme();
+    mq.addEventListener ? mq.addEventListener("change", oc) : mq.addListener(oc);
+  }
+
+  fill(cur);
+  requestAnimationFrame(render);
+})();
+</script>
+</body>
+</html>

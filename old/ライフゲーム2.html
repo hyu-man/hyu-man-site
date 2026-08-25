@@ -1,0 +1,851 @@
+﻿<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>life — ひゅーまん</title>
+<meta
+  name="description"
+  content="Conway's Game of Life — ひゅーまん"
+>
+
+<style>
+  :root {
+    --ink: #111;
+    --bg: #fff;
+    --sub: #9a9a9a;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  html,
+  body {
+    width: 100%;
+    height: 100%;
+  }
+
+  body {
+    margin: 0;
+    min-height: 100dvh;
+    overflow: hidden;
+
+    background: var(--bg);
+    color: var(--ink);
+
+    font-family:
+      "Hiragino Kaku Gothic ProN",
+      "Yu Gothic",
+      -apple-system,
+      sans-serif;
+  }
+
+  /*
+   * -----------------------------------------
+   *  Canvas
+   * -----------------------------------------
+   */
+
+  canvas {
+    position: fixed;
+
+    top: 50%;
+    left: 50%;
+
+    transform: translate(-50%, -50%);
+
+    /*
+     * 121 × 121 の宇宙。
+     *
+     * 画面サイズに合わせてかなり大きくする。
+     */
+    width: min(88vw, 820px);
+    height: min(88vw, 820px);
+
+    display: block;
+
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+
+    cursor: crosshair;
+    touch-action: none;
+  }
+
+  /*
+   * -----------------------------------------
+   *  Title
+   * -----------------------------------------
+   */
+
+  .title {
+    position: fixed;
+
+    top: 22px;
+    left: 50%;
+
+    transform: translateX(-50%);
+
+    z-index: 10;
+
+    font-size: 12px;
+    font-weight: 700;
+
+    letter-spacing: .5em;
+    text-indent: .5em;
+
+    opacity: .88;
+
+    user-select: none;
+    pointer-events: none;
+  }
+
+  /*
+   * -----------------------------------------
+   *  Generation
+   * -----------------------------------------
+   */
+
+  .generation {
+    position: fixed;
+
+    top: 22px;
+    right: 24px;
+
+    z-index: 10;
+
+    font-size: 9px;
+
+    letter-spacing: .18em;
+
+    color: var(--sub);
+
+    opacity: .7;
+
+    user-select: none;
+    pointer-events: none;
+  }
+
+  /*
+   * -----------------------------------------
+   *  Bottom
+   * -----------------------------------------
+   */
+
+.caption {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+
+  z-index: 10;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+
+  padding: 9px 14px 10px;
+
+  background: var(--bg);
+
+  color: var(--sub);
+
+  text-align: center;
+
+  user-select: none;
+  pointer-events: none;
+}
+
+.caption strong {
+  color: var(--ink);
+
+  font-size: 14px;
+  font-weight: 700;
+
+  letter-spacing: .42em;
+  text-indent: .42em;
+}
+
+.caption span {
+  font-size: 10px;
+  font-weight: 400;
+
+  letter-spacing: .12em;
+  white-space: nowrap;
+}
+
+  /*
+   * -----------------------------------------
+   *  Hint
+   * -----------------------------------------
+   */
+
+  .hint {
+    position: fixed;
+
+    right: 24px;
+    bottom: 22px;
+
+    z-index: 10;
+
+    font-size: 9px;
+
+    letter-spacing: .12em;
+
+    color: var(--sub);
+
+    opacity: 0;
+
+    transition: opacity .8s ease;
+
+    user-select: none;
+    pointer-events: none;
+  }
+
+  body:hover .hint {
+    opacity: .45;
+  }
+
+  /*
+   * -----------------------------------------
+   *  Dark mode
+   * -----------------------------------------
+   */
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --ink: #f2f2f2;
+      --bg: #0a0a0a;
+      --sub: #777;
+    }
+  }
+
+  /*
+   * -----------------------------------------
+   *  Mobile
+   * -----------------------------------------
+   */
+
+  @media (max-width: 600px) {
+
+    canvas {
+      width: 94vw;
+      height: 94vw;
+    }
+
+    .title {
+      top: 18px;
+      font-size: 11px;
+    }
+
+    .generation {
+      top: 18px;
+      right: 16px;
+    }
+
+    .caption {
+      bottom: 18px;
+    }
+
+    .hint {
+      display: none;
+    }
+  }
+</style>
+</head>
+
+<body>
+
+
+<canvas
+  id="cv"
+  width="121"
+  height="121"
+  aria-label="Conway's Game of Life"
+></canvas>
+
+<div
+  class="generation"
+  id="generation"
+>
+  000000
+</div>
+
+<div class="caption">
+  <strong>Life</strong>
+  <span>いきる / ふえる / きえる</span>
+</div>
+
+<div class="hint">
+  draw / space / r
+</div>
+
+<script>
+(() => {
+  "use strict";
+
+  /*
+   * =========================================
+   * World
+   * =========================================
+   */
+
+  const N = 121;
+  const SIZE = N * N;
+
+  const cv =
+    document.getElementById("cv");
+
+  const ctx =
+    cv.getContext("2d", {
+      alpha: false
+    });
+
+  const generationEl =
+    document.getElementById(
+      "generation"
+    );
+
+  const styles =
+    getComputedStyle(
+      document.documentElement
+    );
+
+  const INK =
+    styles
+      .getPropertyValue("--ink")
+      .trim() || "#111";
+
+  const BG =
+    styles
+      .getPropertyValue("--bg")
+      .trim() || "#fff";
+
+
+  /*
+   * =========================================
+   * Life state
+   * =========================================
+   */
+
+  let grid =
+    new Uint8Array(SIZE);
+
+  let next =
+    new Uint8Array(SIZE);
+
+  let previous =
+    new Uint8Array(SIZE);
+
+  let generation = 0;
+
+  let running = true;
+
+  let lastTime = 0;
+
+  const SPEED = 85;
+
+
+  /*
+   * =========================================
+   * Utilities
+   * =========================================
+   */
+
+  function index(x, y) {
+    return y * N + x;
+  }
+
+
+  /*
+   * =========================================
+   * Initial world
+   * =========================================
+   *
+   * 世界全体に生命を散らす。
+   *
+   * 中央に「主役」を作らない。
+   */
+
+  function reset() {
+
+    grid.fill(0);
+    next.fill(0);
+    previous.fill(0);
+
+    /*
+     * 少し疎なランダム宇宙。
+     */
+    for (
+      let i = 0;
+      i < SIZE;
+      i++
+    ) {
+
+      grid[i] =
+        Math.random() < 0.115
+          ? 1
+          : 0;
+    }
+
+    /*
+     * ごく少数の秩序だった
+     * パターンも混ぜる。
+     *
+     * 全部ランダムより、
+     * 時間が経ったときに
+     * 変化の仕方が面白くなる。
+     */
+
+    addSeed(
+      18,
+      22,
+      [
+        [0, 1],
+        [1, 2],
+        [2, 0],
+        [2, 1],
+        [2, 2]
+      ]
+    );
+
+    addSeed(
+      87,
+      29,
+      [
+        [1, 0],
+        [2, 1],
+        [0, 2],
+        [1, 2],
+        [2, 2]
+      ]
+    );
+
+    addSeed(
+      34,
+      91,
+      [
+        [0, 1],
+        [1, 2],
+        [2, 0],
+        [2, 1],
+        [2, 2]
+      ]
+    );
+
+    generation = 0;
+
+    draw();
+  }
+
+
+  function addSeed(x, y, cells) {
+
+    for (
+      const [dx, dy]
+      of cells
+    ) {
+
+      const nx =
+        (x + dx + N) % N;
+
+      const ny =
+        (y + dy + N) % N;
+
+      grid[
+        index(nx, ny)
+      ] = 1;
+    }
+  }
+
+
+  /*
+   * =========================================
+   * Neighbor count
+   * =========================================
+   */
+
+  function countNeighbors(x, y) {
+
+    let count = 0;
+
+    for (
+      let dy = -1;
+      dy <= 1;
+      dy++
+    ) {
+
+      for (
+        let dx = -1;
+        dx <= 1;
+        dx++
+      ) {
+
+        if (
+          dx === 0 &&
+          dy === 0
+        ) {
+          continue;
+        }
+
+        const nx =
+          (x + dx + N) % N;
+
+        const ny =
+          (y + dy + N) % N;
+
+        count +=
+          grid[
+            index(nx, ny)
+          ];
+      }
+    }
+
+    return count;
+  }
+
+
+  /*
+   * =========================================
+   * Next generation
+   * =========================================
+   */
+
+  function step() {
+
+    previous.set(grid);
+
+    for (
+      let y = 0;
+      y < N;
+      y++
+    ) {
+
+      for (
+        let x = 0;
+        x < N;
+        x++
+      ) {
+
+        const i =
+          index(x, y);
+
+        const neighbors =
+          countNeighbors(x, y);
+
+        if (grid[i]) {
+
+          next[i] =
+            (
+              neighbors === 2 ||
+              neighbors === 3
+            )
+              ? 1
+              : 0;
+
+        } else {
+
+          next[i] =
+            neighbors === 3
+              ? 1
+              : 0;
+        }
+      }
+    }
+
+    const temp =
+      grid;
+
+    grid =
+      next;
+
+    next =
+      temp;
+
+    generation++;
+  }
+
+
+  /*
+   * =========================================
+   * Render
+   * =========================================
+   */
+
+  function draw() {
+
+    /*
+     * 完全消去。
+     *
+     * 残像・ぼかしなし。
+     */
+    ctx.fillStyle =
+      BG;
+
+    ctx.fillRect(
+      0,
+      0,
+      N,
+      N
+    );
+
+
+    /*
+     * Lifeそのものを
+     * 1セル = 1ピクセルで描く。
+     */
+
+    ctx.fillStyle =
+      INK;
+
+    for (
+      let y = 0;
+      y < N;
+      y++
+    ) {
+
+      for (
+        let x = 0;
+        x < N;
+        x++
+      ) {
+
+        if (
+          grid[
+            index(x, y)
+          ]
+        ) {
+
+          ctx.fillRect(
+            x,
+            y,
+            1,
+            1
+          );
+        }
+      }
+    }
+
+
+    /*
+     * 世代番号。
+     */
+    generationEl.textContent =
+      String(generation)
+        .padStart(6, "0");
+  }
+
+
+  /*
+   * =========================================
+   * Pointer
+   * =========================================
+   */
+
+  function pointerCell(e) {
+
+    const rect =
+      cv.getBoundingClientRect();
+
+    const x =
+      Math.floor(
+        (
+          e.clientX -
+          rect.left
+        ) /
+        rect.width *
+        N
+      );
+
+    const y =
+      Math.floor(
+        (
+          e.clientY -
+          rect.top
+        ) /
+        rect.height *
+        N
+      );
+
+    if (
+      x < 0 ||
+      x >= N ||
+      y < 0 ||
+      y >= N
+    ) {
+      return null;
+    }
+
+    return {
+      x,
+      y
+    };
+  }
+
+
+  let drawing = false;
+
+
+  /*
+   * クリックで生命を置く。
+   */
+  cv.addEventListener(
+    "pointerdown",
+    e => {
+
+      drawing = true;
+
+      cv.setPointerCapture(
+        e.pointerId
+      );
+
+      const p =
+        pointerCell(e);
+
+      if (p) {
+
+        grid[
+          index(
+            p.x,
+            p.y
+          )
+        ] = 1;
+
+        draw();
+      }
+    }
+  );
+
+
+  /*
+   * ドラッグで生命を描く。
+   */
+  cv.addEventListener(
+    "pointermove",
+    e => {
+
+      if (!drawing) {
+        return;
+      }
+
+      const p =
+        pointerCell(e);
+
+      if (p) {
+
+        grid[
+          index(
+            p.x,
+            p.y
+          )
+        ] = 1;
+
+        draw();
+      }
+    }
+  );
+
+
+  cv.addEventListener(
+    "pointerup",
+    () => {
+      drawing = false;
+    }
+  );
+
+  cv.addEventListener(
+    "pointercancel",
+    () => {
+      drawing = false;
+    }
+  );
+
+
+  /*
+   * =========================================
+   * Keyboard
+   * =========================================
+   */
+
+  document.addEventListener(
+    "keydown",
+    e => {
+
+      /*
+       * Space
+       * pause / resume
+       */
+      if (
+        e.code === "Space"
+      ) {
+
+        e.preventDefault();
+
+        running =
+          !running;
+
+        return;
+      }
+
+
+      /*
+       * R
+       * reset
+       */
+      if (
+        e.key.toLowerCase() === "r"
+      ) {
+
+        reset();
+      }
+    }
+  );
+
+
+  /*
+   * =========================================
+   * Animation
+   * =========================================
+   */
+
+  function frame(time) {
+
+    if (
+      running &&
+      time - lastTime >
+      SPEED
+    ) {
+
+      step();
+
+      draw();
+
+      lastTime =
+        time;
+    }
+
+    requestAnimationFrame(
+      frame
+    );
+  }
+
+
+  /*
+   * =========================================
+   * Start
+   * =========================================
+   */
+
+  reset();
+
+  requestAnimationFrame(
+    frame
+  );
+
+})();
+</script>
+
+</body>
+</html>
