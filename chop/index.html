@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>きざむ — ひゅーまん</title>
+<meta name="description" content="ブレイクをその場で作って、32に切って、蟻が並べ替えます。">
+<link rel="canonical" href="https://hyu-man.com/chop/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="ひゅーまん">
+<meta property="og:title" content="きざむ — ひゅーまん">
+<meta property="og:description" content="ブレイクをその場で作って、32に切って、蟻が並べ替えます。">
+<meta property="og:url" content="https://hyu-man.com/chop/">
+<meta property="og:locale" content="ja_JP">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'><rect width='8' height='8' fill='%23f5f3f0'/><rect x='1' y='1' width='1' height='6' fill='%23111'/><rect x='3' y='2' width='1' height='4' fill='%23111'/><rect x='5' y='0' width='1' height='7' fill='%23111'/><rect x='7' y='3' width='1' height='2' fill='%23111'/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Hachi+Maru+Pop&family=DotGothic16&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing:border-box; margin:0; padding:0; }
+  :root {
+    --bg:#f5f3f0; --ink:#1a1a1a; --sub:#b0a8a0; --line:#e2ded9; --cheek:#ff96aa;
+    --dot:'Press Start 2P','DotGothic16','Courier New',monospace;
+    --maru:'Hachi Maru Pop','DotGothic16',sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#0f0f0e; --ink:#efefec; --sub:#6e6a66; --line:#262624; }
+  }
+  body {
+    background:var(--bg); color:var(--ink); font-family:var(--maru);
+    display:flex; flex-direction:column; align-items:center; padding:32px 16px 56px;
+  }
+  h1 { font-family:var(--dot); font-size:13px; font-weight:400;
+       letter-spacing:.3em; text-indent:.3em; margin-bottom:6px; }
+  .lead { font-size:14px; color:var(--sub); letter-spacing:.05em; margin-bottom:18px; }
+  .wrap { width:100%; max-width:780px; }
+  canvas { width:100%; height:auto; aspect-ratio:720 / 300;
+           image-rendering:pixelated; border:1px solid var(--line); display:block; }
+
+  .bar { display:flex; flex-wrap:wrap; gap:9px; align-items:center; margin-top:14px; }
+  button {
+    font-family:var(--maru); font-size:13px; letter-spacing:.06em;
+    background:var(--bg); color:var(--ink); border:1px solid var(--ink);
+    padding:5px 15px; cursor:pointer; border-radius:2px;
+  }
+  button:hover { background:var(--ink); color:var(--bg); }
+  button.on { background:var(--cheek); border-color:var(--cheek); color:var(--bg); }
+  button.go { border-style:dashed; }
+  button:disabled { opacity:.35; cursor:default; }
+  button:disabled:hover { background:var(--bg); color:var(--ink); }
+  label { font-size:12px; color:var(--sub); letter-spacing:.04em; display:flex;
+          align-items:center; gap:6px; }
+  input[type=range] { width:100px; accent-color:var(--ink); }
+  .rate { font-family:var(--dot); font-size:9px; color:var(--sub);
+          font-variant-numeric:tabular-nums; }
+  #dl { display:none; font-size:13px; margin-top:12px; }
+  #dl a { color:var(--cheek); }
+  .note { margin-top:20px; font-size:12.5px; line-height:2.05; color:var(--sub); }
+  .note b { color:var(--ink); font-weight:400; }
+  nav { margin-top:30px; font-family:var(--dot); font-size:9px;
+        letter-spacing:.1em; color:var(--sub); }
+  nav a { color:var(--sub); text-decoration:none; margin-right:12px; }
+  nav a:hover { color:var(--ink); }
+</style>
+</head>
+<body>
+
+<h1>きざむ</h1>
+<p class="lead">ブレイクをその場で作って、32に切って、蟻が並べ替えます。</p>
+
+<div class="wrap">
+  <canvas id="cv" width="720" height="300" aria-label="ブレイクの波形と刻み"></canvas>
+
+  <div class="bar">
+    <button id="run">まわす</button>
+    <button id="reroll">ふりなおす</button>
+    <button id="wav" class="go">WAV をかきだす</button>
+    <label>きざみ <input type="range" id="amt" min="0" max="100" value="45"><span class="rate" id="amtT">45%</span></label>
+    <label>ドンシャリ <input type="range" id="ds" min="0" max="100" value="60"><span class="rate" id="dsT">60%</span></label>
+    <label>BPM <input type="range" id="bpm" min="140" max="180" value="174"><span class="rate" id="bpmT">174</span></label>
+  </div>
+  <div id="dl"></div>
+
+  <p class="note">
+    ブレイクは<b>その場で合成</b>しています。サンプルは1バイトも読み込んでいません。<br>
+    2小節を<b>32スライス</b>に切って、どのスライスをどこで鳴らすかを蟻が決めます。<br>
+    <b>きざみ</b>を0にすると素のブレイク。上げるほど蟻が口を出します。
+    左に曲がると逆再生、まわりが真っ黒だと連打。<br>
+    <b>ドンシャリ</b>は 90Hz を持ち上げ、650Hz を削り、7kHz を持ち上げています。<br>
+    WAV は 4小節ぶんを書き出します。DAW にそのまま置けます。
+  </p>
+
+  <nav>
+    <a href="/">ひゅーまん</a><a href="/loop/">/loop/</a><a href="/midi/">/midi/</a><a href="/play/">/play/</a><a href="/ant/">/ant/</a><a href="/film/">/film/</a>
+  </nav>
+</div>
+
+<script>
+(() => {
+  "use strict";
+  const SLICES = 32;
+  const $ = id => document.getElementById(id);
+  const cv = $("cv"), ctx2 = cv.getContext("2d", { alpha:false });
+  const cssv = k => getComputedStyle(document.documentElement).getPropertyValue(k).trim();
+  let INK, BG, SUB, LINE, CHEEK;
+  const theme = () => { INK=cssv('--ink'); BG=cssv('--bg'); SUB=cssv('--sub');
+                        LINE=cssv('--line'); CHEEK=cssv('--cheek'); };
+  theme();
+
+  // ---- 蟻 ---------------------------------------------------------------
+  const COLS = 64, ROWS = 64, MG = 6, DX = [0,1,0,-1], DY = [-1,0,1,0];
+  function walk(steps, seed) {
+    const g = new Uint8Array(COLS*ROWS);
+    let x = (COLS>>1) + (seed % 5) - 2, y = ROWS>>1, d = seed & 3;
+    const at = (a,b) => (a<0||a>=COLS||b<0||b>=ROWS) ? 0 : g[b*COLS+a];
+    const sh = (dx,dy) => {
+      if (dy===1)      { g.copyWithin(COLS,0,COLS*(ROWS-1)); g.fill(0,0,COLS); }
+      else if (dy===-1){ g.copyWithin(0,COLS,COLS*ROWS);     g.fill(0,COLS*(ROWS-1)); }
+      if (dx===1){ for(let r=0;r<ROWS;r++){const b=r*COLS; g.copyWithin(b+1,b,b+COLS-1); g[b]=0;} }
+      else if (dx===-1){ for(let r=0;r<ROWS;r++){const b=r*COLS; g.copyWithin(b,b+1,b+COLS); g[b+COLS-1]=0;} }
+    };
+    const o = [];
+    for (let i = 0; i < steps; i++) {
+      const k = y*COLS + x, on = g[k] ^ 1;
+      g[k] = on; d = on ? (d+1)&3 : (d+3)&3;
+      x += DX[d]; y += DY[d];
+      if (x>=COLS-MG){sh(-1,0);x--;} if (x<MG){sh(1,0);x++;}
+      if (y>=ROWS-MG){sh(0,-1);y--;} if (y<MG){sh(0,1);y++;}
+      o.push({ white:!!on, dir:d,
+               gt: at(x,y-1)|(at(x+1,y)<<1)|(at(x,y+1)<<2)|(at(x-1,y)<<3) });
+    }
+    return o;
+  }
+
+  // ---- ブレイクをその場で作る ---------------------------------------------
+  function drums(c, out, bpm) {
+    const st = 60/bpm/4;                       // 16分
+    const kickAt  = [0,3,10,16,19,26];
+    const snareAt = [4,12,20,28];
+    const ghostAt = [7,14,23,30];
+    const nz = c.createBuffer(1, Math.floor(c.sampleRate*0.5), c.sampleRate);
+    const nd = nz.getChannelData(0);
+    for (let i = 0; i < nd.length; i++) nd[i] = Math.random()*2 - 1;
+
+    function noise(t, dur, type, hz, q, vol) {
+      const s = c.createBufferSource(); s.buffer = nz;
+      const f = c.createBiquadFilter(); f.type = type; f.frequency.value = hz;
+      if (q) f.Q.value = q;
+      const g = c.createGain();
+      g.gain.setValueAtTime(vol, t);
+      g.gain.exponentialRampToValueAtTime(0.0001, t+dur);
+      s.connect(f).connect(g).connect(out);
+      s.start(t, Math.random()*0.3); s.stop(t+dur+0.01);
+    }
+    for (let i = 0; i < 32; i++) {
+      const t = i*st;
+      if (kickAt.indexOf(i) >= 0) {
+        const o = c.createOscillator(); o.type = "sine";
+        o.frequency.setValueAtTime(115, t);
+        o.frequency.exponentialRampToValueAtTime(42, t+0.06);
+        const g = c.createGain();
+        g.gain.setValueAtTime(1.0, t);
+        g.gain.exponentialRampToValueAtTime(0.0001, t+0.30);
+        o.connect(g).connect(out); o.start(t); o.stop(t+0.32);
+        noise(t, 0.007, "highpass", 2400, 0, 0.3);
+      }
+      if (snareAt.indexOf(i) >= 0) {
+        noise(t, 0.17, "bandpass", 1750, 0.7, 0.55);
+        const o = c.createOscillator(); o.type = "triangle"; o.frequency.value = 205;
+        const g = c.createGain();
+        g.gain.setValueAtTime(0.30, t);
+        g.gain.exponentialRampToValueAtTime(0.0001, t+0.10);
+        o.connect(g).connect(out); o.start(t); o.stop(t+0.12);
+      }
+      if (ghostAt.indexOf(i) >= 0) noise(t, 0.055, "bandpass", 1900, 0.9, 0.16);
+      noise(t, (i%4===0)?0.05:0.028, "highpass", 8200, 0, (i%4===0)?0.16:0.075);
+    }
+  }
+  function renderBreak(bpm) {
+    const two = 8*60/bpm;                       // 2小節
+    const C = new (window.OfflineAudioContext||window.webkitOfflineAudioContext)(1, Math.ceil(44100*(two+0.4)), 44100);
+    const g = C.createGain(); g.gain.value = 0.8; g.connect(C.destination);
+    drums(C, g, bpm);
+    return C.startRendering().then(b => {
+      // 2小節ぴったりに切り詰める
+      const n = Math.floor(44100*two);
+      const cut = ac.createBuffer(1, n, 44100);
+      cut.getChannelData(0).set(b.getChannelData(0).subarray(0, n));
+      return cut;
+    });
+  }
+  function reverse(buf) {
+    const r = ac.createBuffer(1, buf.length, buf.sampleRate);
+    const a = buf.getChannelData(0), b = r.getChannelData(0);
+    for (let i = 0; i < a.length; i++) b[i] = a[a.length-1-i];
+    return r;
+  }
+
+  // ---- 刻みの譜面 --------------------------------------------------------
+  let plan = [];
+  function makePlan(pat, amt) {
+    plan = [];
+    for (let i = 0; i < SLICES; i++) {
+      const e = pat[i];
+      let idx = i, rev = false, rep = 1;
+      const act = (e.gt * 100 / 15) < amt;      // きざみ量で介入の頻度が決まる
+      if (act) {
+        idx = (e.gt * 2 + (e.white ? 1 : 0)) % SLICES;
+        if (!e.white && i % 2 === 0) rep = 2;   // 黒 → 連打
+        if (e.gt === 15) rev = true;            // まわり真っ黒 → 逆
+      }
+      plan.push({ idx:idx, rev:rev, rep:rep });
+    }
+  }
+
+  // ---- 音 ---------------------------------------------------------------
+  let ac = null, brk = null, brkR = null, chain = null, dsAmt = 0.6;
+  function makeChain(c, dest, amt) {
+    const lo = c.createBiquadFilter(); lo.type = "lowshelf";
+    lo.frequency.value = 90;  lo.gain.value = 9*amt;
+    const md = c.createBiquadFilter(); md.type = "peaking";
+    md.frequency.value = 650; md.Q.value = 1.0; md.gain.value = -8*amt;
+    const hi = c.createBiquadFilter(); hi.type = "highshelf";
+    hi.frequency.value = 7000; hi.gain.value = 8*amt;
+    const sh = c.createWaveShaper();
+    const cur = new Float32Array(1024);
+    for (let i = 0; i < 1024; i++) { const x = (i/1023)*2-1; cur[i] = Math.tanh(x*(1+2.2*amt)); }
+    sh.curve = cur; sh.oversample = "4x";
+    const cp = c.createDynamicsCompressor();
+    cp.threshold.value = -10; cp.knee.value = 4; cp.ratio.value = 10;
+    cp.attack.value = 0.003; cp.release.value = 0.12;
+    const g = c.createGain(); g.gain.value = 0.7;
+    lo.connect(md).connect(hi).connect(sh).connect(cp).connect(g).connect(dest);
+    return lo;
+  }
+
+  let playing = false, timer = null, i32 = 0, nextT = 0, barT = 0, bpm = 174;
+  const stepDur = () => 60/bpm/4;
+  function fire(c, dest, p, t, sd, src, srcR) {
+    for (let r = 0; r < p.rep; r++) {
+      const s = c.createBufferSource();
+      s.buffer = p.rev ? srcR : src;
+      const off = p.rev ? (SLICES-1-p.idx)*sd : p.idx*sd;
+      const len = sd / p.rep;
+      const g = c.createGain();
+      g.gain.setValueAtTime(1, t + r*len);
+      g.gain.setValueAtTime(1, t + r*len + len*0.92);
+      g.gain.linearRampToValueAtTime(0, t + r*len + len);   // ぶつ切りを防ぐ
+      s.connect(g).connect(dest);
+      s.start(t + r*len, off, len*1.05);
+    }
+  }
+  function sched() {
+    const sd = brk.duration / SLICES;
+    while (nextT < ac.currentTime + 0.14) {
+      if (i32 === 0) barT = nextT;
+      fire(ac, chain, plan[i32], nextT, sd, brk, brkR);
+      nextT += stepDur(); i32++;
+      if (i32 >= SLICES) i32 = 0;
+    }
+  }
+
+  // ---- WAV --------------------------------------------------------------
+  function wavBlob(buf) {
+    const n = buf.length, ch = buf.numberOfChannels, sr = buf.sampleRate;
+    const d = new DataView(new ArrayBuffer(44 + n*ch*2));
+    const w = (o,s) => { for (let i=0;i<s.length;i++) d.setUint8(o+i, s.charCodeAt(i)); };
+    w(0,"RIFF"); d.setUint32(4, 36+n*ch*2, true); w(8,"WAVEfmt ");
+    d.setUint32(16,16,true); d.setUint16(20,1,true); d.setUint16(22,ch,true);
+    d.setUint32(24,sr,true); d.setUint32(28,sr*ch*2,true);
+    d.setUint16(32,ch*2,true); d.setUint16(34,16,true);
+    w(36,"data"); d.setUint32(40, n*ch*2, true);
+    let p = 44;
+    for (let i = 0; i < n; i++) for (let c = 0; c < ch; c++) {
+      let v = Math.max(-1, Math.min(1, buf.getChannelData(c)[i]));
+      d.setInt16(p, v < 0 ? v*0x8000 : v*0x7FFF, true); p += 2;
+    }
+    return new Blob([d.buffer], { type:"audio/wav" });
+  }
+  function exportWav() {
+    const sd = brk.duration / SLICES, total = stepDur()*SLICES*2;   // 4小節
+    const C = new (window.OfflineAudioContext||window.webkitOfflineAudioContext)(1, Math.ceil(44100*(total+0.3)), 44100);
+    const dest = makeChain(C, C.destination, dsAmt);
+    const cp = C.createBuffer(1, brk.length, 44100);
+    cp.getChannelData(0).set(brk.getChannelData(0));
+    const cpR = C.createBuffer(1, brkR.length, 44100);
+    cpR.getChannelData(0).set(brkR.getChannelData(0));
+    for (let k = 0; k < SLICES*2; k++)
+      fire(C, dest, plan[k % SLICES], k*stepDur(), sd, cp, cpR);
+    C.startRendering().then(b => {
+      const name = "chop_" + bpm + "bpm_" + $("amt").value + ".wav";
+      const url = URL.createObjectURL(wavBlob(b));
+      const el = $("dl"); el.style.display = "block";
+      el.innerHTML = '<a href="' + url + '" download="' + name + '">' + name + ' をダウンロード</a>';
+    });
+  }
+
+  // ---- 描く -------------------------------------------------------------
+  let peaks = [];
+  function calcPeaks() {
+    peaks = [];
+    const d = brk.getChannelData(0), per = Math.floor(d.length/360);
+    for (let i = 0; i < 360; i++) {
+      let m = 0;
+      for (let k = i*per; k < (i+1)*per && k < d.length; k++) m = Math.max(m, Math.abs(d[k]));
+      peaks.push(m);
+    }
+  }
+  function render() {
+    ctx2.fillStyle = BG; ctx2.fillRect(0,0,720,300);
+    // 波形
+    const OX = 20, WW = 680;
+    ctx2.fillStyle = INK;
+    peaks.forEach((m,i) => {
+      const h = Math.max(1, m*76), x = OX + i*(WW/360);
+      ctx2.fillRect(x, 90-h, Math.max(1, WW/360-0.4), h*2);
+    });
+    ctx2.fillStyle = LINE;
+    for (let i = 0; i <= SLICES; i++) ctx2.fillRect(OX + i*(WW/SLICES), 8, 1, 164);
+    ctx2.font = "9px monospace"; ctx2.fillStyle = SUB;
+    ctx2.fillText("BREAK  2 bars / 32 slices", OX, 186);
+
+    // 刻みの譜面
+    const CY = 208, CH = 56;
+    plan.forEach((p,i) => {
+      const x = OX + i*(WW/SLICES), w = WW/SLICES - 1.5;
+      const same = (p.idx === i && !p.rev && p.rep === 1);
+      ctx2.fillStyle = same ? LINE : INK;
+      const h = 4 + (p.idx/SLICES)*(CH-10);
+      ctx2.fillRect(x, CY + CH - h, w, h);
+      if (p.rev) { ctx2.fillStyle = CHEEK; ctx2.fillRect(x, CY, w, 3); }
+      if (p.rep > 1) { ctx2.fillStyle = CHEEK; ctx2.fillRect(x, CY+CH+3, w, 3); }
+    });
+    ctx2.fillStyle = SUB;
+    ctx2.fillText("PLAN   ↑逆再生  ↓連打", OX, CY+CH+22);
+
+    if (playing && ac) {
+      const p = (ac.currentTime - barT)/stepDur();
+      if (p >= 0 && p < SLICES) {
+        ctx2.fillStyle = CHEEK;
+        ctx2.fillRect(OX + p*(WW/SLICES), 8, 2, 164);
+        ctx2.fillRect(OX + p*(WW/SLICES), CY-4, 2, CH+12);
+      }
+    }
+    requestAnimationFrame(render);
+  }
+
+  // ---- 操作 -------------------------------------------------------------
+  let seed = 1;
+  function build() {
+    return renderBreak(bpm).then(b => {
+      brk = b; brkR = reverse(b); calcPeaks();
+      makePlan(walk(SLICES + seed*7, seed).slice(-SLICES), +$("amt").value);
+    });
+  }
+  function ensure() {
+    if (!ac) { ac = new (window.AudioContext||window.webkitAudioContext)(); }
+    if (ac.state === "suspended") ac.resume();
+  }
+  $("run").onclick = () => {
+    ensure();
+    if (playing) {
+      playing = false; clearInterval(timer); timer = null;
+      $("run").textContent = "まわす"; $("run").classList.remove("on");
+      return;
+    }
+    const go = () => {
+      chain = makeChain(ac, ac.destination, dsAmt);
+      playing = true; i32 = 0; nextT = ac.currentTime + 0.1; barT = nextT;
+      timer = setInterval(sched, 25);
+      $("run").textContent = "とめる"; $("run").classList.add("on");
+    };
+    brk ? go() : build().then(go);
+  };
+  $("reroll").onclick = () => { ensure(); seed++; build(); };
+  $("amt").oninput = e => {
+    $("amtT").textContent = e.target.value + "%";
+    if (brk) makePlan(walk(SLICES + seed*7, seed).slice(-SLICES), +e.target.value);
+  };
+  $("ds").oninput = e => {
+    dsAmt = +e.target.value/100; $("dsT").textContent = e.target.value + "%";
+    if (playing) { clearInterval(timer); chain = makeChain(ac, ac.destination, dsAmt);
+                   nextT = ac.currentTime + 0.1; barT = nextT; i32 = 0;
+                   timer = setInterval(sched, 25); }
+  };
+  $("bpm").oninput = e => { bpm = +e.target.value; $("bpmT").textContent = bpm; };
+  $("bpm").onchange = () => { ensure(); build(); };
+  $("wav").onclick = () => { ensure(); brk ? exportWav() : build().then(exportWav); };
+  if (window.matchMedia) {
+    const mq = window.matchMedia("(prefers-color-scheme: dark)");
+    const oc = () => theme();
+    mq.addEventListener ? mq.addEventListener("change", oc) : mq.addListener(oc);
+  }
+
+  // 最初の絵だけ出しておく（音は押すまで鳴らない）
+  ac = new (window.AudioContext||window.webkitAudioContext)();
+  build();
+  requestAnimationFrame(render);
+})();
+</script>
+</body>
+</html>

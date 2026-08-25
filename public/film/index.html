@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>うごく — ひゅーまん</title>
+<meta name="description" content="規則が出した答えを、そのまま置いてあります。">
+<link rel="canonical" href="https://hyu-man.com/film/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="ひゅーまん">
+<meta property="og:title" content="うごく — ひゅーまん">
+<meta property="og:description" content="規則が出した答えを、そのまま置いてあります。">
+<meta property="og:url" content="https://hyu-man.com/film/">
+<meta property="og:locale" content="ja_JP">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'><rect width='8' height='8' fill='%23fff'/><rect x='1' y='2' width='6' height='4' fill='%23111'/><rect x='2' y='3' width='2' height='2' fill='%23fff'/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Hachi+Maru+Pop&family=DotGothic16&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink:#111; --bg:#fff; --sub:#9a9a9a; --line:#e0e0de; --cheek:#ff96aa;
+    --dot:'Press Start 2P','DotGothic16','Courier New',monospace;
+    --maru:'Hachi Maru Pop','DotGothic16',sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --ink:#f2f2f2; --bg:#0a0a0a; --sub:#777; --line:#2a2a2a; }
+  }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body {
+    background:var(--bg); color:var(--ink); font-family:var(--maru);
+    padding:38px 18px 70px; display:flex; flex-direction:column; align-items:center;
+  }
+  h1 { font-family:var(--dot); font-size:13px; font-weight:400;
+       letter-spacing:.3em; text-indent:.3em; margin-bottom:6px; }
+  .lead { font-size:13px; color:var(--sub); letter-spacing:.05em; margin-bottom:20px; }
+
+  .filter { display:flex; gap:8px; margin-bottom:28px; }
+  .filter button {
+    font-family:var(--maru); font-size:12px; letter-spacing:.06em;
+    background:var(--bg); color:var(--sub); border:1px solid var(--line);
+    padding:4px 14px; cursor:pointer; border-radius:2px;
+  }
+  .filter button:hover { color:var(--ink); border-color:var(--ink); }
+  .filter button.on { background:var(--ink); color:var(--bg); border-color:var(--ink); }
+
+  .grid {
+    width:100%; max-width:1000px;
+    display:grid; grid-template-columns:repeat(auto-fill, minmax(300px, 1fr)); gap:26px;
+  }
+  figure { margin:0; }
+  figure[hidden] { display:none; }
+  .frame {
+    position:relative; border:1px solid var(--line); background:var(--bg);
+    cursor:zoom-in; overflow:hidden; line-height:0;
+    min-height:150px; display:flex; align-items:center; justify-content:center;
+  }
+  .frame:hover { border-color:var(--cheek); }
+  .frame video, .frame img {
+    width:100%; height:auto; display:block; image-rendering:pixelated;
+  }
+  .err {
+    font-family:var(--maru); font-size:12px; line-height:1.9;
+    color:var(--cheek); padding:20px; text-align:center; word-break:break-all;
+  }
+  .err code { font-family:var(--dot); font-size:9px; color:var(--sub); }
+  figcaption { margin-top:9px; font-size:13px; letter-spacing:.04em; line-height:1.7; }
+  figcaption .no { font-family:var(--dot); font-size:8px; color:var(--sub);
+                   letter-spacing:.1em; margin-right:8px; }
+  figcaption .note { display:block; font-size:12px; color:var(--sub); margin-top:2px; }
+
+  nav { margin-top:44px; font-family:var(--dot); font-size:9px;
+        letter-spacing:.1em; color:var(--sub); }
+  nav a { color:var(--sub); text-decoration:none; margin-right:13px; }
+  nav a:hover { color:var(--ink); }
+
+  #box {
+    position:fixed; inset:0; z-index:99; display:none;
+    background:var(--bg); align-items:center; justify-content:center;
+    padding:24px; cursor:zoom-out; flex-direction:column; gap:14px;
+  }
+  #box.on { display:flex; }
+  #box video, #box img {
+    width:auto; max-width:94vw; max-height:80vh;
+    image-rendering:pixelated; border:1px solid var(--line); background:var(--bg);
+  }
+  #box .cap { font-size:13px; letter-spacing:.05em; text-align:center; }
+  #box .cap span { display:block; font-size:12px; color:var(--sub); margin-top:3px; }
+</style>
+</head>
+<body>
+
+<h1>うごく</h1>
+<p class="lead">規則が出した答えを、そのまま置いてあります。</p>
+
+<div class="filter">
+  <button data-f="all" class="on">ぜんぶ</button>
+  <button data-f="video">うごく</button>
+  <button data-f="image">とまってる</button>
+</div>
+
+<div class="grid" id="grid"></div>
+
+<nav>
+  <a href="/">ひゅーまん</a><a href="/ant/">/ant/</a><a href="/life/">/life/</a><a href="/toad/">/toad/</a><a href="/collatz/">/collatz/</a><a href="/halt/">/halt/</a>
+</nav>
+
+<div id="box"><div class="holder"></div><div class="cap"></div></div>
+
+<script>
+(() => {
+  "use strict";
+
+  /* ─────────────────────────────────────────────────────────
+     1行足すだけで増える。
+       うごく → type:"video"  ファイルは public/v/
+       とまってる → type:"image" ファイルは public/w/
+     ───────────────────────────────────────────────────────── */
+  const WORKS = [
+    { type:"video", src:"/v/life_heart.mp4", title:"ベタ塗りは死ぬ。点線は生きる。",
+      note:"B3/S23。左は41世代で死ぬ。右はブリンカーで組んだので、崩れない。" },
+    { type:"video", src:"/v/ant_two.mp4", title:"ふたり",
+      note:"ラングトンの蟻を二匹。決まっているのに、いつ会うかわからない。" },
+    { type:"image", src:"/w/bt_1_gen0.png", title:"gen 0",
+      note:"規則をまだ一度も通していない盤。この先は全部きまっている。" },
+    { type:"image", src:"/w/lx_2_slices.png", title:"世代を積む",
+      note:"1行が1世代。下へ行くほど未来。縦の線は、変わらないことで生き延びた者。" },
+    { type:"image", src:"/w/lx_4_sheet.png", title:"36枚",
+      note:"種を変えただけ。規則は全部おなじ。" },
+    { type:"image", src:"/w/jl_1_g140.png", title:"g140",
+      note:"ジュリア集合とライフゲーム。連結か塵か、二択しかない。" },
+    { type:"image", src:"/w/tm_LRRRRRLLR.png", title:"LRRRRRLLR",
+      note:"タルマイト。曲がり方を文字列で与えると、螺旋が出る。" },
+
+    { type:"image", src:"/w/art_01_Attractor.png", title:"Attractor",
+      note:"角度を log で回した。2,200本が中心の一点に落ちる。真ん中の黒い核は、みんなが同じ道を通るせいで埋まらないところ。" },
+    { type:"image", src:"/w/art_02_DIVIDE.png", title:"DIVIDE",
+      note:"÷2 のところだけ。半分になるたび、一段落ちる。240本。" },
+    { type:"image", src:"/w/art_03_FLIGHT.png", title:"FLIGHT",
+      note:"27 の軌道。1本だけ。111歩あるいて、9232 で頂点、そこから 1 へ落ちる。" },
+    { type:"image", src:"/w/art_04_ODD.png", title:"ODD",
+      note:"3n+1 のところだけ。跳ねて、上へ抜けていく。" },
+    { type:"image", src:"/w/art_05_1.png", title:"1",
+      note:"点がひとつ。それだけ。" },
+
+    { type:"image", src:"/w/om_window.png", title:"観測窓",
+      note:"ちいさな機械を144台ならべて、1歩だけ走らせた。止まったのが27台。あとの117台は「止まらない」のではなく「1歩ではわからなかった」。窓の外は、一度も覗いていない。" },
+  ];
+  /* ───────────────────────────────────────────────────────── */
+
+  const grid = document.getElementById("grid");
+  const box  = document.getElementById("box");
+  const hold = box.querySelector(".holder");
+  const bc   = box.querySelector(".cap");
+  const still = window.matchMedia &&
+                window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const figs = [];
+
+  WORKS.forEach((w, i) => {
+    const fig   = document.createElement("figure");
+    const frame = document.createElement("div");
+    frame.className = "frame";
+
+    let el;
+    if (w.type === "video") {
+      el = document.createElement("video");
+      el.src = w.src; el.muted = true; el.loop = true;
+      el.playsInline = true; el.preload = "metadata";
+      if (still) el.controls = true;
+    } else {
+      el = document.createElement("img");
+      el.src = w.src; el.alt = w.title; el.loading = "lazy"; el.decoding = "async";
+    }
+    el.addEventListener("error", () => {
+      frame.innerHTML = '<div class="err">よみこめませんでした<br><code>' + w.src + '</code></div>';
+      frame.style.cursor = "default"; frame.dataset.dead = "1";
+    });
+
+    frame.appendChild(el);
+    fig.appendChild(frame);
+
+    const cap = document.createElement("figcaption");
+    cap.innerHTML = '<span class="no">' + String(i+1).padStart(2,"0") + '</span>' +
+                    w.title + '<span class="note">' + w.note + '</span>';
+    fig.appendChild(cap);
+    grid.appendChild(fig);
+    figs.push({ fig, type:w.type });
+
+    frame.addEventListener("click", () => {
+      if (frame.dataset.dead) return;
+      hold.innerHTML = "";
+      let b;
+      if (w.type === "video") {
+        b = document.createElement("video");
+        b.src = w.src; b.muted = true; b.loop = true; b.playsInline = true;
+        b.controls = !!still;
+        hold.appendChild(b); b.load();
+        if (!still) b.play().catch(() => { b.controls = true; });
+      } else {
+        b = document.createElement("img");
+        b.src = w.src; b.alt = w.title;
+        hold.appendChild(b);
+      }
+      bc.innerHTML = w.title + "<span>" + w.note + "</span>";
+      box.classList.add("on");
+    });
+
+    if (w.type === "video" && !still && "IntersectionObserver" in window) {
+      new IntersectionObserver(es => es.forEach(e => {
+        if (e.isIntersecting) el.play().catch(() => {}); else el.pause();
+      }), { threshold:0.2 }).observe(el);
+    } else if (w.type === "video" && !still) {
+      el.autoplay = true;
+    }
+  });
+
+  document.querySelectorAll(".filter button").forEach(b => {
+    b.onclick = () => {
+      document.querySelectorAll(".filter button").forEach(x => x.classList.remove("on"));
+      b.classList.add("on");
+      const f = b.dataset.f;
+      figs.forEach(o => { o.fig.hidden = (f !== "all" && o.type !== f); });
+    };
+  });
+
+  const close = () => { box.classList.remove("on"); hold.innerHTML = ""; };
+  box.addEventListener("click", close);
+  document.addEventListener("keydown", e => { if (e.key === "Escape") close(); });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>うそつき — ひゅーまん</title>
+<meta name="description" content="なんかいやっても、あたりません。">
+<link rel="canonical" href="https://hyu-man.com/liar/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="ひゅーまん">
+<meta property="og:title" content="うそつき — ひゅーまん">
+<meta property="og:description" content="なんかいやっても、あたりません。">
+<meta property="og:url" content="https://hyu-man.com/liar/">
+<meta property="og:locale" content="ja_JP">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'><rect width='8' height='8' fill='%23f5f3f0'/><rect x='1' y='2' width='2' height='2' fill='%23111'/><rect x='5' y='2' width='2' height='2' fill='%23111'/><rect x='2' y='5' width='1' height='1' fill='%23111'/><rect x='5' y='5' width='1' height='1' fill='%23111'/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Hachi+Maru+Pop&family=DotGothic16&display=swap" rel="stylesheet">
+<script src="/js/dmg.js"></script>
+<style>
+  * { box-sizing:border-box; margin:0; padding:0; }
+  :root {
+    --bg:#f5f3f0; --ink:#1a1a1a; --sub:#b0a8a0; --line:#e2ded9; --cheek:#ff96aa;
+    --dot:'Press Start 2P','DotGothic16','Courier New',monospace;
+    --maru:'Hachi Maru Pop','DotGothic16',sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#0f0f0e; --ink:#efefec; --sub:#6e6a66; --line:#262624; }
+  }
+  body {
+    background:var(--bg); color:var(--ink); font-family:var(--maru);
+    display:flex; flex-direction:column; align-items:center;
+    min-height:100dvh; justify-content:center; padding:30px 16px 50px;
+  }
+  h1 { font-family:var(--dot); font-size:13px; font-weight:400;
+       letter-spacing:.3em; text-indent:.3em; margin-bottom:6px; }
+  .lead { font-size:14px; color:var(--sub); letter-spacing:.05em; margin-bottom:22px; }
+  .wrap { width:100%; max-width:640px; }
+
+  .stage { position:relative; }
+  canvas { width:100%; height:auto; aspect-ratio:640 / 250;
+           image-rendering:pixelated; display:block; }
+
+  .bub {
+    position:absolute; font-size:14px; letter-spacing:.05em; line-height:1.5;
+    background:var(--bg); border:1px solid var(--ink); border-radius:3px;
+    padding:6px 12px; white-space:nowrap;
+    opacity:0; transition:opacity .18s ease; pointer-events:none;
+  }
+  .bub.on { opacity:1; }
+  .bub::after {
+    content:""; position:absolute; bottom:-5px; left:18px;
+    width:8px; height:8px; background:var(--bg);
+    border-right:1px solid var(--ink); border-bottom:1px solid var(--ink);
+    transform:rotate(45deg);
+  }
+  #bj { left:4%;  top:2%; }
+  #bl { left:56%; top:2%; }
+  #bl.pink { color:var(--cheek); border-color:var(--cheek); }
+  #bl.pink::after { border-color:var(--cheek); }
+
+  .bar { display:flex; flex-wrap:wrap; gap:10px; align-items:center;
+         justify-content:center; margin-top:16px; }
+  button {
+    font-family:var(--maru); font-size:14px; letter-spacing:.06em;
+    background:var(--bg); color:var(--ink); border:1px solid var(--ink);
+    padding:7px 20px; cursor:pointer; border-radius:2px;
+  }
+  button:hover { background:var(--ink); color:var(--bg); }
+  button:disabled { opacity:.35; cursor:default; }
+  button:disabled:hover { background:var(--bg); color:var(--ink); }
+  button.snd.on { background:var(--cheek); border-color:var(--cheek); color:var(--bg); }
+  label { font-size:12px; color:var(--sub); display:flex; align-items:center; gap:6px; }
+  input[type=range] { width:90px; accent-color:var(--ink); }
+
+  .score { margin-top:14px; text-align:center; font-size:13px; color:var(--sub); }
+  .score b { font-family:var(--dot); font-size:15px; color:var(--ink);
+             font-variant-numeric:tabular-nums; }
+  .score .hit b { color:var(--cheek); }
+
+  .say { margin-top:18px; text-align:center; min-height:4.2em;
+         font-size:13px; line-height:2.1; color:var(--cheek); }
+  .say div { opacity:0; transition:opacity 1s ease; }
+  .say div.on { opacity:1; }
+
+  .note { margin-top:22px; font-size:12.5px; line-height:2.05; color:var(--sub); }
+  .note b { color:var(--ink); font-weight:400; }
+  nav { margin-top:28px; font-family:var(--dot); font-size:9px;
+        letter-spacing:.1em; color:var(--sub); text-align:center; }
+  nav a { color:var(--sub); text-decoration:none; margin-right:12px; }
+  nav a:hover { color:var(--ink); }
+  @media (max-width:600px) {
+    .bub { font-size:12px; padding:5px 9px; }
+    .note { font-size:12px; }
+  }
+</style>
+</head>
+<body>
+
+<h1>うそつき</h1>
+<p class="lead">この子は とまる？</p>
+
+<div class="wrap">
+  <div class="stage">
+    <canvas id="cv" width="640" height="250" aria-label="判定する子と、うそつき"></canvas>
+    <div class="bub" id="bj"></div>
+    <div class="bub" id="bl"></div>
+  </div>
+
+  <div class="bar">
+    <button id="ask">きいてみる</button>
+    <label>はやさ <input type="range" id="sp" min="1" max="5" value="2"></label>
+    <button id="snd" class="snd">おと</button>
+  </div>
+
+  <p class="score">
+    きいた <b id="n">0</b> かい　／　
+    <span class="hit">あたり <b id="h">0</b> かい</span>
+  </p>
+
+  <div class="say">
+    <div id="s1">なんかいやっても、あたりません。</div>
+    <div id="s2">はやくしても、おなじです。</div>
+    <div id="s3">しらべる方法が ない、と証明されています。</div>
+  </div>
+
+  <p class="note">
+    左が<b>はんていする子</b>。「この子は とまる？」に答えます。<br>
+    右が<b>うそつき</b>。答えを聞いてから、<b>その逆をやります。</b><br>
+    「とまります」と言われたら歩きつづける。「とまりません」と言われたら止まる。<br>
+    はんていする子が何を答えても、うそつきは外しにいけます。<br>
+    もっと速い機械を持ってきても、その機械の答えを聞いてから逆をやるだけ。
+    <b>速さの話ではありません。</b><br>
+    これが停止性問題です。1936年、チューリング。
+  </p>
+
+  <nav>
+    <a href="/">ひゅーまん</a><a href="/halt/">/halt/</a><a href="/count/">/count/</a><a href="/collatz/">/collatz/</a><a href="/toad/">/toad/</a><a href="/ant/">/ant/</a>
+  </nav>
+</div>
+
+<script>
+(() => {
+  "use strict";
+  const P = 4;                                   // 1ドット = 4px
+  const $ = id => document.getElementById(id);
+  const cv = $("cv"), ctx = cv.getContext("2d", { alpha:false });
+  const cssv = k => getComputedStyle(document.documentElement).getPropertyValue(k).trim();
+  let BG, INK, SUB, LINE, CHEEK;
+  const theme = () => { BG=cssv('--bg'); INK=cssv('--ink'); SUB=cssv('--sub');
+                        LINE=cssv('--line'); CHEEK=cssv('--cheek'); };
+  theme();
+
+  const r = (x,y,w,h,c) => { ctx.fillStyle=c; ctx.fillRect(x*P,y*P,w*P,h*P); };
+
+  // ---- 状態 ------------------------------------------------------------
+  let jEye="open", jThink=0, lEye="open", lWalk=false, lLegs=0, t=0;
+  let asked=0, hit=0, busy=false, said=null;
+
+  const JX=26, JY=12, LX=94, LY=14;              // ドット単位の位置
+
+  function judge() {
+    r(JX-3, JY-4, 28, 4, INK);                   // ぼうし
+    r(JX,   JY,   22, 26, INK);
+    r(JX+1, JY+18, 4, 3, CHEEK);
+    r(JX+17,JY+18, 4, 3, CHEEK);
+    if (jEye === "x") {                          // こまった
+      for (const ex of [JX+4, JX+14]) {
+        for (let i=0;i<4;i++){ r(ex+i, JY+10+i, 1,1, BG); r(ex+3-i, JY+10+i, 1,1, BG); }
+      }
+    } else if (jEye === "think") {
+      r(JX+4, JY+12, 4, 2, BG); r(JX+14, JY+12, 4, 2, BG);
+    } else {
+      r(JX+4, JY+10, 4, 4, BG); r(JX+14, JY+10, 4, 4, BG);
+    }
+    if (jThink > 0) {                            // かんがえてる点
+      const n = 1 + (Math.floor(t/9) % 3);
+      for (let i=0;i<n;i++) r(JX+24+i*3, JY-8, 2, 2, SUB);
+    }
+  }
+
+  function liar() {
+    const bob = lWalk ? (Math.floor(t/6) % 2) : 0;
+    const y = LY + bob;
+    r(LX+10, y-4, 2, 4, INK);                    // つの
+    r(LX, y, 22, 24, INK);
+    r(LX+1,  y+17, 4, 3, CHEEK);
+    r(LX+17, y+17, 4, 3, CHEEK);
+    if (lEye === "shut") { r(LX+4, y+12, 4, 2, BG); r(LX+14, y+12, 4, 2, BG); }
+    else                 { r(LX+4, y+10, 4, 4, BG); r(LX+14, y+10, 4, 4, BG); }
+    const sw = lWalk ? (Math.floor(t/6) % 2) : 0; // あし
+    r(LX+4  + (sw?1:0), y+24, 4, 3, INK);
+    r(LX+14 - (sw?1:0), y+24, 4, 3, INK);
+  }
+
+  function draw() {
+    ctx.fillStyle = BG; ctx.fillRect(0,0,640,250);
+    r(0, 52, 160, 1, LINE);                      // ゆか
+    judge(); liar();
+    ctx.fillStyle = SUB; ctx.font = "11px monospace";
+    ctx.fillText("HALT?", JX*P, 240);
+    ctx.fillText("LIAR",  LX*P, 240);
+    t++;
+    requestAnimationFrame(draw);
+  }
+
+  // ---- おと ------------------------------------------------------------
+  let ac=null, sound=false;
+  const beep = (hz, dur, duty) => {
+    if (!sound || !ac) return;
+    DMG.pulse("p1", { t:ac.currentTime+0.01, hz:hz, dur:dur, vol:0.4,
+                      duty:duty===undefined?0.5:duty, decay:0.02 });
+  };
+
+  // ---- 一回ぶん --------------------------------------------------------
+  const wait = ms => new Promise(r2 => setTimeout(r2, ms));
+  const show = (el, txt, pink) => {
+    el.textContent = txt;
+    el.classList.toggle("pink", !!pink);
+    el.classList.add("on");
+  };
+  const hide = el => el.classList.remove("on");
+
+  async function round() {
+    if (busy) return;
+    busy = true; $("ask").disabled = true;
+    const speed = +$("sp").value;
+    const T = 900 / speed;                       // 速くしても結果は同じ
+
+    hide($("bj")); hide($("bl"));
+    jEye = "think"; jThink = 1; lEye = "open"; lWalk = false;
+    beep(330, 0.05, 0.125);
+    await wait(T);
+
+    // はんていする子が答える。何を答えてもいい
+    const saysHalt = Math.random() < 0.5;
+    jThink = 0; jEye = "open";
+    show($("bj"), saysHalt ? "とまります" : "とまりません");
+    beep(saysHalt ? 494 : 392, 0.12);
+    await wait(T * 0.9);
+
+    // うそつきは、その逆をやる
+    if (saysHalt) { lWalk = true;  lEye = "open"; show($("bl"), "うごく", true); }
+    else          { lWalk = false; lEye = "shut"; show($("bl"), "とまる", true); }
+    beep(saysHalt ? 587 : 262, 0.18, 0.25);
+    await wait(T * 1.1);
+
+    jEye = "x";                                  // はずした
+    show($("bj"), "…");
+    beep(196, 0.30, 0.5);
+
+    asked++;
+    $("n").textContent = asked;
+    $("h").textContent = hit;                    // ずっと 0
+    if (asked >= 3)  $("s1").classList.add("on");
+    if (asked >= 6)  $("s2").classList.add("on");
+    if (asked >= 10) $("s3").classList.add("on");
+
+    await wait(T * 1.4);
+    jEye = "open";
+    busy = false; $("ask").disabled = false;
+  }
+
+  $("ask").onclick = round;
+  $("snd").onclick = e => {
+    if (!ac) { ac = new (window.AudioContext||window.webkitAudioContext)(); DMG.init(ac); }
+    if (ac.state === "suspended") ac.resume();
+    sound = !sound;
+    e.currentTarget.classList.toggle("on", sound);
+  };
+  if (window.matchMedia) {
+    const mq = window.matchMedia("(prefers-color-scheme: dark)");
+    const oc = () => theme();
+    mq.addEventListener ? mq.addEventListener("change", oc) : mq.addListener(oc);
+  }
+
+  requestAnimationFrame(draw);
+})();
+</script>
+</body>
+</html>

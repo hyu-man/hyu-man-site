@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>うつす — ひゅーまん</title>
+<meta name="description" content="絵を入れると、ぐるっと回って元にもどる動画になります。">
+<link rel="canonical" href="https://hyu-man.com/canvas/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="ひゅーまん">
+<meta property="og:title" content="うつす — ひゅーまん">
+<meta property="og:description" content="絵を入れると、ぐるっと回って元にもどる動画になります。">
+<meta property="og:url" content="https://hyu-man.com/canvas/">
+<meta property="og:locale" content="ja_JP">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'><rect width='8' height='8' fill='%23f5f3f0'/><rect x='2' y='1' width='4' height='6' fill='none' stroke='%23111' stroke-width='1'/><rect x='3' y='3' width='2' height='2' fill='%23111'/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Hachi+Maru+Pop&family=DotGothic16&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing:border-box; margin:0; padding:0; }
+  :root{
+    --bg:#f5f3f0; --ink:#1a1a1a; --sub:#b0a8a0; --line:#e2ded9; --cheek:#ff96aa;
+    --dot:'Press Start 2P','DotGothic16','Courier New',monospace;
+    --maru:'Hachi Maru Pop','DotGothic16',sans-serif;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --bg:#0f0f0e; --ink:#efefec; --sub:#6e6a66; --line:#262624; }
+  }
+  body{
+    background:var(--bg); color:var(--ink); font-family:var(--maru);
+    display:flex; flex-direction:column; align-items:center; padding:32px 16px 56px;
+  }
+  h1{ font-family:var(--dot); font-size:13px; font-weight:400;
+      letter-spacing:.3em; text-indent:.3em; margin-bottom:6px; }
+  .lead{ font-size:14px; color:var(--sub); letter-spacing:.05em; margin-bottom:18px; }
+  .wrap{ width:100%; max-width:760px; }
+
+  .row{ display:flex; gap:22px; align-items:flex-start; flex-wrap:wrap; }
+  .stage{ width:236px; }
+  canvas{ width:100%; height:auto; aspect-ratio:9/16; display:block;
+          border:1px solid var(--line); background:var(--bg); }
+  .side{ flex:1; min-width:250px; }
+
+  .drop{
+    border:2px dashed var(--line); border-radius:4px; padding:26px 16px;
+    text-align:center; font-size:13px; color:var(--sub); cursor:pointer;
+    letter-spacing:.05em; line-height:1.9;
+  }
+  .drop:hover, .drop.over{ border-color:var(--cheek); color:var(--ink); }
+  .drop input{ display:none; }
+
+  .grp{ margin-top:16px; }
+  .grp .lb{ font-size:11px; color:var(--sub); letter-spacing:.1em; margin-bottom:7px; }
+  .opts{ display:flex; gap:7px; flex-wrap:wrap; }
+  .opts button{
+    font-family:var(--maru); font-size:13px; letter-spacing:.05em;
+    background:var(--bg); color:var(--sub); border:1px solid var(--line);
+    padding:5px 13px; cursor:pointer; border-radius:2px;
+  }
+  .opts button:hover{ color:var(--ink); border-color:var(--ink); }
+  .opts button.on{ background:var(--ink); color:var(--bg); border-color:var(--ink); }
+
+  .go{ margin-top:20px; display:flex; gap:9px; align-items:center; flex-wrap:wrap; }
+  .go button{
+    font-family:var(--maru); font-size:14px; letter-spacing:.06em;
+    background:var(--bg); color:var(--ink); border:1px solid var(--ink);
+    padding:7px 20px; cursor:pointer; border-radius:2px;
+  }
+  .go button:hover{ background:var(--ink); color:var(--bg); }
+  .go button:disabled{ opacity:.35; cursor:default; }
+  .go button:disabled:hover{ background:var(--bg); color:var(--ink); }
+  .go button.rec{ border-style:dashed; }
+  .go button.rec.on{ background:var(--cheek); border-color:var(--cheek); color:var(--bg); }
+  .bar{ flex:1; min-width:110px; height:3px; background:var(--line); }
+  .bar i{ display:block; height:3px; width:0; background:var(--cheek); }
+  #dl{ display:none; margin-top:12px; font-size:13px; }
+  #dl a{ color:var(--cheek); }
+  .info{ margin-top:8px; font-family:var(--dot); font-size:9px; color:var(--sub);
+         letter-spacing:.08em; min-height:1.4em; }
+
+  .note{ margin-top:22px; font-size:12.5px; line-height:2.05; color:var(--sub); }
+  .note b{ color:var(--ink); font-weight:400; }
+  .note code{ font-family:var(--dot); font-size:9.5px; }
+  nav{ margin-top:28px; font-family:var(--dot); font-size:9px;
+       letter-spacing:.1em; color:var(--sub); }
+  nav a{ color:var(--sub); text-decoration:none; margin-right:12px; }
+  nav a:hover{ color:var(--ink); }
+  @media (max-width:640px){ .stage{ width:100%; max-width:236px; margin:0 auto; } }
+</style>
+</head>
+<body>
+
+<h1>うつす</h1>
+<p class="lead">絵を入れると、ぐるっと回って元にもどる動画になります。</p>
+
+<div class="wrap">
+  <div class="row">
+    <div class="stage">
+      <canvas id="cv" width="720" height="1280" aria-label="できあがりの見本"></canvas>
+      <div class="info" id="info"></div>
+    </div>
+
+    <div class="side">
+      <label class="drop" id="drop">
+        ここに 絵を おとす<br>
+        <span style="font-size:11px">おしてもいい　PNG / JPG / GIF</span>
+        <input type="file" id="file" accept="image/*">
+      </label>
+
+      <div class="grp">
+        <div class="lb">うごき</div>
+        <div class="opts" id="mo">
+          <button data-m="spin" class="on">まわる</button>
+          <button data-m="zoom">よる</button>
+          <button data-m="flow">ながれる</button>
+          <button data-m="beat">またたく</button>
+          <button data-m="still">とまる</button>
+        </div>
+      </div>
+
+      <div class="grp">
+        <div class="lb">ながさ</div>
+        <div class="opts" id="du">
+          <button data-d="4">4びょう</button>
+          <button data-d="6" class="on">6びょう</button>
+          <button data-d="8">8びょう</button>
+        </div>
+      </div>
+
+      <div class="grp">
+        <div class="lb">まわりの色</div>
+        <div class="opts" id="pd">
+          <button data-p="auto" class="on">絵から</button>
+          <button data-p="#ffffff">しろ</button>
+          <button data-p="#111111">くろ</button>
+          <button data-p="#fff7e5">クリーム</button>
+        </div>
+      </div>
+
+      <div class="go">
+        <button id="play">ためす</button>
+        <button id="rec" class="rec" disabled>ろくおん</button>
+        <div class="bar"><i id="pg"></i></div>
+      </div>
+      <div id="dl"></div>
+    </div>
+  </div>
+
+  <p class="note">
+    720 × 1280、9:16。<b>ちょうど一周して、元にもどります。</b>
+    どこで切っても つなぎ目が出ません。<br>
+    <b>まわる</b>は360度、<b>よる</b>と<b>またたく</b>は行って戻る、
+    <b>ながれる</b>は絵の高さ分きっかり流れます。<br>
+    絵はどこにも送っていません。<b>ぜんぶこの画面の中で作っています。</b><br>
+    落ちてくるのは Safari なら mp4、ほかは webm です。
+    webm を mp4 にするなら<br>
+    <code>ffmpeg -i in.webm -c:v libx264 -pix_fmt yuv420p -an out.mp4</code>
+  </p>
+
+  <nav>
+    <a href="/">ひゅーまん</a><a href="/midi/">/midi/</a><a href="/chop/">/chop/</a><a href="/loop/">/loop/</a><a href="/film/">/film/</a>
+  </nav>
+</div>
+
+<script>
+(() => {
+  "use strict";
+  const W = 720, H = 1280, FPS = 30;
+  const $ = id => document.getElementById(id);
+  const cv = $("cv"), ctx = cv.getContext("2d");
+  let img = null, pad = "auto", padCol = "#ffffff";
+  let motion = "spin", dur = 6;
+  let playing = false, t0 = 0, raf = 0;
+
+  /* ---- 絵を読む ---------------------------------------------------- */
+  function load(file) {
+    if (!file || !/^image\//.test(file.type)) return;
+    const url = URL.createObjectURL(file);
+    const im = new Image();
+    im.onload = () => {
+      img = im; URL.revokeObjectURL(url);
+      padCol = sample(im);
+      $("info").textContent = im.naturalWidth + " x " + im.naturalHeight;
+      $("rec").disabled = false;
+      draw(0);
+    };
+    im.onerror = () => { $("info").textContent = "よみこめませんでした"; };
+    im.src = url;
+  }
+  // 四隅の色をならして、まわりの色にする
+  function sample(im) {
+    const c = document.createElement("canvas"); c.width = c.height = 32;
+    const g = c.getContext("2d"); g.drawImage(im, 0, 0, 32, 32);
+    const d = g.getImageData(0,0,32,32).data;
+    const pts = [[0,0],[31,0],[0,31],[31,31],[1,1],[30,1],[1,30],[30,30]];
+    let r=0,gg=0,b=0;
+    for (const [x,y] of pts) { const i=(y*32+x)*4; r+=d[i]; gg+=d[i+1]; b+=d[i+2]; }
+    const n = pts.length;
+    const hex = v => Math.round(v/n).toString(16).padStart(2,"0");
+    return "#" + hex(r) + hex(gg) + hex(b);
+  }
+  const bgColor = () => pad === "auto" ? padCol : pad;
+
+  /* ---- 一枚描く。p は 0〜1。p=1 が p=0 と同じになるようにする ---- */
+  function draw(p) {
+    ctx.fillStyle = bgColor(); ctx.fillRect(0,0,W,H);
+    if (!img) {
+      ctx.fillStyle = "#b0a8a0"; ctx.font = "22px system-ui";
+      ctx.textAlign = "center"; ctx.fillText("絵を いれてください", W/2, H/2);
+      ctx.textAlign = "left"; return;
+    }
+    const iw = img.naturalWidth, ih = img.naturalHeight;
+    ctx.save();
+
+    if (motion === "flow") {                 // 絵の高さぶん、きっかり流れる
+      const s = W / iw, dh = ih * s;
+      let y = -(p * dh) % dh;
+      while (y < H) { ctx.drawImage(img, 0, y, W, dh); y += dh; }
+      ctx.drawImage(img, 0, y - dh*2, W, dh);
+      ctx.restore(); return;
+    }
+
+    let sc = Math.max(W/iw, H/ih);           // 画面を覆う
+    if (motion === "spin") {
+      sc = Math.max(sc, Math.hypot(W,H) / Math.min(iw,ih));   // 回しても角が出ない
+      ctx.translate(W/2, H/2);
+      ctx.rotate(p * Math.PI * 2);
+      ctx.translate(-W/2, -H/2);
+    } else if (motion === "zoom") {
+      sc *= 1 + 0.09 * (1 - Math.cos(p * Math.PI * 2)) / 2;   // 行って戻る
+    } else if (motion === "beat") {
+      ctx.globalAlpha = 0.82 + 0.18 * (1 + Math.cos(p * Math.PI * 2)) / 2;
+    }
+    const dw = iw * sc, dh = ih * sc;
+    ctx.drawImage(img, (W-dw)/2, (H-dh)/2, dw, dh);
+    ctx.restore();
+  }
+
+  /* ---- ためす ------------------------------------------------------ */
+  function loop(ts) {
+    if (!t0) t0 = ts;
+    const p = ((ts - t0) / 1000 / dur) % 1;
+    draw(p);
+    $("pg").style.width = (p*100).toFixed(1) + "%";
+    if (playing) raf = requestAnimationFrame(loop);
+  }
+  function play() {
+    if (playing) { playing = false; cancelAnimationFrame(raf);
+                   $("play").textContent = "ためす"; return; }
+    playing = true; t0 = 0; $("play").textContent = "とめる";
+    raf = requestAnimationFrame(loop);
+  }
+
+  /* ---- ろくおん ---------------------------------------------------- */
+  const pickMime = () => ["video/mp4","video/webm;codecs=vp9","video/webm;codecs=vp8","video/webm"]
+    .find(m => window.MediaRecorder && MediaRecorder.isTypeSupported(m)) || "";
+  function record() {
+    if (!img) return;
+    playing = false; cancelAnimationFrame(raf); $("play").textContent = "ためす";
+    const stream = cv.captureStream(FPS);
+    const mime = pickMime();
+    const rec = new MediaRecorder(stream, mime ? { mimeType: mime, videoBitsPerSecond: 8000000 } : undefined);
+    const chunks = [];
+    rec.ondataavailable = e => { if (e.data && e.data.size) chunks.push(e.data); };
+    rec.onstop = () => {
+      const type = (rec.mimeType || mime || "video/webm").split(";")[0];
+      const ext = type.indexOf("mp4") >= 0 ? "mp4" : "webm";
+      const url = URL.createObjectURL(new Blob(chunks, { type }));
+      const name = "canvas_" + motion + "_" + dur + "s." + ext;
+      const d = $("dl"); d.style.display = "block";
+      d.innerHTML = '<a href="'+url+'" download="'+name+'">'+name+' をダウンロード</a>';
+      $("rec").classList.remove("on"); $("rec").textContent = "ろくおん";
+      $("pg").style.width = "0%";
+      draw(0);
+    };
+    $("rec").classList.add("on"); $("rec").textContent = "ろくおん中";
+    $("dl").style.display = "none";
+    rec.start();
+
+    const start = performance.now(), total = dur * 1000;
+    (function tick(ts) {
+      const el = (ts || performance.now()) - start;
+      if (el >= total) { draw(0); setTimeout(() => rec.stop(), 120); return; }
+      draw((el / total) % 1);
+      $("pg").style.width = (el/total*100).toFixed(1) + "%";
+      requestAnimationFrame(tick);
+    })();
+  }
+
+  /* ---- 操作 -------------------------------------------------------- */
+  const drop = $("drop");
+  $("file").onchange = e => load(e.target.files[0]);
+  ["dragenter","dragover"].forEach(k => drop.addEventListener(k, e => {
+    e.preventDefault(); drop.classList.add("over"); }));
+  ["dragleave","drop"].forEach(k => drop.addEventListener(k, e => {
+    e.preventDefault(); drop.classList.remove("over"); }));
+  drop.addEventListener("drop", e => {
+    const f = e.dataTransfer && e.dataTransfer.files[0]; if (f) load(f); });
+  document.addEventListener("paste", e => {
+    const it = e.clipboardData && e.clipboardData.files[0]; if (it) load(it); });
+
+  const pickGroup = (id, attr, fn) => {
+    $(id).addEventListener("click", e => {
+      const b = e.target.closest("button"); if (!b) return;
+      $(id).querySelectorAll("button").forEach(x => x.classList.remove("on"));
+      b.classList.add("on"); fn(b.dataset[attr]);
+      if (!playing) draw(0);
+    });
+  };
+  pickGroup("mo", "m", v => motion = v);
+  pickGroup("du", "d", v => dur = +v);
+  pickGroup("pd", "p", v => pad = v);
+
+  $("play").onclick = play;
+  $("rec").onclick = record;
+
+  draw(0);
+})();
+</script>
+</body>
+</html>

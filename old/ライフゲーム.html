@@ -1,0 +1,467 @@
+﻿<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>life — ひゅーまん</title>
+<meta
+  name="description"
+  content="Conway's Game of Life — ひゅーまん"
+>
+
+<style>
+  :root {
+    --ink: #111;
+    --bg: #fff;
+    --sub: #9a9a9a;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  html,
+  body {
+    height: 100%;
+  }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+
+    font-family:
+      "Hiragino Kaku Gothic ProN",
+      "Yu Gothic",
+      -apple-system,
+      sans-serif;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    min-height: 100dvh;
+    padding: 40px 20px;
+  }
+
+  h1 {
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: .42em;
+    margin: 0 0 26px;
+    text-indent: .42em;
+  }
+
+  canvas {
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+
+    display: block;
+
+    width: min(320px, 74vw);
+    height: min(320px, 74vw);
+
+    cursor: crosshair;
+    touch-action: none;
+  }
+
+  .meta {
+    margin-top: 26px;
+
+    font-size: 12px;
+    color: var(--sub);
+
+    letter-spacing: .1em;
+    line-height: 2.1;
+
+    text-align: center;
+  }
+
+  .meta b {
+    color: var(--ink);
+    font-weight: 700;
+    letter-spacing: .14em;
+  }
+
+  .generation {
+    position: fixed;
+
+    top: 16px;
+    right: 18px;
+
+    font-size: 9px;
+    color: var(--sub);
+
+    letter-spacing: .16em;
+
+    opacity: .7;
+
+    user-select: none;
+    pointer-events: none;
+  }
+
+  .hint {
+    position: fixed;
+
+    bottom: 16px;
+
+    font-size: 10px;
+    color: var(--sub);
+
+    letter-spacing: .2em;
+
+    opacity: .7;
+
+    user-select: none;
+    pointer-events: none;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --ink: #f2f2f2;
+      --bg: #0a0a0a;
+      --sub: #777;
+    }
+  }
+</style>
+</head>
+
+<body>
+
+<h1>ひゅーまん</h1>
+
+<canvas
+  id="cv"
+  width="121"
+  height="121"
+  aria-label="Conway's Game of Life"
+></canvas>
+
+<p class="meta">
+  <b>life</b><br>
+  生きる　増える　消える
+</p>
+
+<div
+  class="generation"
+  id="generation"
+>
+  000000
+</div>
+
+<div class="hint">
+  space / r
+</div>
+
+<script>
+(() => {
+  "use strict";
+
+  const N = 121;
+  const SIZE = N * N;
+
+  const cv = document.getElementById("cv");
+  const ctx = cv.getContext("2d", {
+    alpha: false
+  });
+
+  const generationEl =
+    document.getElementById("generation");
+
+  const styles =
+    getComputedStyle(
+      document.documentElement
+    );
+
+  const INK =
+    styles
+      .getPropertyValue("--ink")
+      .trim() || "#111";
+
+  const BG =
+    styles
+      .getPropertyValue("--bg")
+      .trim() || "#fff";
+
+  let grid = new Uint8Array(SIZE);
+  let next = new Uint8Array(SIZE);
+  let previous = new Uint8Array(SIZE);
+
+  let generation = 0;
+  let running = true;
+  let lastTime = 0;
+
+  const SPEED = 90;
+
+  function index(x, y) {
+    return y * N + x;
+  }
+
+  function reset() {
+    grid.fill(0);
+    next.fill(0);
+    previous.fill(0);
+
+    /*
+     * 少しだけランダムな生命を置く。
+     */
+    for (let i = 0; i < SIZE; i++) {
+      grid[i] =
+        Math.random() < 0.14
+          ? 1
+          : 0;
+    }
+
+    /*
+     * 中央に小さな秩序をひとつ置く。
+     */
+    const cx = Math.floor(N / 2);
+    const cy = Math.floor(N / 2);
+
+    const seed = [
+      [0, 1],
+      [1, 2],
+      [2, 0],
+      [2, 1],
+      [2, 2]
+    ];
+
+    for (const [dx, dy] of seed) {
+      grid[
+        index(cx - 1 + dx, cy - 1 + dy)
+      ] = 1;
+    }
+
+    generation = 0;
+
+    draw();
+  }
+
+  function countNeighbors(x, y) {
+    let count = 0;
+
+    for (let dy = -1; dy <= 1; dy++) {
+      for (let dx = -1; dx <= 1; dx++) {
+
+        if (
+          dx === 0 &&
+          dy === 0
+        ) {
+          continue;
+        }
+
+        const nx =
+          (x + dx + N) % N;
+
+        const ny =
+          (y + dy + N) % N;
+
+        count +=
+          grid[index(nx, ny)];
+      }
+    }
+
+    return count;
+  }
+
+  function step() {
+    previous.set(grid);
+
+    for (let y = 0; y < N; y++) {
+      for (let x = 0; x < N; x++) {
+
+        const i = index(x, y);
+        const neighbors =
+          countNeighbors(x, y);
+
+        if (grid[i]) {
+          next[i] =
+            neighbors === 2 ||
+            neighbors === 3
+              ? 1
+              : 0;
+        } else {
+          next[i] =
+            neighbors === 3
+              ? 1
+              : 0;
+        }
+      }
+    }
+
+    const temp = grid;
+    grid = next;
+    next = temp;
+
+    generation++;
+  }
+
+  function draw() {
+    /*
+     * 毎回完全に描き直す。
+     * 残像もアンチエイリアスも使わない。
+     */
+    ctx.fillStyle = BG;
+    ctx.fillRect(0, 0, N, N);
+
+    ctx.fillStyle = INK;
+
+    for (let y = 0; y < N; y++) {
+      for (let x = 0; x < N; x++) {
+
+        if (!grid[index(x, y)]) {
+          continue;
+        }
+
+        /*
+         * 1セル = 1ピクセル。
+         */
+        ctx.fillRect(
+          x,
+          y,
+          1,
+          1
+        );
+      }
+    }
+
+    generationEl.textContent =
+      String(generation).padStart(6, "0");
+  }
+
+  /*
+   * クリックした場所に生命を置く。
+   */
+  function pointerCell(e) {
+    const rect =
+      cv.getBoundingClientRect();
+
+    const x = Math.floor(
+      (
+        (e.clientX - rect.left) /
+        rect.width
+      ) * N
+    );
+
+    const y = Math.floor(
+      (
+        (e.clientY - rect.top) /
+        rect.height
+      ) * N
+    );
+
+    if (
+      x < 0 ||
+      x >= N ||
+      y < 0 ||
+      y >= N
+    ) {
+      return null;
+    }
+
+    return {
+      x,
+      y
+    };
+  }
+
+  let drawing = false;
+
+  cv.addEventListener(
+    "pointerdown",
+    e => {
+
+      drawing = true;
+
+      cv.setPointerCapture(
+        e.pointerId
+      );
+
+      const p =
+        pointerCell(e);
+
+      if (p) {
+        grid[index(p.x, p.y)] = 1;
+        draw();
+      }
+    }
+  );
+
+  cv.addEventListener(
+    "pointermove",
+    e => {
+
+      if (!drawing) {
+        return;
+      }
+
+      const p =
+        pointerCell(e);
+
+      if (p) {
+        grid[index(p.x, p.y)] = 1;
+        draw();
+      }
+    }
+  );
+
+  cv.addEventListener(
+    "pointerup",
+    () => {
+      drawing = false;
+    }
+  );
+
+  cv.addEventListener(
+    "pointercancel",
+    () => {
+      drawing = false;
+    }
+  );
+
+  /*
+   * Space = pause
+   * R = reset
+   */
+  document.addEventListener(
+    "keydown",
+    e => {
+
+      if (e.code === "Space") {
+        e.preventDefault();
+        running = !running;
+      }
+
+      if (
+        e.key.toLowerCase() === "r"
+      ) {
+        reset();
+      }
+    }
+  );
+
+  function frame(time) {
+
+    if (
+      running &&
+      time - lastTime > SPEED
+    ) {
+      step();
+      draw();
+      lastTime = time;
+    }
+
+    requestAnimationFrame(frame);
+  }
+
+  reset();
+
+  requestAnimationFrame(frame);
+
+})();
+</script>
+
+</body>
+</html>

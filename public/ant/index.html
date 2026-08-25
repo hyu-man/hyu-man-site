@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ant — ひゅーまん</title>
+<meta name="description" content="白なら右 / 黒なら左 / 裏返して一歩">
+<link rel="canonical" href="https://hyu-man.com/ant/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="ひゅーまん">
+<meta property="og:title" content="Ant — ひゅーまん">
+<meta property="og:description" content="白なら右 / 黒なら左 / 裏返して一歩">
+<meta property="og:url" content="https://hyu-man.com/ant/">
+<meta property="og:image" content="https://hyu-man.com/og/ant.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="ja_JP">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'><rect width='8' height='8' fill='%23f5f3f0'/><rect x='2' y='0' width='1' height='2' fill='%23111'/><rect x='5' y='0' width='1' height='2' fill='%23111'/><rect x='1' y='2' width='6' height='5' fill='%23111'/><rect x='2' y='3' width='1' height='1' fill='%23f5f3f0'/><rect x='5' y='3' width='1' height='1' fill='%23f5f3f0'/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Hachi+Maru+Pop&family=DotGothic16&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing:border-box; margin:0; padding:0; }
+  :root {
+    --bg:#f5f3f0; --ink:#1a1a1a; --sub:#b0a8a0; --ghost:#2a1a1a;
+    --cheek:#ff96aa; --grey:#9a9490;
+    --dot:'Press Start 2P','DotGothic16','Courier New',monospace;
+    --maru:'Hachi Maru Pop','DotGothic16',sans-serif;
+  }
+  html,body { width:100%; height:100%; overflow:hidden; background:var(--bg); }
+  body { display:flex; align-items:center; justify-content:center; font-family:var(--maru); }
+
+  .stage { position:relative; width:min(72vw,72vh,700px); aspect-ratio:1/1; }
+  canvas { width:100%; height:100%; display:block; image-rendering:pixelated;
+           background:var(--bg); cursor:pointer; }
+  .title {
+    position:absolute; inset:0; z-index:20;
+    display:flex; align-items:center; justify-content:center;
+    font-family:var(--dot); font-size:clamp(34px,8.5vw,80px);
+    letter-spacing:.08em; text-indent:.08em;
+    color:var(--ghost); opacity:.15; pointer-events:none; user-select:none;
+    animation:breathe 3s ease-in-out infinite;
+  }
+  @keyframes breathe { 0%,100%{opacity:.15} 50%{opacity:.32} }
+
+  .steps, .left {
+    position:fixed; top:26px; z-index:10; color:var(--sub);
+    user-select:none; pointer-events:none; line-height:1.7;
+  }
+  .steps { right:26px; text-align:right; }
+  .left  { left:26px; }
+  .num { display:block; font-family:var(--dot); font-size:21px;
+         color:var(--ink); font-variant-numeric:tabular-nums; }
+  .ask { display:block; font-size:12px; letter-spacing:.06em; margin-top:6px; }
+  .done .num, .done .ask { color:var(--cheek); }
+
+  /* (♡  ♡) — すきまが実際の距離 */
+  .hh { display:block; font-size:19px; color:var(--cheek); line-height:1; white-space:nowrap; }
+  .hh #gap { display:inline-block; width:0; transition:width .25s ease-out; }
+  .h1,.h2 { display:inline-block; animation:beat .9s ease-in-out infinite; }
+  .h2 { animation-delay:.45s; }
+  @keyframes beat { 0%,100%{transform:scale(1)} 50%{transform:scale(1.3)} }
+
+  .tabs { position:fixed; top:26px; left:50%; transform:translateX(-50%); z-index:12;
+          display:flex; gap:8px; }
+  .tabs button {
+    font-family:var(--maru); font-size:13px; letter-spacing:.06em;
+    background:var(--bg); color:var(--sub); border:1px solid var(--sub);
+    padding:4px 15px; cursor:pointer; border-radius:2px;
+  }
+  .tabs button.on { color:var(--bg); background:var(--ink); border-color:var(--ink); }
+  .tabs .snd { padding:4px 11px; }
+  .tabs .snd.on { background:var(--cheek); border-color:var(--cheek); color:var(--bg); }
+  .tabs button:hover { color:var(--ink); border-color:var(--ink); }
+  .tabs button.on:hover { color:var(--bg); }
+
+  #say {
+    position:fixed; bottom:74px; left:0; right:0; z-index:15; text-align:center;
+    font-size:15px; letter-spacing:.18em; color:var(--cheek);
+    opacity:0; transform:translateY(6px);
+    transition:opacity 1.2s ease, transform 1.2s ease;
+    pointer-events:none; user-select:none;
+  }
+  #say.on { opacity:1; transform:translateY(0); }
+
+  .sub { position:fixed; bottom:26px; left:26px; z-index:10;
+         font-size:12px; letter-spacing:.06em; color:var(--sub);
+         line-height:2.1; pointer-events:none; user-select:none; }
+  .sub a {
+    pointer-events:auto; display:inline-block; text-decoration:none; padding-bottom:2px;
+    font-family:var(--dot); font-size:9px; letter-spacing:.12em;
+    background:linear-gradient(90deg,#ff0040,#ff8a00,#ffe600,#3ddc4a,#00b7ff,#8a4bff,#ff0040);
+    background-size:300% 100%; -webkit-background-clip:text; background-clip:text;
+    color:transparent; animation:flow 4s linear infinite;
+  }
+  @keyframes flow { from{background-position:0% 0} to{background-position:300% 0} }
+  .sub a:hover { animation-duration:1s; }
+
+  .hint { position:fixed; bottom:26px; right:26px; z-index:10; text-align:right;
+          font-size:11px; letter-spacing:.05em; color:var(--sub);
+          line-height:1.9; opacity:.75; pointer-events:none; user-select:none; }
+
+  @media (max-width:600px) {
+    .stage { width:min(94vw,58vh); }
+    .steps,.left { top:62px; }
+    .steps { right:14px; } .left { left:14px; }
+    .num { font-size:14px; } .ask { font-size:10px; } .hh { font-size:15px; }
+    .title { font-size:clamp(24px,9vw,44px); opacity:.13; }
+    .hint { display:none; }
+    .sub { font-size:10px; bottom:14px; left:14px; }
+    #say { bottom:56px; font-size:12px; }
+    .tabs { top:16px; }
+    .tabs button { font-size:11px; padding:3px 11px; }
+  }
+  @media (prefers-reduced-motion:reduce) {
+    .title,.h1,.h2 { animation:none; }
+    .sub a { animation:none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="tabs">
+  <button id="tab1" class="on">ひとり</button>
+  <button id="tab2">ふたり</button>
+  <button id="snd" class="snd" title="おと">♪</button>
+</div>
+
+<div class="stage">
+  <canvas id="cv" width="726" height="726" aria-label="ラングトンの蟻"></canvas>
+  <div class="title">Ant</div>
+</div>
+
+<div class="left" id="leftBox">
+  <span class="num" id="leftNum">--</span>
+  <span class="hh" id="leftHH" hidden>(<span class="h1">♡</span><span id="gap"></span><span class="h2">♡</span>)</span>
+  <span class="ask" id="leftAsk">くろいマス</span>
+</div>
+
+<div class="steps" id="stepBox">
+  <span class="num" id="steps">000000</span>
+  <span class="ask" id="stepAsk">いま、なんぽ？</span>
+</div>
+
+<div id="say"></div>
+
+<div class="sub">
+  白なら右 / 黒なら左 / 裏返して一歩<br>
+  <a href="https://hyu-man.bandcamp.com" target="_blank" rel="noopener">→ MUSIC</a>
+</div>
+
+<div class="hint">さわると とまる<br>R で さいしょから</div>
+
+<script>
+(() => {
+  "use strict";
+  const N = 121, S = 6, M = 12, PER = 16, MEET = 8;
+  const W = N * S;
+  const DX = [0,1,0,-1], DY = [-1,0,1,0];      // 上 右 下 左
+
+  const cv  = document.getElementById("cv");
+  const ctx = cv.getContext("2d", { alpha:false });
+  const img = ctx.createImageData(W, W), px = img.data;
+  for (let p = 3; p < px.length; p += 4) px[p] = 255;
+  const base = new Uint8ClampedArray(px.length);
+
+  const hex = s => { s = s.trim();
+    if (s.length === 4) s = "#"+s[1]+s[1]+s[2]+s[2]+s[3]+s[3];
+    return [parseInt(s.slice(1,3),16), parseInt(s.slice(3,5),16), parseInt(s.slice(5,7),16)]; };
+  const cs = getComputedStyle(document.documentElement);
+  const BG    = hex(cs.getPropertyValue("--bg"));
+  const INK   = hex(cs.getPropertyValue("--ink"));
+  const CHEEK = hex(cs.getPropertyValue("--cheek"));
+  const GREY  = hex(cs.getPropertyValue("--grey"));
+
+  const grid = new Uint8Array(N*N);
+  const $ = id => document.getElementById(id);
+
+  let mode = 1;                 // 1 = ひとり / 2 = ふたり
+  let A, B, steps, run = true;
+  let recent, onHighway, met, bloom, bx, by, beat;
+
+  // ---- 下地（軌跡） ----
+  function cell(cx, cy, col) {
+    const x0 = cx*S, y0 = cy*S;
+    for (let r = 0; r < S; r++) {
+      let p = ((y0+r)*W + x0)*4;
+      for (let c = 0; c < S; c++, p += 4) {
+        base[p]=col[0]; base[p+1]=col[1]; base[p+2]=col[2]; base[p+3]=255;
+      }
+    }
+  }
+  function rebuild() {
+    for (let cy = 0; cy < N; cy++) for (let cx = 0; cx < N; cx++)
+      cell(cx, cy, grid[cy*N+cx] ? INK : BG);
+  }
+  function shift(dx, dy) {
+    if (dy === 1)       { grid.copyWithin(N, 0, N*(N-1)); grid.fill(0, 0, N); }
+    else if (dy === -1) { grid.copyWithin(0, N, N*N);     grid.fill(0, N*(N-1)); }
+    if (dx === 1) { for (let r = 0; r < N; r++) { const b = r*N; grid.copyWithin(b+1, b, b+N-1); grid[b]=0; } }
+    else if (dx === -1) { for (let r = 0; r < N; r++) { const b = r*N; grid.copyWithin(b, b+1, b+N); grid[b+N-1]=0; } }
+    recent++; rebuild();
+  }
+
+  function reset() {
+    grid.fill(0); steps = 0; beat = 0;
+    recent = 0; onHighway = false; met = 0; bloom = 0;
+    if (mode === 1) { A = {x:N>>1, y:N>>1, d:0}; B = null; }
+    else            { A = {x:40, y:60, d:0}; B = {x:80, y:60, d:0}; }
+    rebuild();
+    $("leftHH").hidden = (mode === 1);
+    $("leftNum").hidden = (mode === 2);
+    $("stepBox").classList.remove("done");
+    $("leftBox").classList.remove("done");
+    $("say").classList.remove("on");
+    $("stepAsk").textContent = mode === 1 ? "いま、なんぽ？" : "二人が出会う歩数は？";
+    $("leftAsk").textContent = mode === 1 ? "くろいマス" : "まだ、はなれてる";
+  }
+
+  // ---- 一歩 ----
+  function walk(P, wrap) {
+    const i = P.y*N + P.x, on = grid[i] ^ 1;
+    grid[i] = on;
+    P.d = on ? (P.d+1)&3 : (P.d+3)&3;
+    if (!wrap) cell(P.x, P.y, on ? INK : BG);
+    P.x += DX[P.d]; P.y += DY[P.d];
+    if (wrap) { P.x = (P.x+N)%N; P.y = (P.y+N)%N; }
+  }
+  const gap = () => {
+    const dx = Math.abs(A.x-B.x), dy = Math.abs(A.y-B.y);
+    return Math.max(Math.min(dx, N-dx), Math.min(dy, N-dy));
+  };
+
+  function step() {
+    if (mode === 1) {
+      walk(A, false);
+      if (A.x >= N-M) { shift(-1,0); A.x--; }
+      if (A.x <  M)   { shift( 1,0); A.x++; }
+      if (A.y >= N-M) { shift(0,-1); A.y--; }
+      if (A.y <  M)   { shift(0, 1); A.y++; }
+      steps++;
+      if (steps % 600 === 0) {
+        if (!onHighway && recent >= 10) {
+          onHighway = true;
+          $("stepBox").classList.add("done");
+          $("stepAsk").textContent = "ハイウェイに のった";
+          $("say").textContent = "もう、もどらない";
+          $("say").classList.add("on");
+          chime(BASE * 2);
+        }
+        recent = 0;
+      }
+    } else {
+      walk(A, true); walk(B, true); steps++;
+      if (!met && gap() <= MEET) {
+        met = steps; bloom = 110;
+        bx = (A.x+B.x)>>1; by = (A.y+B.y)>>1;
+        $("stepBox").classList.add("done");
+        $("leftBox").classList.add("done");
+        $("stepAsk").textContent = "二人が出会った歩数";
+        $("leftAsk").textContent = "くっついた";
+        $("say").textContent = "♡　会った　♡";
+        $("say").classList.add("on");
+        chime(BASE * 3);                      // 完全五度うえ
+      }
+    }
+  }
+
+  // ---- 蟻を描く（進行方向に回る） ----
+  function box(x, y, w, h, col) {
+    const x0 = Math.max(0,x), y0 = Math.max(0,y);
+    const x1 = Math.min(W,x+w), y1 = Math.min(W,y+h);
+    for (let yy = y0; yy < y1; yy++) {
+      let p = (yy*W + x0)*4;
+      for (let xx = x0; xx < x1; xx++, p += 4) { px[p]=col[0]; px[p+1]=col[1]; px[p+2]=col[2]; }
+    }
+  }
+  function rot(t, d) {
+    const [a,b,w,h] = t;
+    if (d === 0) return [a,b,w,h];
+    if (d === 1) return [-b-h, a, h, w];
+    if (d === 2) return [-a-w, -b-h, w, h];
+    return [b, -a-w, h, w];
+  }
+  function drawAnt(P, cheek) {
+    const ox = P.x*S + (S>>1), oy = P.y*S + (S>>1);
+    box(ox-6, oy-7, 13, 15, INK);
+    box(ox-7, oy-5, 15, 11, INK);
+    for (const t of [[-4,-12,1,5],[3,-12,1,5]]) { const [a,b,w,h] = rot(t,P.d); box(ox+a,oy+b,w,h,INK); }
+    for (const t of [[-6,-1,4,3],[3,-1,4,3]])   { const [a,b,w,h] = rot(t,P.d); box(ox+a,oy+b,w,h,cheek); }
+    for (const t of [[-4,-6,3,3],[2,-6,3,3]])   { const [a,b,w,h] = rot(t,P.d); box(ox+a,oy+b,w,h,BG); }
+  }
+  const BLOOM = ["..###...###..",".#####.#####.","#############","#############",
+                 "#############",".###########.","..#########..","...#######...",
+                 "....#####....",".....###.....","......#......"];
+  function drawBloom(k) {
+    const h = BLOOM.length, w = BLOOM[0].length;
+    for (let r = 0; r < h; r++) for (let c = 0; c < w; c++) {
+      if (BLOOM[r][c] !== "#") continue;
+      const gx = (((bx-(w>>1)+c)%N+N)%N)*S, gy = (((by-(h>>1)+r)%N+N)%N)*S;
+      for (let yy = 0; yy < S; yy++) { let p = ((gy+yy)*W + gx)*4;
+        for (let xx = 0; xx < S; xx++, p += 4) {
+          px[p]   += (CHEEK[0]-px[p]  )*k;
+          px[p+1] += (CHEEK[1]-px[p+1])*k;
+          px[p+2] += (CHEEK[2]-px[p+2])*k;
+        } }
+    }
+  }
+
+  function paint() {
+    if (mode === 2) rebuild();          // トーラス側は毎回まるごと
+    px.set(base);
+    if (bloom > 0) { drawBloom(Math.min(1, bloom/110)); bloom--; }
+    if (mode === 1) drawAnt(A, CHEEK);
+    else { drawAnt(B, met ? CHEEK : GREY); drawAnt(A, CHEEK); }
+    ctx.putImageData(img, 0, 0);        // 転送は1フレームに1回
+    $("steps").textContent = String(met || steps).padStart(6, "0");
+    if (mode === 1) {
+      let n = 0; for (let i = 0; i < N*N; i++) n += grid[i];
+      $("leftNum").textContent = String(n).padStart(4, "0");
+    } else {
+      $("gap").style.width = Math.round(Math.min(met ? 0 : gap(), 60) * 1.1) + "px";
+    }
+  }
+
+  // ---- おと ----------------------------------------------------------
+  // ふたり: 二つの音のズレ = ふたりの距離。近づくと うなりが遅くなり、
+  //         会うと ぴたりと止まって ひとつの音になる。
+  const SND = { on:false, ac:null, oA:null, oB:null, gA:null, gB:null, dir:0 };
+  const BASE = 220;                              // A3
+
+  function osc(type, hz, vol) {
+    const o = SND.ac.createOscillator(), g = SND.ac.createGain();
+    o.type = type; o.frequency.value = hz;
+    g.gain.value = 0;
+    o.connect(g).connect(SND.ac.destination);
+    o.start();
+    g.gain.linearRampToValueAtTime(vol, SND.ac.currentTime + 0.8);
+    return { o, g };
+  }
+  function soundOn() {
+    SND.ac = SND.ac || new (window.AudioContext || window.webkitAudioContext)();
+    if (SND.ac.state === "suspended") SND.ac.resume();
+    const a = osc("triangle", BASE, 0.055);
+    const b = osc("triangle", BASE, 0.055);
+    SND.oA = a.o; SND.gA = a.g; SND.oB = b.o; SND.gB = b.g;
+    SND.on = true;
+  }
+  function soundOff() {
+    if (!SND.ac) return;
+    const t = SND.ac.currentTime;
+    [SND.gA, SND.gB].forEach(g => { if (g) g.gain.linearRampToValueAtTime(0.0001, t + 0.25); });
+    const oa = SND.oA, ob = SND.oB;
+    setTimeout(() => { try { oa.stop(); ob.stop(); } catch(e){} }, 350);
+    SND.on = false; SND.oA = SND.oB = null;
+  }
+  function chime(hz) {                            // 会えたときの ちいさい音
+    if (!SND.on) return;
+    const t = SND.ac.currentTime;
+    const o = SND.ac.createOscillator(), g = SND.ac.createGain();
+    o.type = "sine"; o.frequency.value = hz;
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(0.09, t + 0.04);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 1.6);
+    o.connect(g).connect(SND.ac.destination);
+    o.start(t); o.stop(t + 1.7);
+  }
+  function tuneSound() {
+    if (!SND.on || !SND.oA) return;
+    const t = SND.ac.currentTime, T = t + 0.08;
+    if (mode === 2) {
+      // ズレ = 距離。60マス離れて 15Hz、くっついて 0Hz
+      const d = met ? 0 : Math.min(gap(), 60) * 0.25;
+      SND.oA.frequency.setTargetAtTime(BASE, t, 0.05);
+      SND.oB.frequency.setTargetAtTime(BASE + d, t, met ? 0.5 : 0.05);
+    } else {
+      // ひとり: 向きが音になる。ハイウェイに乗ると 104歩周期の繰り返しになる
+      const hz = BASE * Math.pow(2, [0, 3, 7, 10][A.d] / 12);
+      SND.oA.frequency.setTargetAtTime(hz, t, 0.02);
+      SND.oB.frequency.setTargetAtTime(hz * 2, t, 0.02);
+      void T;
+    }
+  }
+
+  function frame() {
+    if (run) { for (let k = 0; k < PER; k++) step(); beat++; }
+    tuneSound();
+    paint();
+    requestAnimationFrame(frame);
+  }
+
+  function setMode(m) {
+    mode = m;
+    $("tab1").classList.toggle("on", m === 1);
+    $("tab2").classList.toggle("on", m === 2);
+    reset(); paint();
+  }
+  $("tab1").onclick = () => setMode(1);
+  $("tab2").onclick = () => setMode(2);
+  $("snd").onclick = e => {
+    if (SND.on) soundOff(); else soundOn();
+    e.currentTarget.classList.toggle("on", SND.on);
+  };
+  cv.addEventListener("click", () => { run = !run; });
+  document.addEventListener("keydown", e => {
+    if (e.code === "Space") { e.preventDefault(); run = !run; }
+    else if (e.key && e.key.toLowerCase() === "r") { reset(); paint(); }
+    else if (e.key === "1") setMode(1);
+    else if (e.key === "2") setMode(2);
+  });
+
+  reset();
+  if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    run = false;
+    for (let k = 0; k < 14000; k++) step();
+    paint();
+  } else {
+    requestAnimationFrame(frame);
+  }
+})();
+</script>
+</body>
+</html>
