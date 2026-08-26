@@ -31,8 +31,14 @@
 
   .top{ min-height:100dvh; display:flex; flex-direction:column;
         align-items:center; justify-content:center; }
-  h1{ font-family:var(--dot); font-size:34px; font-weight:400;
-      letter-spacing:.1em; margin-bottom:10px; }
+  h1.om{ font-family:var(--dot); font-weight:400;
+         font-size:clamp(30px, 10.5vw, 58px); letter-spacing:.02em;
+         line-height:1.2; margin-bottom:14px; color:var(--ink);
+         font-variant-numeric:tabular-nums; }
+  h1.om .d{ transition:color .6s linear; }
+  h1.om .mov{ color:var(--cheek); }        /* まだ動いている桁 */
+  h1.om em{ font-style:normal; color:var(--sub); }
+
   .say{ font-size:13px; color:var(--sub); letter-spacing:.08em;
         text-align:center; line-height:2; margin-bottom:22px; }
 
@@ -68,6 +74,12 @@
            line-height:2.3; color:var(--ink); word-break:break-all; }
   .end{ margin-top:18px; font-size:14px; line-height:2.1; letter-spacing:.06em; }
 
+  .ex{ font-size:14px; letter-spacing:.05em; margin-bottom:8px; }
+  .ex .tm{ font-family:var(--dot); font-size:9px; color:var(--sub);
+           margin-left:10px; font-variant-numeric:tabular-nums; }
+  audio{ width:100%; max-width:340px; height:32px; margin:2px 0 14px;
+         filter:grayscale(1); opacity:.88; }
+
   footer{ margin-top:46px; font-family:var(--dot); font-size:9px;
           color:var(--sub); letter-spacing:.2em; text-align:center; }
   nav{ margin-top:20px; font-family:var(--dot); font-size:9px;
@@ -79,13 +91,12 @@
 <body>
 
 <div class="top">
-  <h1>ω</h1>
+  <h1 class="om" id="big" aria-label="ω の下限。増えつづける"></h1>
   <p class="say">完全に決まっている。<br>永遠に計算できない。</p>
 
   <canvas id="cv" width="800" height="800" aria-label="広がりつづける観測窓"></canvas>
 
   <div class="meter">
-    <div class="n" id="n">0.<em>…</em></div>
     <div class="lb" id="lb"></div>
   </div>
 
@@ -95,12 +106,13 @@
 <div class="body">
 
   <div class="sec">
-    <div class="h">4 TRACKS</div>
+    <div class="h">5 TRACKS</div>
     <ol>
-      <li><span class="no">01</span><span class="ti">ω<span class="memo">いる。届かない。</span></span><span class="tm">1:46</span></li>
-      <li><span class="no">02</span><span class="ti">Eventually<span class="memo">いる。間に合わない。</span></span><span class="tm">1:19</span></li>
-      <li><span class="no">03</span><span class="ti">H — The Decider<span class="memo">いない。</span></span><span class="tm">0:53</span></li>
-      <li><span class="no">04</span><span class="ti">Still<span class="memo">いないと知ってから、まだ数えている。</span></span><span class="tm">2:11</span></li>
+      <li><span class="no">01</span><span class="ti">(◍-ω-◍)<span class="memo">いる。届かない。</span></span><span class="tm">1:21</span></li>
+      <li><span class="no">02</span><span class="ti">Oracle<span class="memo">いない。</span></span><span class="tm">1:29</span></li>
+      <li><span class="no">03</span><span class="ti">4.5<span class="memo">いる。間に合わない。</span></span><span class="tm">1:19</span></li>
+      <li><span class="no">04</span><span class="ti">Still<span class="memo">いないと知ってから、まだ数えている。</span></span><span class="tm">1:46</span></li>
+      <li><span class="no">05</span><span class="ti">three<span class="memo">聞いていた側が喋る。</span></span><span class="tm">1:38</span></li>
     </ol>
   </div>
 
@@ -133,7 +145,17 @@
 
   <div class="sec">
     <div class="h">UNUSED</div>
-    <p class="digits">
+
+    <p class="ex">なぞ<span class="tm">1:09</span></p>
+    <audio controls preload="none" src="/v/nazo.mp3"></audio>
+    <p class="txt">
+      ω に入れなかった曲。5曲目として一度入れて、外した。<br>
+      曲名は歌詞の最後の語。<br>
+      書いたのではなく、楽器が重なってそう聞こえたので、そのまま採った。<br>
+      配信にはありません。
+    </p>
+
+    <p class="digits" style="margin-top:30px">
       0 1 8 5 7 4 2 1 7 6 2 5 9 8 3 4 1 6
     </p>
     <p class="end">
@@ -143,7 +165,7 @@
       No answer.
     </p>
     <p class="txt" style="margin-top:16px">
-      5曲目になるはずだった歌詞。曲が来なかったので、ここに置いてあります。
+      曲が来なかった歌詞。ここに置いてあります。
     </p>
   </div>
 
@@ -243,8 +265,7 @@
     if (t % GROW === 0 && N < 240) N += 2;
     observe(N*N);
     draw();
-    const rr = seen ? halted/seen : 0;
-    $("n").innerHTML = "0." + rr.toFixed(6).slice(2) + "<em>…</em>";
+    paintNum(seen ? halted/seen : 0);
     $("lb").textContent = "のぞいた " + seen.toLocaleString("ja-JP") +
                           "　とまった " + halted.toLocaleString("ja-JP");
     requestAnimationFrame(frame);
@@ -255,6 +276,35 @@
     const oc = () => theme();
     mq.addEventListener ? mq.addEventListener("change", oc) : mq.addListener(oc);
   }
+  /* ---- 下限の桁。左から順に固まる。右端はいつまでも動く -------------- */
+  const NDIG = 8, SETTLE = 120;          // 2秒変わらなければ、固まったとみなす
+  const dig = [], lastChg = new Array(NDIG).fill(0);
+  (function initNum(){
+    const big = $("big");
+    big.appendChild(document.createTextNode("0."));
+    for (let i=0;i<NDIG;i++){
+      const sp = document.createElement("span");
+      sp.className = "d mov"; sp.textContent = "0";
+      big.appendChild(sp); dig.push(sp);
+    }
+    const e = document.createElement("em"); e.textContent = "…";
+    big.appendChild(e);
+  })();
+  function paintNum(rr){
+    const s = rr.toFixed(NDIG).slice(2);
+    for (let i=0;i<NDIG;i++)
+      if (dig[i].textContent !== s[i]) { dig[i].textContent = s[i]; lastChg[i] = t; }
+    // 左から連続して止まっている分だけを「固まった」とする。
+    // 途中の桁が単独で固まることはない
+    let k = 0;
+    while (k < NDIG-1 && (t - lastChg[k]) > SETTLE) k++;   // 最後の一桁は固めない。まだ見ていない機械がある
+    for (let i=0;i<NDIG;i++){
+      const settled = i < k;
+      if (settled === dig[i].classList.contains("mov"))
+        dig[i].classList.toggle("mov", !settled);
+    }
+  }
+
   observe(N*N); draw();
   requestAnimationFrame(frame);
 })();
