@@ -178,7 +178,7 @@
 </div>
 
 <div class="kami">
-  <canvas id="kami" width="224" height="176" aria-label="ねている神さま"></canvas>
+  <canvas id="kami" width="240" height="176" aria-label="ねている神さま"></canvas>
   <p>さわると おきます</p>
 </div>
 
@@ -327,7 +327,7 @@
   const cv = document.getElementById("kami");
   if (!cv) return;
   const ctx = cv.getContext("2d");
-  const PX = 4, GX = 8, GY = 14;
+  const PX = 4, GX = 8, GY = 16;
   const cs = () => getComputedStyle(document.documentElement);
   let INK, WHITE, PINK, MUTED;
   const theme = () => { const c = cs();
@@ -338,7 +338,7 @@
   theme();
   const r = (x,y,w,h,col) => { ctx.fillStyle = col; ctx.fillRect(x*PX,y*PX,w*PX,h*PX); };
 
-  let t = 0, mood = "sleep", moodT = 0, idleT = 0;
+  let t = 0, mood = "sleep", moodT = 0, idleT = 800;   // 起動時から寝ている
 
   function god() {
     const nod = mood==="doze" ? Math.round(Math.sin(t/30)*1.8)
@@ -362,7 +362,7 @@
     r(GX+1, y+16, 6, 3, PINK); r(GX+19, y+16, 6, 3, PINK);
     if (mood==="happy") { r(GX+10, y+17, 6, 2, INK); r(GX+11, y+19, 4, 1, INK); }
     else                { r(GX+11, y+18, 4, 2, INK); }
-    if (mood==="sleep") {
+    if (mood==="sleep" || mood==="doze") {
       const k = Math.floor(t/26) % 3;
       for (let i=0;i<=k;i++) { const zx=GX+29+i*6, zy=y-3-i*5;
         r(zx,zy,4,1,MUTED); r(zx+3,zy+1,1,1,MUTED); r(zx+1,zy+2,1,1,MUTED); r(zx,zy+3,4,1,MUTED); }
@@ -374,10 +374,14 @@
   });
 
   function frame() {
+    if (document.hidden) { requestAnimationFrame(frame); return; }
     t++;
     if (moodT > 0) { if (--moodT === 0) mood = "wait"; }
-    else if (++idleT > 200 && mood !== "sleep") {
-      mood = idleT > 260 ? "sleep" : "sleepy";
+    else {
+      idleT++;                                 // うとうと → 寝る → 深く寝る
+      if      (idleT > 1200) mood = "doze";
+      else if (idleT > 700)  mood = "sleep";
+      else if (idleT > 400)  mood = "sleepy";
     }
     ctx.fillStyle = WHITE; ctx.fillRect(0,0,cv.width,cv.height);
     god();
