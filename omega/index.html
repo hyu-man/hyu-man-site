@@ -32,8 +32,9 @@
   .top{ min-height:100dvh; display:flex; flex-direction:column;
         align-items:center; justify-content:center; }
   h1.om{ font-family:var(--dot); font-weight:400;
-         font-size:clamp(30px, 10.5vw, 58px); letter-spacing:.02em;
+         font-size:clamp(14px, 7.6vw, 58px); letter-spacing:.02em;
          line-height:1.2; margin-bottom:14px; color:var(--ink);
+         max-width:100%; white-space:nowrap;
          font-variant-numeric:tabular-nums; }
   h1.om .d{ transition:color .6s linear; }
   h1.om .mov{ color:var(--cheek); }        /* まだ動いている桁 */
@@ -81,12 +82,6 @@
          filter:grayscale(1); opacity:.88; }
   ol li audio{ margin:9px 0 3px; max-width:300px; height:30px; }
 
-  .top{ position:relative; }
-  .kami{ position:absolute; top:6px; right:0; z-index:3; text-align:right; }
-  .kami canvas{ width:min(200px,46vw); height:auto; image-rendering:pixelated;
-                display:block; cursor:pointer; }
-  .kami p{ margin-top:2px; font-size:10px; color:var(--sub); letter-spacing:.08em; }
-  @media (max-width:520px){ .kami{ top:2px; } .kami p{ display:none; } }
 
   footer{ margin-top:46px; font-family:var(--dot); font-size:9px;
           color:var(--sub); letter-spacing:.2em; text-align:center; }
@@ -99,10 +94,6 @@
 <body>
 
 <div class="top">
-  <div class="kami">
-    <canvas id="kami" width="240" height="176" aria-label="ねている神さま"></canvas>
-    <p>けたが きまると おきます</p>
-  </div>
   <h1 class="om" id="big" aria-label="ω の下限。増えつづける"></h1>
   <p class="say">完全に決まっている。<br>永遠に計算できない。</p>
 
@@ -295,7 +286,6 @@
   // 窓は 150 フレームに一度しか広がらないので、
   // 秒で数えると、広がりの谷間で全桁が固まってしまう。
   const dig = [], lastChg = new Array(NDIG).fill(0);
-  let settledK = 0;
   (function initNum(){
     const big = $("big");
     big.appendChild(document.createTextNode("0."));
@@ -317,7 +307,6 @@
     while (k < NDIG-1 && (gen - lastChg[k]) >= SETTLE) k++;   // 最後の一桁は固めない。まだ見ていない機械がある
     // その桁が「はじめて」決まったときだけ知らせる。
     // k は行ったり来たりするので、最大値を更新したときに限る
-    if (k > settledK) { settledK = k; document.dispatchEvent(new CustomEvent("omega:settle")); }
     for (let i=0;i<NDIG;i++){
       const settled = i < k;
       if (settled === dig[i].classList.contains("mov"))
@@ -326,88 +315,6 @@
   }
 
   observe(N*N); draw();
-  requestAnimationFrame(frame);
-})();
-
-/* ---- 神さま。/omega/ の部屋にいた子をそのまま連れてきた ----------------
-   既定が睡眠。放っておくと勝手に寝る。さわると起きて、また寝る。      */
-(() => {
-  "use strict";
-  const cv = document.getElementById("kami");
-  if (!cv) return;
-  const ctx = cv.getContext("2d");
-  const PX = 4, GX = 8, GY = 16;
-  const cs = () => getComputedStyle(document.documentElement);
-  let INK, WHITE, PINK, MUTED;
-  const theme = () => { const c = cs();
-    INK   = c.getPropertyValue('--ink').trim();
-    WHITE = c.getPropertyValue('--bg').trim();
-    PINK  = c.getPropertyValue('--cheek').trim();
-    MUTED = c.getPropertyValue('--sub').trim(); };
-  theme();
-  const r = (x,y,w,h,col) => { ctx.fillStyle = col; ctx.fillRect(x*PX,y*PX,w*PX,h*PX); };
-
-  let t = 0, mood = "sleep", moodT = 0, idleT = 800;   // 起動時から寝ている
-
-  function god() {
-    const nod = mood==="doze" ? Math.round(Math.sin(t/30)*1.8)
-              : mood==="sleep"? Math.round(Math.sin(t/46)) : 0;
-    const y = GY + nod;
-    r(GX+7, y-7, 12, 2, MUTED); r(GX+4, y-5, 3, 2, MUTED); r(GX+19, y-5, 3, 2, MUTED);
-    r(GX-1, y-1, 28, 26, INK); r(GX, y, 26, 24, WHITE);
-    // 四すみを1マス落として、角を丸くする
-    for (const [cx,cy] of [[GX-1,y-1],[GX+26,y-1],[GX-1,y+24],[GX+26,y+24]]) r(cx,cy,1,1,WHITE);
-    for (const [cx,cy] of [[GX,y],[GX+25,y],[GX,y+23],[GX+25,y+23]])         r(cx,cy,1,1,INK);
-    r(GX-4, y+9, 4, 8, INK); r(GX-3, y+10, 3, 6, WHITE);
-    r(GX+26,y+9, 4, 8, INK); r(GX+26,y+10, 3, 6, WHITE);
-    const ex = [GX+4, GX+16];
-    if (mood==="happy") {
-      for (const x of ex) { r(x,y+13,1,1,INK); r(x+1,y+12,1,1,INK); r(x+2,y+11,1,1,INK);
-                            r(x+3,y+12,1,1,INK); r(x+4,y+13,1,1,INK); }
-    } else if (mood==="sleepy") {
-      for (const x of ex) { r(x, y+10, 6, 4, INK); r(x, y+10, 6, 2, WHITE); }
-    } else if (mood==="sleep" || mood==="doze") {
-      for (const x of ex) { r(x, y+12, 6, 1, INK); r(x+1, y+13, 4, 1, INK); }
-    } else {                                   // おきている。まるい目に光を一つ
-      for (const x of ex) { r(x, y+9, 6, 6, INK); r(x+1, y+10, 2, 2, WHITE); }
-    }
-    r(GX+1, y+15, 7, 4, PINK); r(GX+18, y+15, 7, 4, PINK);
-    if (mood==="happy") { r(GX+10, y+17, 6, 2, INK); r(GX+11, y+19, 4, 1, INK); }
-    else {                                        // ねがおの くちは ω
-      for (const dx of [0,2,4]) r(GX+11+dx, y+18, 1, 1, INK);
-      for (const dx of [1,3])   r(GX+11+dx, y+19, 1, 1, INK);
-    }
-    if (mood==="sleep" || mood==="doze") {
-      const k = Math.floor(t/26) % 3;
-      for (let i=0;i<=k;i++) { const zx=GX+29+i*6, zy=y-3-i*5;
-        r(zx,zy,4,1,MUTED); r(zx+3,zy+1,1,1,MUTED); r(zx+1,zy+2,1,1,MUTED); r(zx,zy+3,4,1,MUTED); }
-    }
-  }
-
-  const wake = (frames) => { mood = "happy"; moodT = frames; idleT = 0; };
-  cv.addEventListener("click", () => wake(90));
-  // 桁がひとつ固まると、神さまが起きる。固まらなくなるほど、寝ている
-  document.addEventListener("omega:settle", () => wake(150));
-
-  function frame() {
-    if (document.hidden) { requestAnimationFrame(frame); return; }
-    t++;
-    if (moodT > 0) { if (--moodT === 0) mood = "wait"; }
-    else {
-      idleT++;                                 // うとうと → 寝る → 深く寝る
-      if      (idleT > 1200) mood = "doze";
-      else if (idleT > 700)  mood = "sleep";
-      else if (idleT > 400)  mood = "sleepy";
-    }
-    ctx.fillStyle = WHITE; ctx.fillRect(0,0,cv.width,cv.height);
-    god();
-    requestAnimationFrame(frame);
-  }
-  if (window.matchMedia) {
-    const mq = window.matchMedia("(prefers-color-scheme: dark)");
-    const oc = () => theme();
-    mq.addEventListener ? mq.addEventListener("change", oc) : mq.addListener(oc);
-  }
   requestAnimationFrame(frame);
 })();
 </script>
