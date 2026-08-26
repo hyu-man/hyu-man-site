@@ -61,6 +61,16 @@
   .albums a:hover { background:var(--ink); color:var(--bg); border-color:transparent; }
   .albums .new  { font-size:19px; letter-spacing:.14em; border-bottom-width:2px;
                   padding-bottom:5px; }
+  .albums .new i { font-style:normal; color:var(--cheek); }
+  /* ◍ はほお。ゆっくり息をするように滲む */
+  @media (prefers-reduced-motion: no-preference){
+    .albums .new i { animation:blush 4.2s ease-in-out infinite; }
+    .albums .new i:last-of-type { animation-delay:.35s; }
+    @keyframes blush{
+      0%,100%{ text-shadow:0 0 0 rgba(255,150,170,0); }
+      50%    { text-shadow:0 0 11px rgba(255,150,170,.9), 0 0 24px rgba(255,150,170,.4); }
+    }
+  }
   .albums .past { display:flex; gap:20px; font-size:11px; }
   .albums .past a { color:var(--sub); border-bottom-color:var(--line); }
   .albums .past a:hover { background:var(--sub); color:var(--bg); border-color:transparent; }
@@ -133,7 +143,7 @@
     </div>
   </div>
   <div class="albums">
-    <a class="new" href="/omega/">(◍-ω-◍)</a>
+    <a class="new" href="/omega/">(<i>◍</i>-ω-<i>◍</i>)</a>
     <div class="past">
       <a href="https://hyu-man.bandcamp.com/album/not-yet">(not yet)</a>
       <a href="https://hyu-man.bandcamp.com/album/life">LIFE</a>
