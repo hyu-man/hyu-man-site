@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="同じ格子を二匹の蟻が歩く。両方が踏んだマスだけが、先に踏んだほうの色で塗られる。">
+<title>二匹の蟻</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Hachi+Maru+Pop&family=DotGothic16&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+
+  :root{
+    /* ジャケットは紙の上の物体。ここは常に固定 */
+    --paper:#faf9f7; --ink:#141414; --pink:#ff96aa;
+    /* 部屋の明かり。テーマで変わるのはここだけ */
+    --room:#f2efeb; --room-ink:#141414; --room-sub:#a8a29c; --room-line:#e6e2dd;
+    --dot:'Press Start 2P','DotGothic16','Courier New',monospace;
+    --maru:'Hachi Maru Pop','DotGothic16',sans-serif;
+    --goth:'DotGothic16','Hachi Maru Pop',sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root:not([data-theme="light"]){
+      --room:#191613; --room-ink:#ece7e0; --room-sub:#7d766c; --room-line:#2b2622;
+    }
+  }
+  :root[data-theme="dark"]{
+    --room:#191613; --room-ink:#ece7e0; --room-sub:#7d766c; --room-line:#2b2622;
+  }
+
+  body{
+    background:var(--room); color:var(--room-ink); font-family:var(--maru);
+    -webkit-font-smoothing:antialiased;
+    display:flex; flex-direction:column; align-items:center;
+    padding:0 20px 96px;
+  }
+
+  /* ---------- 舞台 ---------- */
+  .stage{min-height:100dvh; display:flex; flex-direction:column;
+         align-items:center; justify-content:center; gap:18px; padding:36px 0}
+
+  .eyebrow{font-family:var(--dot); font-size:9px; letter-spacing:.22em;
+           color:var(--room-sub)}
+
+  .jacket{background:var(--paper); line-height:0;
+          box-shadow:0 1px 0 rgba(20,20,20,.05), 0 18px 44px -26px rgba(20,20,20,.45)}
+  canvas{display:block; width:min(560px,84vw,58vh); height:auto; aspect-ratio:1/1}
+
+  .bar{width:min(560px,84vw,58vh); height:2px; background:var(--room-line)}
+  .bar i{display:block; height:100%; width:0; background:var(--room-ink)}
+
+  .readout{display:flex; flex-wrap:wrap; justify-content:center; gap:14px 20px;
+           font-family:var(--dot); font-size:9px; letter-spacing:.06em;
+           font-variant-numeric:tabular-nums; text-align:center}
+  .readout dt{color:var(--room-sub); margin-bottom:7px}
+  .readout dd{color:var(--room-ink); font-size:11px}
+
+  .ctl{display:flex; flex-wrap:wrap; justify-content:center; gap:8px 18px;
+       font-family:var(--dot); font-size:9px; letter-spacing:.1em}
+  .ctl button{font:inherit; letter-spacing:inherit; background:none; border:0;
+              color:var(--room-sub); cursor:pointer; padding:5px 1px;
+              border-bottom:1px dotted currentColor}
+  .ctl button:hover{color:var(--room-ink)}
+  .ctl button[aria-pressed="true"]{color:var(--room-ink);
+                                   border-bottom:1px solid currentColor}
+  .ctl button:focus-visible{outline:2px solid var(--pink); outline-offset:3px}
+  .ctl .grp{display:flex; gap:10px; align-items:center}
+  .ctl .grp>span{color:var(--room-sub); opacity:.6}
+
+  .state{font-family:var(--goth); font-size:12px; letter-spacing:.08em;
+         color:var(--room-sub); min-height:1.4em; text-align:center}
+
+  /* ---------- 読みもの ---------- */
+  .prose{width:100%; max-width:600px}
+  .sec{border-top:1px solid var(--room-line); padding:30px 0 26px;
+       display:flex; flex-direction:column; gap:16px}
+  .sec h2{font-family:var(--dot); font-size:9px; font-weight:400;
+          letter-spacing:.2em; color:var(--room-sub)}
+  .sec p{font-size:13px; line-height:2.15; color:var(--room-sub);
+         text-wrap:pretty}
+  .sec p b{color:var(--room-ink); font-weight:400}
+
+  .rules{display:grid; grid-template-columns:auto 1fr; gap:12px 20px;
+         align-items:baseline}
+  .rules dt{font-family:var(--dot); font-size:10px; letter-spacing:.04em;
+            color:var(--room-ink)}
+  .rules dd{font-family:var(--goth); font-size:13px; letter-spacing:.05em;
+            line-height:1.7; color:var(--room-sub)}
+
+  .legend{display:flex; flex-direction:column; gap:11px}
+  .legend div{display:flex; align-items:center; gap:14px;
+              font-family:var(--goth); font-size:13px; letter-spacing:.05em;
+              color:var(--room-sub)}
+  .legend s{width:15px; height:15px; flex:none; text-decoration:none;
+            border:1px solid var(--room-line)}
+  .legend .k{background:var(--ink)}
+  .legend .p{background:var(--pink)}
+  .legend .w{background:var(--paper)}
+  .legend b{color:var(--room-ink); font-weight:400}
+
+  .aside{font-family:var(--goth); font-size:11.5px; line-height:2;
+         letter-spacing:.04em; color:var(--room-sub);
+         border-left:2px solid var(--pink); padding-left:14px}
+  .aside b{color:var(--room-ink); font-weight:400}
+
+  .poem{font-family:var(--dot); font-size:11px; line-height:2.5;
+        letter-spacing:.09em; color:var(--room-ink)}
+  .poem span{color:var(--room-sub)}
+  .poem em{font-style:normal; color:var(--pink)}
+
+  .spec{font-family:var(--dot); font-size:8.5px; letter-spacing:.14em;
+        color:var(--room-sub); line-height:2.4; font-variant-numeric:tabular-nums}
+
+  footer{margin-top:40px; font-family:var(--dot); font-size:8.5px;
+         letter-spacing:.2em; color:var(--room-sub); text-align:center}
+
+  /* ボタンを丸く。押すと沈む */
+  .ctl button{
+    border:1px solid var(--room-line); border-radius:999px;
+    padding:6px 14px; transition:background .16s, color .16s,
+                                border-color .16s, transform .08s;
+  }
+  .ctl button:hover{
+    color:var(--room-ink); border-color:var(--room-ink);
+  }
+  .ctl button:active{ transform:translateY(1px); }
+  .ctl button[aria-pressed="true"]{
+    background:var(--pink); border-color:var(--pink); color:var(--paper);
+  }
+
+  /* すすみ具合の線をピンクに */
+  .bar i{ background:var(--pink); transition:width .2s linear; }
+
+  /* 数字。両方だけ色を変える */
+  .readout dd{ transition:color .3s }
+  .readout div:nth-child(4) dd{ color:var(--pink) }
+  /* 出会っているあいだだけ、そこも灯る */
+  .readout dd.hot{ color:var(--pink) }
+
+  /* 見出しの前にほおをひとつ */
+  .sec h2::before{
+    content:""; display:inline-block; width:6px; height:6px;
+    border-radius:50%; background:var(--pink);
+    margin-right:9px; vertical-align:middle;
+  }
+
+  /* ジャケットがすこし浮く */
+  .jacket{ transition:transform .3s ease, box-shadow .3s ease; }
+  .jacket:hover{ transform:translateY(-2px);
+                 box-shadow:0 1px 0 rgba(20,20,20,.05),
+                            0 22px 52px -26px rgba(20,20,20,.5); }
+
+  @media (prefers-reduced-motion: reduce){
+    .ctl button, .bar i, .jacket{ transition:none }
+  }
+
+</style>
+</head>
+<body>
+<main>
+
+<section class="stage">
+  <p class="eyebrow">BOTH &nbsp;/&nbsp; ジャケット</p>
+
+  <div class="jacket"><canvas id="cv" aria-label="同じ格子の上を歩く二匹の蟻"></canvas></div>
+
+  <div class="bar" role="presentation"><i id="bar"></i></div>
+
+  <dl class="readout">
+    <div><dt>STEP</dt><dd id="rT">0</dd></div>
+    <div><dt>一匹目</dt><dd id="rA">0</dd></div>
+    <div><dt>二匹目</dt><dd id="rB">0</dd></div>
+    <div><dt>両方</dt><dd id="rC">0</dd></div>
+    <div><dt>出会い</dt><dd id="rM">0</dd></div>
+  </dl>
+
+  <p class="state" id="state">同じ盤の上を、二匹。</p>
+
+  <div class="ctl">
+    <span class="grp">
+      <span>速さ</span>
+      <button type="button" data-sp="120">ゆっくり</button>
+      <button type="button" data-sp="1080" aria-pressed="true">ふつう</button>
+      <button type="button" data-sp="2600">はやい</button>
+      <button type="button" data-sp="12000">とばす</button>
+    </span>
+    <button type="button" id="bOne" aria-pressed="true">片方だけを薄く</button>
+    <button type="button" id="bRoll" aria-pressed="true">ずらす</button>
+    <button type="button" id="bAgain">もう一度</button>
+    <button type="button" id="bMore" hidden>続ける</button>
+  </div>
+</section>
+
+<div class="prose">
+
+  <section class="sec">
+    <h2>やめたこと</h2>
+    <p>
+      四つの規則を並べるのはやめた。<br>
+      四枚を見て、共通しているのは「四つの規則」ではなく、<br>
+      <b>どの規則も二択でできている</b>、ということだった。
+    </p>
+    <dl class="rules">
+      <dt>not yet</dt><dd>白なら右、黒なら左</dd>
+      <dt>LIFE</dt><dd>2か3でいきる</dd>
+      <dt>Collatz</dt><dd>偶数なら半分、奇数なら3倍して1</dd>
+      <dt>&omega;</dt><dd>0か1を書く</dd>
+    </dl>
+  </section>
+
+  <section class="sec">
+    <h2>したこと</h2>
+    <p>
+      だから、規則をひとつだけ選んで、二匹で走らせる。<br>
+      一枚目の蟻を、二匹、同じ格子の上に置く。<br>
+      片方が裏返した色を、もう片方が読む。<b>同じ盤を共有する。</b>
+    </p>
+    <p>
+      塗るのは、<b>二匹とも踏んだマスだけ。</b><br>
+      片方しか踏んでいないマスは、紙のまま残す。
+    </p>
+    <div class="legend">
+      <div><s class="k"></s><span><b>黒</b>&nbsp; 先に踏んだのが一匹目</span></div>
+      <div><s class="p"></s><span><b>ピンク</b>&nbsp; 先に踏んだのが二匹目</span></div>
+      <div><s class="w"></s><span><b>紙</b>&nbsp; どちらか片方だけ、または一度も踏まれていない</span></div>
+    </div>
+    <p class="aside">
+      絵は、蟻のいる場所には現れない。<br>
+      片方が通ったあと、もう片方が同じマスに辿り着いた瞬間に、<b>後ろで</b>色がつく。<br>
+      何千歩も遅れて灯るマスがある。<br>
+      <b>二匹は同じ色をしている。</b>黒とピンクは、蟻の色ではなくマスの色。
+    </p>
+  </section>
+
+  <section class="sec">
+    <h2>26,000歩めに見つけたこと</h2>
+    <p class="aside">
+      二匹が<b>同時に</b>踏んだマスが、ちょうど一つある。<br>
+      どちらが先でもないので、黒にもピンクにもならない。<br>
+      両方が踏んだのに、紙のまま残っている。
+    </p>
+    <p class="aside">
+      その一マスは、<b>10,513歩め</b>にできる。<br>
+      二匹はそこまで、一度も同じマスに立っていない。<br>
+      <b>はじめて出会ったその一歩が、どちらのものにもならなかった。</b>
+    </p>
+    <p>
+      出会いは、走りきるまでに十回ある。<br>
+      10,513歩から10,741歩までに五回、そのあと二万歩をこえるまで一度もなく、<br>
+      22,649歩から23,026歩までに、また五回。
+    </p>
+  </section>
+
+  <section class="sec">
+    <h2>ATTRACTOR</h2>
+    <p>Attractor の一行が、そのまま規則になっている。</p>
+    <p class="poem">
+      I was<span> / </span>you were<br>
+      no name<span> / </span>no mirror<br>
+      your rhythm<span> / </span>my silence<br>
+      <em>who came first?</em>
+    </p>
+  </section>
+
+  <section class="sec">
+    <h2>SPEC</h2>
+    <p class="spec">
+      n = 128 &nbsp;&middot;&nbsp; steps = 26,000 &nbsp;&middot;&nbsp; gap = 36<br>
+      交互に一歩ずつ &nbsp;&middot;&nbsp; 上下左右つなぎ &nbsp;&middot;&nbsp; 乱数なし
+    </p>
+  </section>
+
+</div>
+
+<footer>どちらが先に踏んだか</footer>
+
+</main>
+
+<script>
+(() => {
+  "use strict";
+  const N = 128, GAP = 36, TARGET = 26000, MARGIN = 0.075, ROLLBY = 64;
+  const DX = [0, 1, 0, -1], DY = [-1, 0, 1, 0];          // 上 右 下 左
+  const $ = id => document.getElementById(id);
+
+  const RM = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const FADE = RM ? 0 : 16;                               // 灯るまでのフレーム数
+  const BLINK = !RM;                                      // まばたき
+
+  const css = getComputedStyle(document.documentElement);
+  const hex = v => { const h = css.getPropertyValue(v).trim();
+    return [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16)); };
+  const PAPER = hex("--paper"), INK = hex("--ink"), PINK = hex("--pink");
+  const mix = (a, b, k) => [0, 1, 2].map(i => Math.round(a[i] + (b[i] - a[i]) * k));
+  const F_INK = mix(PAPER, INK, .10), F_PINK = mix(PAPER, PINK, .18);
+
+  let ROLL = true, SHOW_ONE = true;
+  /* 速さは「毎秒何歩」。画面が 60Hz でも 120Hz でも同じ時間で終わる */
+  let SPS = 1080, clock = 0, lastTs = 0, acc = 0;
+
+  /* ---- 画素 ----------------------------------------------------------- */
+  const off = document.createElement("canvas");
+  off.width = off.height = N;
+  const octx = off.getContext("2d", { alpha: false });
+  const img = octx.createImageData(N, N), D = img.data;
+
+  function px(i, c) {
+    const y = (i / N) | 0, x = ROLL ? (i % N + ROLLBY) % N : i % N;
+    const o = (y * N + x) << 2;
+    D[o] = c[0]; D[o + 1] = c[1]; D[o + 2] = c[2]; D[o + 3] = 255;
+  }
+
+  /* ---- 盤面 ----------------------------------------------------------- */
+  let g, fa, fb, col, A, B, t, na, nb, both, ties, fading, frame, done;
+  let enc, together, tieAt, tieFrame, encFrame, doneAt;   // 出会いのこと
+  let tieStep, encStep, encClock;  // 一度に何歩も進むので、歩数と時刻は控えておく
+  let stopAt;                                             // どこで手を止めるか
+
+  function reset() {
+    g = new Uint8Array(N * N); fa = new Int32Array(N * N);
+    fb = new Int32Array(N * N); col = new Uint8Array(N * N);
+    A = [(N >> 1) - GAP, N >> 1, 0];                      // x, y, dir
+    B = [(N >> 1) + GAP, N >> 1, 2];                      // 向かい合わせ
+    t = na = nb = both = ties = frame = enc = 0; done = false;
+    together = false; tieAt = tieFrame = encFrame = -1; doneAt = 0;
+    tieStep = encStep = 0; encClock = -99; acc = 0;
+    stopAt = TARGET; msgUntil = 0; msgPri = -1;
+    fading = []; repaintAll();
+  }
+
+  /* 一歩。Python の two_ants と同じ順序で、交互に */
+  function step() {
+    t++;
+    /* 同じマスに立っているか。続けて立っている分は、ひとつの出会いと数える */
+    const now = A[0] === B[0] && A[1] === B[1];
+    if (now && !together) { enc++; encFrame = frame; encStep = t; encClock = clock; }
+    together = now;
+    for (let k = 0; k < 2; k++) {
+      const p = k ? B : A, me = k ? fb : fa, you = k ? fa : fb;
+      const x = p[0], y = p[1], i = y * N + x;
+      let d = p[2];
+      if (me[i] === 0) {
+        me[i] = t; k ? nb++ : na++;
+        if (you[i] > 0) {                                 // ここで二匹が揃った
+          both++;
+          if (you[i] < t) paint(i, k ? 1 : 2);            // 先に踏んだほうの色
+          else { ties++; tieAt = i; tieFrame = frame; tieStep = t; }  // 同時
+        } else if (SHOW_ONE) px(i, k ? F_PINK : F_INK);
+      }
+      const on = g[i] ^ 1; g[i] = on;                     // 裏返して、読む
+      d = on ? (d + 1) & 3 : (d + 3) & 3;
+      p[0] = (x + DX[d] + N) % N; p[1] = (y + DY[d] + N) % N; p[2] = d;
+    }
+  }
+
+  function paint(i, v) {
+    col[i] = v;
+    if (FADE) fading.push(i, frame); else px(i, v === 1 ? INK : PINK);
+  }
+
+  function repaintAll() {
+    for (let i = 0; i < N * N; i++) {
+      let c = PAPER;
+      if (col[i]) c = col[i] === 1 ? INK : PINK;
+      else if (SHOW_ONE && fa[i] > 0 && fb[i] === 0) c = F_INK;
+      else if (SHOW_ONE && fb[i] > 0 && fa[i] === 0) c = F_PINK;
+      px(i, c);
+    }
+    fading = [];
+  }
+
+  function tickFade() {
+    if (!FADE || !fading.length) return;
+    const keep = [];
+    for (let j = 0; j < fading.length; j += 2) {
+      const i = fading[j], f0 = fading[j + 1], k = (frame - f0) / FADE;
+      const c = col[i] === 1 ? INK : PINK;
+      if (k >= 1) px(i, c);
+      else { px(i, mix(PAPER, c, k * k)); keep.push(i, f0); }
+    }
+    fading = keep;
+  }
+
+  /* ---- 描画 ----------------------------------------------------------- */
+  const cv = $("cv"), ctx = cv.getContext("2d", { alpha: false });
+  let cell = 3, pad = 0, W = 0;
+
+  function measure() {
+    const dpr = Math.min(devicePixelRatio || 1, 2);
+    const w = Math.max(1, Math.round(cv.clientWidth * dpr));
+    if (w === W) return;
+    W = w; cv.width = cv.height = W;
+    cell = Math.max(1, Math.floor(W * (1 - 2 * MARGIN) / N));
+    pad = Math.round((W - cell * N) / 2);
+  }
+
+  /* ホームの drawAnt と同じ形。単位はドット。cell に合わせて縮める */
+  const ANT = {
+    body:  [[-6,-7,13,15], [-7,-5,15,11]],
+    horn:  [[-4,-12,1,5],  [3,-12,1,5]],
+    cheek: [[-6,-1,4,3],   [3,-1,4,3]],
+    eye:   [[-4,-6,3,3],   [2,-6,3,3]],
+  };
+  function rot(t, dir) {
+    const [a, b, w, h] = t;
+    if (dir === 0) return [a, b, w, h];
+    if (dir === 1) return [-b - h, a, h, w];
+    if (dir === 2) return [-a - w, -b - h, w, h];
+    return [b, -a - w, h, w];
+  }
+  function ant(p, k) {
+    const x = ROLL ? (p[0] + ROLLBY) % N : p[0];
+    const u = Math.max(1, cell * 0.26);
+    const ox = pad + x * cell + cell / 2;
+    const oy = pad + p[1] * cell + cell / 2;
+    const put = (r, c, grow) => {
+      const [a, b, w, h] = rot(r, p[2]);
+      const e = grow ? u : 0;
+      ctx.fillStyle = "rgb(" + c + ")";
+      ctx.fillRect(Math.round(ox + a * u - e), Math.round(oy + b * u - e),
+                   Math.max(1, Math.round(w * u + e * 2)),
+                   Math.max(1, Math.round(h * u + e * 2)));
+    };
+    /* 黒く塗られたマスの上でも消えないように、紙のふちを一枚まわす */
+    for (const r of ANT.body)  put(r, PAPER, true);
+    for (const r of ANT.horn)  put(r, PAPER, true);
+    for (const r of ANT.body)  put(r, INK);
+    for (const r of ANT.horn)  put(r, INK);
+    for (const r of ANT.cheek) put(r, PINK);
+    const shut = BLINK && (frame + k * 97) % 214 < 7;     // ときどき、まばたき
+    for (const r of ANT.eye)   put(r, shut ? INK : PAPER);
+  }
+
+  /* マスをひとつ、細い枠でかこう */
+  function ring(i, c) {
+    const x = ROLL ? (i % N + ROLLBY) % N : i % N, y = (i / N) | 0;
+    const w = Math.max(1, Math.round(cell * .34));
+    ctx.strokeStyle = "rgb(" + c + ")"; ctx.lineWidth = w;
+    ctx.strokeRect(pad + x * cell - w / 2, pad + y * cell - w / 2,
+                   cell + w, cell + w);
+  }
+
+  function draw() {
+    octx.putImageData(img, 0, 0);
+    ctx.fillStyle = "rgb(" + PAPER + ")";
+    ctx.fillRect(0, 0, W, W);
+    ctx.imageSmoothingEnabled = false;
+    ctx.drawImage(off, pad, pad, cell * N, cell * N);
+
+    /* 蟻と印は、できあがったらそっと消える。ジャケットには残さない */
+    const a = done ? Math.max(0, 1 - (clock - doneAt) / 0.45) : 1;
+    if (a > 0) {
+      ctx.globalAlpha = a;
+      if (tieAt >= 0) ring(tieAt, PINK);                  // 誰のものでもない一マス
+      ant(A, 0); ant(B, 1);
+      ctx.globalAlpha = 1;
+    }
+    ctx.fillStyle = "rgb(" + INK + ")";                   // 奥付の ∞
+    ctx.font = Math.round(W * .018) + "px ui-serif, Georgia, serif";
+    ctx.textAlign = "right"; ctx.textBaseline = "alphabetic";
+    ctx.fillText("∞", W * .945, W * .955);
+  }
+
+  /* ---- まわす --------------------------------------------------------- */
+  const nf = n => n.toLocaleString("ja-JP");
+
+  /* ひとこと。読みきる前に次が来ても、強いものだけが押しのける。秒で数える */
+  let msgUntil = 0, msgPri = -1;
+  function say(txt, hold, pri) {
+    if (clock < msgUntil && pri <= msgPri) return;
+    $("state").textContent = txt; msgUntil = clock + hold; msgPri = pri;
+  }
+
+  function readout() {
+    $("rT").textContent = nf(t); $("rA").textContent = nf(na);
+    $("rB").textContent = nf(nb); $("rC").textContent = nf(both);
+    $("rM").textContent = nf(enc);
+    $("rM").classList.toggle("hot", clock - encClock < 1.2);
+    $("bar").style.width = Math.min(100, t / TARGET * 100) + "%";
+  }
+
+  function loop(ts) {
+    measure(); frame++;
+    /* 経過した時間ぶんだけ歩く。タブが裏にいたぶんは切り捨てる */
+    const dt = lastTs ? Math.min(0.1, (ts - lastTs) / 1000) : 0;
+    lastTs = ts; clock += dt;
+
+    if (!done) {
+      acc += dt * SPS;
+      const n = Math.floor(acc); acc -= n;
+      for (let s = 0; s < n && t < stopAt; s++) step();
+
+      if (tieFrame === frame)                             // いちばんいいところ
+        say(nf(tieStep) + "歩め。はじめて同じマスに立った。" +
+            "どちらが先でもないので、ここは紙のまま残る。", 4, 3);
+      else if (encFrame === frame)
+        say(nf(encStep) + "歩め。すれちがった。" + nf(enc) + "回め。", 2.4, 1);
+
+      if (t >= stopAt) {
+        done = true; doneAt = clock;
+        $("bMore").hidden = false;
+        say("26,000歩。出会いは " + nf(enc) + "回。" +
+            "紙のまま残ったマスが " + nf(ties) + "つ。 (◍-ω-◍)", 1e9, 9);
+      }
+    }
+    tickFade(); draw(); readout();
+    requestAnimationFrame(loop);
+  }
+
+  /* ---- 手 ------------------------------------------------------------- */
+  document.querySelectorAll("[data-sp]").forEach(b =>
+    b.addEventListener("click", () => {
+      SPS = +b.dataset.sp; acc = 0;
+      document.querySelectorAll("[data-sp]").forEach(o =>
+        o.setAttribute("aria-pressed", String(o === b)));
+    }));
+
+  const toggle = (el, get, set) => el.addEventListener("click", () => {
+    set(!get()); el.setAttribute("aria-pressed", String(get())); repaintAll();
+  });
+  toggle($("bOne"), () => SHOW_ONE, v => SHOW_ONE = v);
+  toggle($("bRoll"), () => ROLL, v => ROLL = v);
+
+  $("bMore").addEventListener("click", () => {
+    done = false; stopAt = Infinity; acc = 0; $("bMore").hidden = true;
+    say("蟻は止まらない。ここから先はジャケットではない。", 5, 10);
+  });
+
+  $("bAgain").addEventListener("click", () => {
+    reset(); $("bMore").hidden = true;
+    say("同じ盤の上を、二匹。", 1e9, 0);
+  });
+
+  addEventListener("resize", () => { W = 0; });
+
+  reset(); measure(); loop();
+})();
+</script>
+</body>
+</html>
