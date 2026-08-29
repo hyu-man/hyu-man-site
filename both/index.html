@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="description" content="同じ格子を二匹の蟻が歩く。両方が踏んだマスだけが、先に踏んだほうの色で塗られる。">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'><rect width='8' height='8' fill='%23faf9f7'/><rect x='1' y='1' width='2' height='2' fill='%23141414'/><rect x='5' y='5' width='2' height='2' fill='%23ff96aa'/><rect x='4' y='3' width='1' height='1' fill='%23141414'/><rect x='3' y='4' width='1' height='1' fill='%23ff96aa'/></svg>">
 <title>二匹の蟻</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -189,6 +190,7 @@
     <button type="button" id="bRoll" aria-pressed="true">ずらす</button>
     <button type="button" id="bAgain">もう一度</button>
     <button type="button" id="bMore" hidden>続ける</button>
+    <button type="button" id="bSnd" aria-pressed="false">♪ Already</button>
   </div>
 </section>
 
@@ -507,6 +509,69 @@
     tickFade(); draw(); readout();
     requestAnimationFrame(loop);
   }
+
+  /* ---- 音 -------------------------------------------------------------
+     Already を継ぎ目なく繰り返す。
+     <audio loop> だとコーデックが足した無音のぶん継ぎ目が空くので、
+     いちど PCM に開いてから、鳴っているところだけを繰り返す。          */
+  const AUDIO = "/v/01_already.mp3";
+  let actx = null, sbuf = null, snode = null, sgain = null, sbusy = false;
+
+  function sndLabel() {
+    const b = $("bSnd");
+    b.textContent = sbusy ? "♪ よみこみ中" : "♪ Already";
+    b.setAttribute("aria-pressed", String(!!snode));
+  }
+
+  async function sndBytes() {
+    if (AUDIO.slice(0, 5) === "data:") {                  // 埋め込み
+      const s = atob(AUDIO.slice(AUDIO.indexOf(",") + 1));
+      const u = new Uint8Array(s.length);
+      for (let i = 0; i < s.length; i++) u[i] = s.charCodeAt(i);
+      return u.buffer;
+    }
+    return (await fetch(AUDIO)).arrayBuffer();            // 別ファイル
+  }
+
+  /* 頭とお尻の無音を避けて、鳴っている範囲だけを返す */
+  function sndEnds(b) {
+    const th = 0.0008, ch = [];
+    for (let c = 0; c < b.numberOfChannels; c++) ch.push(b.getChannelData(c));
+    const n = b.length; let s = 0, e = n - 1;
+    head: for (; s < n; s++) for (const d of ch) if (Math.abs(d[s]) > th) break head;
+    tail: for (; e > s; e--)  for (const d of ch) if (Math.abs(d[e]) > th) break tail;
+    return [s / b.sampleRate, (e + 1) / b.sampleRate];
+  }
+
+  async function sndOn() {
+    if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
+    await actx.resume();                                  // 押してもらってから
+    if (!sbuf) {
+      sbusy = true; sndLabel();
+      try { sbuf = await actx.decodeAudioData(await sndBytes()); }
+      catch (err) { sbusy = false; $("bSnd").textContent = "♪ ならない"; return; }
+      sbusy = false;
+    }
+    const [a, z] = sndEnds(sbuf);
+    sgain = actx.createGain(); sgain.gain.value = 0;
+    snode = actx.createBufferSource();
+    snode.buffer = sbuf; snode.loop = true;
+    snode.loopStart = a; snode.loopEnd = z;
+    snode.connect(sgain); sgain.connect(actx.destination);
+    snode.start(0, a);
+    sgain.gain.linearRampToValueAtTime(1, actx.currentTime + .7);   // そっと入る
+    sndLabel();
+  }
+
+  function sndOff() {
+    if (!snode) return;
+    const n = snode, g = sgain; snode = null; sgain = null;
+    g.gain.linearRampToValueAtTime(0, actx.currentTime + .5);
+    setTimeout(() => { try { n.stop(); } catch (err) {} }, 600);
+    sndLabel();
+  }
+
+  $("bSnd").addEventListener("click", () => { snode ? sndOff() : sndOn(); });
 
   /* ---- 手 ------------------------------------------------------------- */
   document.querySelectorAll("[data-sp]").forEach(b =>
