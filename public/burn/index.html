@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>そろう — ひゅーまん</title>
+<meta name="description" content="となりとしか話せないのに、ぜんいんが おなじ一歩で うつ。── 決まっているのに、わからない。">
+<link rel="canonical" href="https://hyu-man.com/burn/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="ひゅーまん">
+<meta property="og:title" content="そろう — ひゅーまん">
+<meta property="og:description" content="となりとしか話せないのに、ぜんいんが おなじ一歩で うつ。">
+<meta property="og:url" content="https://hyu-man.com/burn/">
+<meta property="og:locale" content="ja_JP">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'><rect width='8' height='8' fill='%23f5f3f0'/><rect x='1' y='3' width='1' height='4' fill='%23111'/><rect x='3' y='3' width='1' height='4' fill='%23111'/><rect x='5' y='3' width='1' height='4' fill='%23111'/><rect x='1' y='1' width='1' height='1' fill='%23ff96aa'/><rect x='3' y='1' width='1' height='1' fill='%23ff96aa'/><rect x='5' y='1' width='1' height='1' fill='%23ff96aa'/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Hachi+Maru+Pop&family=DotGothic16&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing:border-box; margin:0; padding:0; }
+  :root {
+    --bg:#f5f3f0; --ink:#1a1a1a; --sub:#b0a8a0; --line:#e2ded9; --cheek:#ff96aa;
+    --dot:'Press Start 2P','DotGothic16','Courier New',monospace;
+    --maru:'Hachi Maru Pop','DotGothic16',sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#0f0f0e; --ink:#efefec; --sub:#6e6a66; --line:#262624; }
+  }
+  body {
+    background:var(--bg); color:var(--ink); font-family:var(--maru);
+    display:flex; flex-direction:column; align-items:center;
+    padding:36px 16px 64px;
+  }
+  h1 { font-family:var(--dot); font-size:13px; font-weight:400;
+       letter-spacing:.3em; text-indent:.3em; margin-bottom:6px; }
+  .lead { font-size:14px; color:var(--sub); letter-spacing:.05em; margin-bottom:26px; }
+
+  .wrap { width:100%; max-width:760px; }
+
+  .row { border-top:1px solid var(--line); border-bottom:1px solid var(--line);
+         padding:12px 0 10px; }
+  #squad { width:100%; height:auto; display:block; image-rendering:pixelated; }
+
+  .st { display:flex; align-items:baseline; gap:10px; margin:10px 0 2px;
+        font-size:12px; color:var(--sub); letter-spacing:.04em; }
+  .st b { font-family:var(--dot); font-size:11px; color:var(--ink);
+          font-variant-numeric:tabular-nums; }
+  .spacer { flex:1 }
+  .st.done, .st.done b { color:var(--cheek); }
+
+  .tower { display:flex; justify-content:center; margin:16px 0 2px; }
+  #time { image-rendering:pixelated; border:1px solid var(--line); }
+
+  .cap { text-align:center; font-size:11px; color:var(--sub); letter-spacing:.06em; }
+  .cap i { font-style:normal; }
+  .cap .k { color:var(--ink); }
+  .cap .p { color:var(--cheek); }
+
+  .bar { display:flex; flex-wrap:wrap; gap:9px; align-items:center; margin:20px 0 4px; }
+  button {
+    font-family:var(--maru); font-size:13px; letter-spacing:.06em;
+    background:var(--bg); color:var(--ink); border:1px solid var(--ink);
+    padding:5px 15px; cursor:pointer; border-radius:2px;
+  }
+  button:hover { background:var(--ink); color:var(--bg); }
+  button.on { background:var(--ink); color:var(--bg); }
+  input[type=range] { width:132px; accent-color:var(--ink); }
+  label { font-size:12px; color:var(--sub); letter-spacing:.04em; }
+  .num { font-family:var(--dot); font-size:9px; color:var(--sub);
+         font-variant-numeric:tabular-nums; }
+
+  .note { margin-top:22px; font-size:12.5px; line-height:2.05; color:var(--sub); }
+  .note b { color:var(--ink); font-weight:400; }
+  .note .q { color:var(--cheek); }
+  .note hr { border:0; border-top:1px solid var(--line); margin:14px 0; }
+  nav { margin-top:36px; font-family:var(--dot); font-size:9px;
+        letter-spacing:.1em; color:var(--sub); }
+  nav a { color:var(--sub); text-decoration:none; margin-right:13px; }
+  nav a:hover { color:var(--ink); }
+</style>
+</head>
+<body>
+
+<h1>そろう</h1>
+<p class="lead">ぜんいん、おなじ一歩で。</p>
+
+<div class="wrap">
+
+  <div class="row"><canvas id="squad" width="760" height="58"></canvas></div>
+
+  <div class="st" id="st"><span id="msg"></span><span class="spacer"></span><span id="cnt"></span></div>
+
+  <div class="tower"><canvas id="time"></canvas></div>
+  <p class="cap" id="cap"></p>
+
+  <div class="bar">
+    <button id="play">とめる</button>
+    <button id="reset">さいしょから</button>
+    <button id="snd">音</button>
+    <label>人数</label><input type="range" id="n" min="3" max="65" value="33">
+    <span class="num" id="nv">33</span>
+    <label>はやさ</label><input type="range" id="sp" min="0" max="100" value="52">
+  </div>
+
+  <p class="note">
+    一列にならんだ兵隊です。左端が将軍。<br>
+    ぜんいんが <b>おなじ一歩</b> で うたなければ いけません。<br>
+    ひとりでも早いと、しっぱいです。<br>
+    <br>
+    だれも、列が何人なのかを しりません。<br>
+    <b>となりとしか、話せません。</b>1歩に1マスぶんだけ。<br>
+    <span class="q">それでも、そろえられます。</span>
+    <hr>
+    将軍は、おなじ向きに2つの合図を出します。<br>
+    <b class="q">はやい合図</b>は 1歩で1マス。<b class="p">おそい合図</b>は 3歩で1マス。<br>
+    はやいほうが 向かいの壁で はねかえって、おそいほうと ぶつかる。<br>
+    そこが <b>まんなか</b> です。まんなかを 壁にすると、列が同じ長さに割れます。<br>
+    <br>
+    長さが偶数なら まんなかは1マス、奇数なら2マス。どちらでも 左右は同じ長さ。<br>
+    だから 同じ深さの区間は いつも同じ長さで、時計が ずれません。<br>
+    ぜんぶのマスが壁になった、次の一歩。そこで うちます。
+    <hr>
+    1957年、<b>John Myhill</b> の問題です。<br>
+    どんなに急いでも <b>2n − 2 歩</b> より早くは そろえられません。
+    将軍の合図が 端まで行って、戻ってくる ぶんです。<br>
+    ここで走っているのは 最小時間の解ではなく、<b>およそ 3n 歩</b> の分割統治です。<br>
+    <b>24状態・176ルール</b>。n = 1 から 600 まで走らせて、
+    早撃ちゼロ、全員一致を確かめてあります。
+  </p>
+
+  <nav>
+    <a href="/">ひゅーまん</a><a href="/halt/">/halt/</a><a href="/count/">/count/</a><a href="/liar/">/liar/</a><a href="/life/">/life/</a><a href="/film/">/film/</a>
+  </nav>
+</div>
+
+<script src="/js/dmg.js"></script>
+<script>
+(() => {
+  "use strict";
+
+  // ══ 一斉射撃問題。局所規則（自分と左右のマスだけを見る） ══════════════
+  //   SPOS=0 SPH=1 で n=1..1200 検算済み。24状態 176ルール
+  const SPH = 1;
+
+  const blank = () => ({ w:0, GR:0, GL:0, R:0, L:0, sR:-1, sL:-1, F:0 });
+  const isWall = x => x === null || x.w === 1;
+  // 「1マスで出会った」まんなか。自分のマスだけで決まるので隣も読める
+  const meets  = x => !x.w && ((x.sR >= 0 && x.L) || (x.sL >= 0 && x.R));
+
+  function init(n) {
+    const c = [];
+    for (let i = 0; i < n; i++) c.push(blank());
+    c[0].w = 1; c[0].GR = 1;            // 将軍は左端
+    c[n-1].w = 1;                       // 右端は壁
+    return c;
+  }
+
+  function step(cells) {
+    const n = cells.length, out = new Array(n);
+    for (let i = 0; i < n; i++) {
+      const c = cells[i];
+      const a = i > 0     ? cells[i-1] : null;
+      const b = i < n - 1 ? cells[i+1] : null;
+      const o = blank();
+
+      if (c.F) { o.F = 1; o.w = 1; out[i] = o; continue; }
+      o.w = c.w;
+
+      // うつ：自分が壁で、左右も壁（列の端は壁とみなす）
+      if (c.w && isWall(a) && isWall(b)) { o.F = 1; out[i] = o; continue; }
+
+      // まんなかを見つける
+      let center = 0, eL = 0, eR = 0;
+      if (!c.w) {
+        const aw = a && !a.w, bw = b && !b.w;
+        if      (c.sR >= 0 && c.L)          { center=1; eL=1; eR=1; }   // 1マスで出会う
+        else if (c.sL >= 0 && c.R)          { center=1; eL=1; eR=1; }
+        else if (c.sR >= 0 && bw && b.L)    { center=1; eL=1; }         // 2マスの左
+        else if (c.L    && aw && a.sR >= 0) { center=1; eR=1; }         // 2マスの右
+        else if (c.R    && bw && b.sL >= 0) { center=1; eL=1; }
+        else if (c.sL >= 0 && aw && a.R)    { center=1; eR=1; }
+      }
+      if (center) { o.w = 1; o.GL = eL; o.GR = eR; out[i] = o; continue; }
+
+      // はやい合図。壁は通さない。壁に入った合図は はねかえる
+      if (a && ((a.R && !a.w && !meets(a)) || a.GR)) o.R = 1;
+      if (b && ((b.L && !b.w && !meets(b)) || b.GL)) o.L = 1;
+      if (b && b.w && b.R) o.L = 1;
+      if (a && a.w && a.L) o.R = 1;
+
+      // おそい合図。3歩で1マス
+      if (c.sR >= 0 && c.sR < 2) o.sR = c.sR + 1;
+      if (c.sL >= 0 && c.sL < 2) o.sL = c.sL + 1;
+      if (a && a.sR === 2 && !c.w && !meets(a)) o.sR = 0;
+      if (b && b.sL === 2 && !c.w && !meets(b)) o.sL = 0;
+
+      // 将軍が おそい合図を置く
+      if (c.GR) o.sR = SPH;
+      if (c.GL) o.sL = SPH;
+
+      out[i] = o;
+    }
+    return out;
+  }
+
+  // 走らせて、全部の歩を覚えておく
+  function history(n) {
+    if (n === 1) { const a = init(1); a[0].F = 1; return [init(1), a]; }
+    let c = init(n);
+    const h = [c];
+    for (let t = 0; t < 12*n + 80; t++) {
+      c = step(c); h.push(c);
+      if (c.every(x => x.F)) break;
+    }
+    return h;
+  }
+
+  // ══ 見た目 ═══════════════════════════════════════════════════════
+  const cs = getComputedStyle(document.documentElement);
+  const C  = k => cs.getPropertyValue(k).trim();
+  let INK, BG, SUB, CHEEK, LINE;
+  const readTheme = () => { INK=C('--ink'); BG=C('--bg'); SUB=C('--sub');
+                            CHEEK=C('--cheek'); LINE=C('--line'); };
+  readTheme();
+
+  const $ = id => document.getElementById(id);
+  const sq = $("squad").getContext("2d");
+  const tw = $("time"), tg = tw.getContext("2d");
+
+  let n = 33, hist = [], t = 0, run = true, hold = 0, sps = 24, sound = false;
+
+  function build() {
+    hist = history(n);
+    const T = hist.length;                       // 0歩目 … 最後
+    const cell = Math.max(1, Math.min(34, Math.floor(720/n), Math.floor(480/T)));
+    tw.width = n; tw.height = T;
+    tw.style.width  = (n * cell) + "px";
+    tw.style.height = (T * cell) + "px";
+    tg.fillStyle = BG; tg.fillRect(0, 0, n, T);
+    t = 0; hold = 0;
+    $("cap").innerHTML = 'よこ <i class="k">' + n + '人</i>　たて <i class="k">' +
+      (T-1) + '歩</i>　下限 <i class="k">' + Math.max(1, 2*n-2) + '歩</i>';
+  }
+
+  // 1歩ぶんを、たての帯に描く
+  function paintRow(k) {
+    const row = hist[k];
+    for (let i = 0; i < n; i++) {
+      const c = row[i];
+      tg.fillStyle = c.F ? CHEEK
+                    : c.w ? INK
+                    : (c.sR >= 0 || c.sL >= 0) ? CHEEK
+                    : (c.R || c.L) ? SUB
+                    : BG;
+      tg.fillRect(i, k, 1, 1);
+    }
+  }
+
+  // 兵隊の列
+  function paintSquad(k) {
+    const W = 760, H = 58, row = hist[k];
+    const w = W / n, bw = Math.max(3, Math.min(24, w * 0.72));
+    sq.fillStyle = BG; sq.fillRect(0, 0, W, H);
+    sq.fillStyle = LINE; sq.fillRect(0, 50, W, 1);              // 地面
+
+    for (let i = 0; i < n; i++) {
+      const c = row[i], cx = i*w + w/2, bx = Math.round(cx - bw/2);
+      const bh = Math.max(8, Math.min(28, bw * 1.2));
+      const by = Math.round(50 - bh), bwr = Math.max(2, Math.round(bw));
+
+      sq.fillStyle = c.F ? CHEEK : c.w ? INK : SUB;             // からだ
+      sq.fillRect(bx, by, bwr, Math.round(bh));
+
+      if (bwr >= 7) {                                           // め
+        const e = Math.max(1, Math.round(bw/7)), ey = by + Math.round(bh*0.3);
+        sq.fillStyle = c.w && !c.F ? BG : INK;                  // 地の色で ぬきになるように
+        sq.fillRect(bx + Math.round(bw*0.2),  ey, e, e);
+        sq.fillRect(bx + Math.round(bw*0.66), ey, e, e);
+        if (c.F) {                                              // くち
+          sq.fillRect(bx + Math.round(bw*0.36), ey + Math.round(bh*0.32),
+                      Math.max(2, Math.round(bw*0.28)), Math.max(1, e));
+        }
+      }
+      if (c.R || c.L) {                                         // はやい合図
+        sq.fillStyle = INK;
+        sq.fillRect(bx, 52, bwr, 3);
+      }
+      if (c.sR >= 0 || c.sL >= 0) {                             // おそい合図
+        sq.fillStyle = CHEEK;
+        const d = Math.max(2, Math.round(bw*0.3));
+        sq.fillRect(Math.round(cx - d/2), by - d - 2, d, d);
+      }
+      if (c.GR || c.GL) {                                       // 合図を出した将軍
+        sq.fillStyle = CHEEK;
+        const d = Math.max(2, Math.round(bw*0.22));
+        sq.fillRect(Math.round(cx - d/2), by - 10, d, 9);
+      }
+      if (c.F) {                                                // ！
+        sq.fillStyle = CHEEK;
+        const d = Math.max(2, Math.round(bw*0.22));
+        sq.fillRect(Math.round(cx - d/2), by - d*4 - 2, d, d*2);
+        sq.fillRect(Math.round(cx - d/2), by - d - 1, d, d);
+      }
+    }
+  }
+
+  function status(k) {
+    const row = hist[k], done = row[0].F;
+    let walls = 0;
+    for (const c of row) if (c.w) walls++;
+    $("msg").innerHTML = done
+      ? 'そろった。<b>' + n + '</b>人が <b>' + k + '</b>歩目に、いっせいに。'
+      : 'まだ だれも うっていません。';
+    $("cnt").innerHTML = '<b>' + k + '</b> 歩　きまったマス <b>' + walls + '/' + n + '</b>';
+    $("st").classList.toggle("done", done);
+  }
+
+  // ══ 音。DMG（ゲームボーイ）の音源をそのまま使う ═══════════════════
+  let ac = null;
+  function audio() {
+    if (ac || !window.DMG) return;
+    ac = new (window.AudioContext || window.webkitAudioContext)();
+    DMG.init(ac, null);
+  }
+  const now = () => ac ? ac.currentTime + 0.01 : 0;
+  function tick()  { if (sound && ac) DMG.hat(now()); }          // まんなかが決まった
+  function shoot() { if (!sound || !ac) return;
+                     DMG.noise({ t:now(), dur:0.30, vol:0.7, decay:0.010, rate:0.55 });
+                     DMG.snare(now() + 0.02); }
+
+  // ══ まわす ═══════════════════════════════════════════════════════
+  let acc = 0, last = 0;
+  function frame(ts) {
+    const dt = last ? Math.min(0.25, (ts - last)/1000) : 0;
+    last = ts;
+
+    if (hold > 0) {
+      if (run) hold -= dt;          // とめている間は、そろった絵を残す
+      if (hold <= 0) { build(); paintRow(0); paintSquad(0); status(0); }
+    } else if (run) {
+      acc += dt * sps;
+      let drew = false;
+      while (acc >= 1 && t < hist.length - 1) {
+        const before = hist[t].reduce((s,c) => s + c.w, 0);
+        t++; acc -= 1; drew = true;
+        paintRow(t);
+        const after = hist[t].reduce((s,c) => s + c.w, 0);
+        if (after > before && !hist[t][0].F) tick();
+        if (hist[t][0].F) { shoot(); hold = 6.0; acc = 0; break; }
+      }
+      if (drew) { paintSquad(t); status(t); }
+      if (t >= hist.length - 1 && hold <= 0) hold = 6.0;
+    }
+    requestAnimationFrame(frame);
+  }
+
+  // ══ そうさ ═══════════════════════════════════════════════════════
+  const spOf = v => Math.max(1, Math.round(Math.pow(10, 0.3 + v/100 * 1.9)));  // 2〜160
+
+  $("play").onclick = e => {
+    run = !run; e.target.textContent = run ? "とめる" : "はしらせる";
+  };
+  $("reset").onclick = () => { build(); paintRow(0); paintSquad(0); status(0); };
+  $("snd").onclick = e => {
+    audio(); sound = !sound && !!ac;
+    if (ac && ac.state === "suspended") ac.resume();
+    e.target.classList.toggle("on", sound);
+  };
+  $("n").oninput = e => {
+    n = +e.target.value; $("nv").textContent = n;
+    build(); paintRow(0); paintSquad(0); status(0);
+  };
+  $("sp").oninput = e => { sps = spOf(+e.target.value); };
+
+  if (window.matchMedia) {
+    const mq = window.matchMedia("(prefers-color-scheme: dark)");
+    const oc = () => { readTheme(); const k = t; build(); for (let i = 0; i <= Math.min(k, hist.length-1); i++) paintRow(i); t = Math.min(k, hist.length-1); paintSquad(t); status(t); };
+    mq.addEventListener ? mq.addEventListener("change", oc) : mq.addListener(oc);
+  }
+
+  sps = spOf(+$("sp").value);
+  build(); paintRow(0); paintSquad(0); status(0);
+  if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    run = false; $("play").textContent = "はしらせる";
+  }
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
