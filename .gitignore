@@ -3,3 +3,12 @@ node_modules/
 *.log
 Thumbs.db
 .DS_Store
+
+# 音源。サイトには置くが、公開リポジトリには入れない。
+# Already だけは「誰でも落としていい」と決めたので、追跡したまま残す。
+public/v/ep_01_omega.mp3
+public/v/ep_02_oracle.mp3
+public/v/ep_03_45.mp3
+public/v/ep_04_still.mp3
+public/v/ep_05_three.mp3
+public/v/nazo.mp3
