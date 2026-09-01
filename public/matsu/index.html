@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>まつ — ひゅーまん</title>
+<meta name="description" content="戻れるなら、戻る。戻れないなら、進む。">
+<link rel="canonical" href="https://hyu-man.com/matsu/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="ひゅーまん">
+<meta property="og:title" content="まつ — ひゅーまん">
+<meta property="og:description" content="戻れるなら、戻る。戻れないなら、進む。">
+<meta property="og:url" content="https://hyu-man.com/matsu/">
+<meta property="og:locale" content="ja_JP">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'><rect width='8' height='8' fill='%23f5f3f0'/><path d='M1 5 A2 2 0 0 1 5 5' fill='none' stroke='%23111'/><rect x='6' y='4' width='1' height='2' fill='%23ff96aa'/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Hachi+Maru+Pop&family=DotGothic16&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing:border-box; margin:0; padding:0; }
+  :root {
+    --bg:#f5f3f0; --ink:#1a1a1a; --sub:#b0a8a0; --line:#e2ded9; --cheek:#ff96aa;
+    --dot:'Press Start 2P','DotGothic16','Courier New',monospace;
+    --maru:'Hachi Maru Pop','DotGothic16',sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#0f0f0e; --ink:#efefec; --sub:#6e6a66; --line:#262624; }
+  }
+  body {
+    background:var(--bg); color:var(--ink); font-family:var(--maru);
+    display:flex; flex-direction:column; align-items:center;
+    padding:36px 16px 64px;
+  }
+  h1 { font-family:var(--dot); font-size:13px; font-weight:400;
+       letter-spacing:.3em; text-indent:.3em; margin-bottom:6px; }
+  .lead { font-size:14px; color:var(--sub); letter-spacing:.05em; margin-bottom:24px; }
+  .wrap { width:100%; max-width:760px; }
+
+  canvas { width:100%; height:auto; display:block; aspect-ratio:760 / 380;
+           border-top:1px solid var(--line); border-bottom:1px solid var(--line); }
+
+  .st { display:flex; align-items:baseline; gap:14px; flex-wrap:wrap;
+        margin-top:14px; font-size:12.5px; color:var(--sub); letter-spacing:.04em; }
+  .st b { font-family:var(--dot); font-size:15px; color:var(--ink);
+          font-variant-numeric:tabular-nums; }
+  .st .w { color:var(--cheek); }
+  .st .w b { color:var(--cheek); }
+  .spacer { flex:1 }
+
+  .bar { display:flex; flex-wrap:wrap; gap:9px; align-items:center; margin:18px 0 4px; }
+  button {
+    font-family:var(--maru); font-size:13px; letter-spacing:.06em;
+    background:var(--bg); color:var(--ink); border:1px solid var(--ink);
+    padding:5px 15px; cursor:pointer; border-radius:2px;
+  }
+  button:hover { background:var(--ink); color:var(--bg); }
+  input[type=range] { width:150px; accent-color:var(--ink); }
+  .rate { font-family:var(--dot); font-size:9px; color:var(--sub);
+          font-variant-numeric:tabular-nums; }
+
+  .note { margin-top:22px; font-size:12.5px; line-height:2.05; color:var(--sub); }
+  .note b { color:var(--ink); font-weight:400; }
+  .note .q { color:var(--cheek); }
+
+  .fromrule { margin-top:30px; font-size:12.5px; line-height:1.9;
+              color:var(--sub, #b0a8a0); letter-spacing:.04em; }
+  .fromrule a { color:var(--ink, #1a1a1a); text-decoration:none;
+                border-bottom:1px solid var(--line, #e2ded9); }
+  .fromrule a:hover { border-bottom-color:var(--ink, #1a1a1a); }
+
+  nav { margin-top:34px; font-family:var(--dot); font-size:9px;
+        letter-spacing:.1em; color:var(--sub, #b0a8a0); }
+  nav a { color:var(--sub, #b0a8a0); text-decoration:none; margin-right:13px; }
+  nav a:hover { color:var(--ink, #1a1a1a); }
+</style>
+</head>
+<body>
+
+<h1>まつ</h1>
+<p class="lead">戻れるなら、戻る。戻れないなら、進む。</p>
+
+<div class="wrap">
+  <canvas id="cv" width="1520" height="760"></canvas>
+
+  <div class="st">
+    <span><b id="n">0</b> 歩</span>
+    <span class="spacer"></span>
+    <span class="w">まだ行っていない いちばん小さい数 <b id="m">1</b></span>
+  </div>
+
+  <div class="bar">
+    <button id="play">とめる</button>
+    <button id="reset">さいしょから</button>
+    <input type="range" id="speed" min="0" max="1000" value="330" aria-label="はやさ">
+    <span class="rate" id="rate">6 /f</span>
+  </div>
+
+  <p class="note">
+    <b>n 歩目は n だけ動きます。</b>
+    左へ戻れるのは、0 より大きくて、まだ行ったことのない所だけ。
+    行けないなら、右へ。<br>
+    上と下に半円がつくのは、一歩ごとに向きを変えているからです。<br><br>
+    ピンクの印が <b>まだ行っていない いちばん小さい数</b>。そこだけ、ずっと待っています。<br>
+    <b>4</b> は 131歩、<b>19</b> は <b>99,734歩</b> 待ちました。
+    そのあと 61、879、1355 と続きます。<br>
+    200万歩まわしても、<b>1355</b> はまだ来ていません。<br><br>
+    <span class="q">ぜんぶの数に いつか行き着くのかは、わかっていません。</span>
+  </p>
+
+
+  <p class="fromrule">
+    この規則から出たもの ── <a href="/film/">うごく 1</a>
+  </p>
+
+<nav>
+  <a href="/">ひゅーまん</a><a href="/film/">/film/</a><a href="/still/">/still/</a>
+</nav>
+</div>
+
+<script>
+(() => {
+  "use strict";
+  const cv = document.getElementById("cv"), g = cv.getContext("2d");
+  const W = cv.width, H = cv.height, PAD = 46;
+  const $ = id => document.getElementById(id);
+
+  const cs = getComputedStyle(document.documentElement);
+  const C = k => cs.getPropertyValue(k).trim();
+  let INK, BG, SUB, CHEEK, LINE;
+  const theme = () => { INK=C('--ink'); BG=C('--bg'); SUB=C('--sub');
+                        CHEEK=C('--cheek'); LINE=C('--line'); };
+  theme();
+
+  let seq, seen, m, hi, sc;
+
+  function reset() {
+    seq = [0]; seen = new Set([0]); m = 1; hi = 20; sc = 1;
+    draw();
+  }
+
+  function step() {
+    const n = seq.length, p = seq[n - 1] - n;
+    const v = (p > 0 && !seen.has(p)) ? p : seq[n - 1] + n;
+    seq.push(v); seen.add(v);
+    while (seen.has(m)) m++;
+    if (v > hi) hi = v;
+  }
+
+  function draw() {
+    const AX = H * 0.52;
+    g.fillStyle = BG; g.fillRect(0, 0, W, H);
+    sc = (W - PAD * 2) / Math.max(hi, 20);
+    const X = v => PAD + v * sc;
+
+    g.strokeStyle = LINE; g.lineWidth = 1;
+    g.beginPath(); g.moveTo(PAD, AX); g.lineTo(W - PAD, AX); g.stroke();
+
+    g.lineWidth = 2; g.strokeStyle = INK;
+    for (let i = 1; i < seq.length; i++) {
+      const a = seq[i - 1], b = seq[i];
+      const r = Math.abs(b - a) * sc / 2, cx = X((a + b) / 2);
+      if (r < 0.4) continue;
+      g.beginPath();
+      g.arc(cx, AX, r, i % 2 ? Math.PI : 0, i % 2 ? 2 * Math.PI : Math.PI);
+      g.stroke();
+    }
+    // いまいる場所
+    g.fillStyle = INK;
+    g.beginPath(); g.arc(X(seq[seq.length - 1]), AX, 4, 0, 7); g.fill();
+    // 待っている数
+    if (m * sc < W - PAD * 2) {
+      const x = X(m);
+      g.fillStyle = CHEEK;
+      g.fillRect(x - 1.5, AX - 16, 3, 32);
+      g.font = "18px 'DotGothic16', monospace";
+      g.textAlign = "center";
+      g.fillText(String(m), x, AX + 38);
+    }
+    $("n").textContent = (seq.length - 1).toLocaleString("ja-JP");
+    $("m").textContent = m.toLocaleString("ja-JP");
+  }
+
+  let run = true, rate = 6;
+  const speedOf = v => Math.max(1, Math.round(Math.pow(10, v / 1000 * 3)));
+
+  function frame() {
+    if (run) { for (let i = 0; i < rate; i++) step(); draw(); }
+    requestAnimationFrame(frame);
+  }
+
+  $("play").onclick = e => { run = !run; e.target.textContent = run ? "とめる" : "あるかせる"; };
+  $("reset").onclick = () => reset();
+  $("speed").oninput = e => { rate = speedOf(+e.target.value); $("rate").textContent = rate + " /f"; };
+  if (window.matchMedia) {
+    const mq = window.matchMedia("(prefers-color-scheme: dark)");
+    const oc = () => { theme(); draw(); };
+    mq.addEventListener ? mq.addEventListener("change", oc) : mq.addListener(oc);
+  }
+
+  rate = speedOf(+$("speed").value); $("rate").textContent = rate + " /f";
+  reset();
+  if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    run = false; $("play").textContent = "あるかせる";
+  }
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
