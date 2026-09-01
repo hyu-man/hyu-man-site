@@ -4,12 +4,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>うごく — ひゅーまん</title>
-<meta name="description" content="規則が出した答えを、そのまま置いてあります。">
+<meta name="description" content="規則が出した答えのうち、動くもの。">
 <link rel="canonical" href="https://hyu-man.com/film/">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="ひゅーまん">
 <meta property="og:title" content="うごく — ひゅーまん">
-<meta property="og:description" content="規則が出した答えを、そのまま置いてあります。">
+<meta property="og:description" content="規則が出した答えのうち、動くもの。">
 <meta property="og:url" content="https://hyu-man.com/film/">
 <meta property="og:locale" content="ja_JP">
 <meta name="twitter:card" content="summary_large_image">
@@ -95,18 +95,12 @@
 <body>
 
 <h1>うごく</h1>
-<p class="lead">規則が出した答えを、そのまま置いてあります。</p>
-
-<div class="filter">
-  <button data-f="all" class="on">ぜんぶ</button>
-  <button data-f="video">うごく</button>
-  <button data-f="image">とまってる</button>
-</div>
+<p class="lead">規則が出した答えのうち、動くもの。</p>
 
 <div class="grid" id="grid"></div>
 
 <nav>
-  <a href="/">ひゅーまん</a><a href="/ant/">/ant/</a><a href="/life/">/life/</a><a href="/toad/">/toad/</a><a href="/collatz/">/collatz/</a><a href="/halt/">/halt/</a>
+  <a href="/">ひゅーまん</a><a href="/still/">/still/</a><a href="/ant/">/ant/</a><a href="/life/">/life/</a><a href="/collatz/">/collatz/</a><a href="/halt/">/halt/</a><a href="/burn/">/burn/</a>
 </nav>
 
 <div id="box"><div class="holder"></div><div class="cap"></div></div>
@@ -116,26 +110,21 @@
   "use strict";
 
   /* ─────────────────────────────────────────────────────────
-     1行足すだけで増える。
-       うごく → type:"video"  ファイルは public/v/
-       とまってる → type:"image" ファイルは public/w/
+     1行足すだけで増える。ここは動くものだけ。ファイルは public/v/
+     止まっているものは /still/ へ。
      ───────────────────────────────────────────────────────── */
 
   /* 規則ごとにまとめる。ホームと同じ切り方。
      並べる順もホームに合わせる。src で引くので、上の注釈は触らない */
   const GROUPS = [
     { rule:"白なら右。黒なら左。踏んだ色を裏返して、一歩。",
-      src:["/v/ant_two.mp4", "/w/bt_1_gen0.png", "/w/tm_LRRRRRLLR.png"] },
+      src:["/v/ant_two.mp4"] },
     { rule:"隣が2か3ならいきる。ちょうど3でうまれる。それ以外はきえる。",
-      src:["/v/miso.mp4", "/v/nazo.mp4", "/v/life_heart.mp4", "/w/lx_2_slices.png",
-           "/w/lx_4_sheet.png", "/w/jl_1_g140.png"] },
-    { rule:"偶数なら半分。奇数なら3倍して1を足す。",
-      src:["/w/art_01_Attractor.png", "/w/art_02_DIVIDE.png", "/w/art_03_FLIGHT.png",
-           "/w/art_04_ODD.png", "/w/art_05_1.png"] },
+      src:["/v/miso.mp4", "/v/nazo.mp4", "/v/life_heart.mp4"] },
     { rule:"戻れるなら、戻る。戻れないなら、進む。",
       src:["/v/matsu.mp4"] },
     { rule:"テープの上を、きまった規則どおりに歩くだけ。",
-      src:["/v/halt_20s.mp4", "/w/om_window.png"] },
+      src:["/v/halt_20s.mp4"] },
     { rule:"列が何人なのかを、だれも知りません。となりとしか話せません。",
       src:["/v/burn.mp4"] },
   ];
@@ -155,30 +144,6 @@
       note:"B3/S23。左は41世代で死ぬ。右はブリンカーで組んだので、崩れない。" },
     { type:"video", src:"/v/ant_two.mp4", title:"ふたり",
       note:"ラングトンの蟻を二匹。決まっているのに、いつ会うかわからない。" },
-    { type:"image", src:"/w/bt_1_gen0.png", title:"gen 0",
-      note:"規則をまだ一度も通していない盤。この先は全部きまっている。" },
-    { type:"image", src:"/w/lx_2_slices.png", title:"世代を積む",
-      note:"1行が1世代。下へ行くほど未来。縦の線は、変わらないことで生き延びた者。" },
-    { type:"image", src:"/w/lx_4_sheet.png", title:"36枚",
-      note:"種を変えただけ。規則は全部おなじ。" },
-    { type:"image", src:"/w/jl_1_g140.png", title:"g140",
-      note:"ジュリア集合とライフゲーム。連結か塵か、二択しかない。" },
-    { type:"image", src:"/w/tm_LRRRRRLLR.png", title:"LRRRRRLLR",
-      note:"タルマイト。曲がり方を文字列で与えると、螺旋が出る。" },
-
-    { type:"image", src:"/w/art_01_Attractor.png", title:"Attractor",
-      note:"角度を log で回した。2,200本が中心の一点に落ちる。真ん中の黒い核は、みんなが同じ道を通るせいで埋まらないところ。" },
-    { type:"image", src:"/w/art_02_DIVIDE.png", title:"DIVIDE",
-      note:"÷2 のところだけ。半分になるたび、一段落ちる。240本。" },
-    { type:"image", src:"/w/art_03_FLIGHT.png", title:"FLIGHT",
-      note:"27 の軌道。1本だけ。111歩あるいて、9232 で頂点、そこから 1 へ落ちる。" },
-    { type:"image", src:"/w/art_04_ODD.png", title:"ODD",
-      note:"3n+1 のところだけ。跳ねて、上へ抜けていく。" },
-    { type:"image", src:"/w/art_05_1.png", title:"1",
-      note:"点がひとつ。それだけ。" },
-
-    { type:"image", src:"/w/om_window.png", title:"観測窓",
-      note:"ちいさな機械を144台ならべて、1歩だけ走らせた。止まったのが27台。あとの117台は「止まらない」のではなく「1歩ではわからなかった」。窓の外は、一度も覗いていない。" },
   ];
   /* ───────────────────────────────────────────────────────── */
 
