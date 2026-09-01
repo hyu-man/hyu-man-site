@@ -80,6 +80,11 @@
         letter-spacing:.1em; color:var(--sub); }
   nav a { color:var(--sub); text-decoration:none; margin-right:13px; }
   nav a:hover { color:var(--ink); }
+  .fromrule { margin-top:30px; font-size:12.5px; line-height:1.9;
+              color:var(--sub, #b0a8a0); letter-spacing:.04em; }
+  .fromrule a { color:var(--ink, #1a1a1a); text-decoration:none;
+                border-bottom:1px solid var(--line, #e2ded9); }
+  .fromrule a:hover { border-bottom-color:var(--ink, #1a1a1a); }
 </style>
 </head>
 <body>
@@ -129,7 +134,11 @@
     しらべる方法が ない、というところまでは わかっています。
   </p>
 
-  <nav>
+    <p class="fromrule">
+    この規則から出たもの ── <a href="/film/">うごく 1</a> ・ <a href="/still/">とまってる 1</a>
+  </p>
+
+<nav>
   <a href="/">ひゅーまん</a><a href="/count/">/count/</a><a href="/liar/">/liar/</a><a href="/film/">/film/</a><a href="/still/">/still/</a>
 </nav>
 </div>
