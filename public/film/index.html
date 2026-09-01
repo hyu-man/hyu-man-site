@@ -69,6 +69,10 @@
                    letter-spacing:.1em; margin-right:8px; }
   figcaption .note { display:block; font-size:12px; color:var(--sub); margin-top:2px; }
 
+  .ghead { grid-column:1/-1; font-size:13px; line-height:1.85; color:var(--sub);
+           letter-spacing:.05em; margin:18px 0 -8px; }
+  .ghead:first-child { margin-top:0; }
+  .ghead b { color:var(--ink); font-weight:400; }
   nav { margin-top:44px; font-family:var(--dot); font-size:9px;
         letter-spacing:.1em; color:var(--sub); }
   nav a { color:var(--sub); text-decoration:none; margin-right:13px; }
@@ -116,6 +120,26 @@
        うごく → type:"video"  ファイルは public/v/
        とまってる → type:"image" ファイルは public/w/
      ───────────────────────────────────────────────────────── */
+
+  /* 規則ごとにまとめる。ホームと同じ切り方。
+     並べる順もホームに合わせる。src で引くので、上の注釈は触らない */
+  const GROUPS = [
+    { rule:"白なら右。黒なら左。踏んだ色を裏返して、一歩。",
+      src:["/v/ant_two.mp4", "/w/bt_1_gen0.png", "/w/tm_LRRRRRLLR.png"] },
+    { rule:"隣が2か3ならいきる。ちょうど3でうまれる。それ以外はきえる。",
+      src:["/v/nazo.mp4", "/v/life_heart.mp4", "/w/lx_2_slices.png",
+           "/w/lx_4_sheet.png", "/w/jl_1_g140.png"] },
+    { rule:"偶数なら半分。奇数なら3倍して1を足す。",
+      src:["/w/art_01_Attractor.png", "/w/art_02_DIVIDE.png", "/w/art_03_FLIGHT.png",
+           "/w/art_04_ODD.png", "/w/art_05_1.png"] },
+    { rule:"戻れるなら、戻る。戻れないなら、進む。",
+      src:["/v/matsu.mp4"] },
+    { rule:"テープの上を、きまった規則どおりに歩くだけ。",
+      src:["/v/halt_20s.mp4", "/w/om_window.png"] },
+    { rule:"列が何人なのかを、だれも知りません。となりとしか話せません。",
+      src:["/v/burn.mp4"] },
+  ];
+
   const WORKS = [
     { type:"video", src:"/v/nazo.mp4", title:"なぞ",
       note:"ライフゲーム。2か3でいきる。ちょうど3でうまれる。人口がゼロになる初期配置を探した。こちらで消しているのではなく、規則が殺している。種93、40×40、155世代で 0。最大105。0 になるのは 0:59.7、曲の「なぞ」と同じ位置。そのあと ゆらぎ ── 空のマスがときどき1コマだけ光る。孤立していれば必ず死ぬが、3つ隣り合うと規則が新しいマスを生む。1:10.9 に 3マスが生まれ、1:15.1 にゆらぎが止まり、曲が終わっても点滅している。枠は生きているマスの外接矩形で、演出ではない。" },
@@ -164,7 +188,7 @@
                 window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const figs = [];
 
-  WORKS.forEach((w, i) => {
+  function makeFig(w, i) {
     const fig   = document.createElement("figure");
     const frame = document.createElement("div");
     frame.className = "frame";
@@ -192,7 +216,8 @@
                     w.title + '<span class="note">' + w.note + '</span>';
     fig.appendChild(cap);
     grid.appendChild(fig);
-    figs.push({ fig, type:w.type });
+    const o = { fig, type:w.type };
+    figs.push(o);
 
     frame.addEventListener("click", () => {
       if (frame.dataset.dead) return;
@@ -220,7 +245,29 @@
     } else if (w.type === "video" && !still) {
       el.autoplay = true;
     }
+    return o;
+  }
+
+  // 規則ごとに見出しを出して、その下に並べる
+  const byId = {}; WORKS.forEach(w => byId[w.src] = w);
+  const shown = {}, groups = [];
+  let no = 0;
+  GROUPS.forEach(G => {
+    const items = G.src.map(s => byId[s]).filter(Boolean);
+    if (!items.length) return;
+    const h = document.createElement("div");
+    h.className = "ghead"; h.textContent = G.rule;
+    grid.appendChild(h);
+    groups.push({ head:h, items: items.map(w => { shown[w.src] = 1; return makeFig(w, no++); }) });
   });
+  // どの組にも入れ忘れたものは、ここに出る。消えない
+  const rest = WORKS.filter(w => !shown[w.src]);
+  if (rest.length) {
+    const h = document.createElement("div");
+    h.className = "ghead"; h.textContent = "そのほか";
+    grid.appendChild(h);
+    groups.push({ head:h, items: rest.map(w => makeFig(w, no++)) });
+  }
 
   document.querySelectorAll(".filter button").forEach(b => {
     b.onclick = () => {
@@ -228,6 +275,8 @@
       b.classList.add("on");
       const f = b.dataset.f;
       figs.forEach(o => { o.fig.hidden = (f !== "all" && o.type !== f); });
+      // 中身が全部隠れた組は、見出しも隠す
+      groups.forEach(g => { g.head.hidden = !g.items.some(o => !o.fig.hidden); });
     };
   });
 
