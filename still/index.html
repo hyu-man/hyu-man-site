@@ -3,14 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>うごく — ひゅーまん</title>
-<meta name="description" content="規則が出した答えのうち、動くもの。">
-<link rel="canonical" href="https://hyu-man.com/film/">
+<title>とまってる — ひゅーまん</title>
+<meta name="description" content="規則が出した答えのうち、止まっているもの。">
+<link rel="canonical" href="https://hyu-man.com/still/">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="ひゅーまん">
-<meta property="og:title" content="うごく — ひゅーまん">
-<meta property="og:description" content="規則が出した答えのうち、動くもの。">
-<meta property="og:url" content="https://hyu-man.com/film/">
+<meta property="og:title" content="とまってる — ひゅーまん">
+<meta property="og:description" content="規則が出した答えのうち、止まっているもの。">
+<meta property="og:url" content="https://hyu-man.com/still/">
 <meta property="og:locale" content="ja_JP">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'><rect width='8' height='8' fill='%23fff'/><rect x='1' y='2' width='6' height='4' fill='%23111'/><rect x='2' y='3' width='2' height='2' fill='%23fff'/></svg>">
@@ -94,13 +94,13 @@
 </head>
 <body>
 
-<h1>うごく</h1>
-<p class="lead">規則が出した答えのうち、動くもの。</p>
+<h1>とまってる</h1>
+<p class="lead">規則が出した答えのうち、止まっているもの。</p>
 
 <div class="grid" id="grid"></div>
 
 <nav>
-  <a href="/">ひゅーまん</a><a href="/still/">/still/</a><a href="/ant/">/ant/</a><a href="/life/">/life/</a><a href="/collatz/">/collatz/</a><a href="/halt/">/halt/</a><a href="/burn/">/burn/</a>
+  <a href="/">ひゅーまん</a><a href="/film/">/film/</a><a href="/ant/">/ant/</a><a href="/life/">/life/</a><a href="/collatz/">/collatz/</a><a href="/halt/">/halt/</a><a href="/burn/">/burn/</a>
 </nav>
 
 <div id="box"><div class="holder"></div><div class="cap"></div></div>
@@ -110,40 +110,46 @@
   "use strict";
 
   /* ─────────────────────────────────────────────────────────
-     1行足すだけで増える。ここは動くものだけ。ファイルは public/v/
-     止まっているものは /still/ へ。
+     1行足すだけで増える。ここは止まっているものだけ。ファイルは public/w/
+     動くものは /film/ へ。
      ───────────────────────────────────────────────────────── */
 
   /* 規則ごとにまとめる。ホームと同じ切り方。
      並べる順もホームに合わせる。src で引くので、上の注釈は触らない */
   const GROUPS = [
     { rule:"白なら右。黒なら左。踏んだ色を裏返して、一歩。",
-      src:["/v/ant_two.mp4"] },
+      src:["/w/bt_1_gen0.png", "/w/tm_LRRRRRLLR.png"] },
     { rule:"隣が2か3ならいきる。ちょうど3でうまれる。それ以外はきえる。",
-      src:["/v/miso.mp4", "/v/nazo.mp4", "/v/life_heart.mp4"] },
-    { rule:"戻れるなら、戻る。戻れないなら、進む。",
-      src:["/v/matsu.mp4"] },
+      src:["/w/lx_2_slices.png", "/w/lx_4_sheet.png", "/w/jl_1_g140.png"] },
+    { rule:"偶数なら半分。奇数なら3倍して1を足す。",
+      src:["/w/art_01_Attractor.png", "/w/art_02_DIVIDE.png", "/w/art_03_FLIGHT.png", "/w/art_04_ODD.png", "/w/art_05_1.png"] },
     { rule:"テープの上を、きまった規則どおりに歩くだけ。",
-      src:["/v/halt_20s.mp4"] },
-    { rule:"列が何人なのかを、だれも知りません。となりとしか話せません。",
-      src:["/v/burn.mp4"] },
+      src:["/w/om_window.png"] },
   ];
 
   const WORKS = [
-    { type:"video", src:"/v/miso.mp4", title:"みそ汁",
-      note:"鍋の中でライフゲーム。丸い鍋なので、円の外はそもそも存在しない。あたたかいうちは泡が立つ ── 空のマスがときどき勝手にひとつ生きる。冷めると立たなくなり、あとは規則だけが残る。0:46 で温度が 0 になり、そこから火の無いまま人口が 76 まで増えて、1:13 に 248世代目で動かなくなる。のこったのは 2×2 がふたつ。音も同じ計算で、生まれたマスが位置で決まる5音のどれかを鳴らす。483回。Max のパッチと同じハッシュを使っているので、乱数は入っていない。" },
-    { type:"video", src:"/v/nazo.mp4", title:"なぞ",
-      note:"ライフゲーム。2か3でいきる。ちょうど3でうまれる。人口がゼロになる初期配置を探した。こちらで消しているのではなく、規則が殺している。種93、40×40、155世代で 0。最大105。0 になるのは 0:59.7、曲の「なぞ」と同じ位置。そのあと ゆらぎ ── 空のマスがときどき1コマだけ光る。孤立していれば必ず死ぬが、3つ隣り合うと規則が新しいマスを生む。1:10.9 に 3マスが生まれ、1:15.1 にゆらぎが止まり、曲が終わっても点滅している。枠は生きているマスの外接矩形で、演出ではない。" },
-    { type:"video", src:"/v/burn.mp4", title:"そろう",
-      note:"15人が一列。何人いるかは、だれも知らない。どのマスも、自分と左右しか見ない。それでも 39歩目に、全員が同じ一歩で撃つ。一斉射撃問題。上の帯は歩の跡で、速い信号と 3歩で1マスの遅い信号が交わる所が「まんなか」。そこが壁になって、区間が同じ長さ2つに割れていく。n=1〜300 で検算済み。" },
-    { type:"video", src:"/v/matsu.mp4", title:"まつ",
-      note:"戻れるなら、戻る。戻れないなら、進む。n歩目は n だけ動く。レカマン数列。ピンクは「まだ行っていない いちばん小さい数」。4 は 131歩、19 は 99,734歩 待った。200万歩まわしても 1355 はまだ来ていない。ぜんぶの数に いつか行き着くのかは、わかっていない。絵は150歩まで。そこから先は速すぎて描けないので、数だけになる。" },
-    { type:"video", src:"/v/halt_20s.mp4", title:"埋めて、消して、寝た",
-      note:"5じょうたいのビジービーバー。47,176,870歩。声に出して数えると4.5年。テープを端から端まで 1 で埋めきってから、最後の 12,288歩でほとんど消して、とまる。のこるのは 4,098個、3マスに1本。最後だけ時間を伸ばしています。等速だと、消すところが1コマも映りません。" },
-    { type:"video", src:"/v/life_heart.mp4", title:"ベタ塗りは死ぬ。点線は生きる。",
-      note:"B3/S23。左は41世代で死ぬ。右はブリンカーで組んだので、崩れない。" },
-    { type:"video", src:"/v/ant_two.mp4", title:"ふたり",
-      note:"ラングトンの蟻を二匹。決まっているのに、いつ会うかわからない。" },
+    { type:"image", src:"/w/bt_1_gen0.png", title:"gen 0",
+      note:"規則をまだ一度も通していない盤。この先は全部きまっている。" },
+    { type:"image", src:"/w/lx_2_slices.png", title:"世代を積む",
+      note:"1行が1世代。下へ行くほど未来。縦の線は、変わらないことで生き延びた者。" },
+    { type:"image", src:"/w/lx_4_sheet.png", title:"36枚",
+      note:"種を変えただけ。規則は全部おなじ。" },
+    { type:"image", src:"/w/jl_1_g140.png", title:"g140",
+      note:"ジュリア集合とライフゲーム。連結か塵か、二択しかない。" },
+    { type:"image", src:"/w/tm_LRRRRRLLR.png", title:"LRRRRRLLR",
+      note:"タルマイト。曲がり方を文字列で与えると、螺旋が出る。" },
+    { type:"image", src:"/w/art_01_Attractor.png", title:"Attractor",
+      note:"角度を log で回した。2,200本が中心の一点に落ちる。真ん中の黒い核は、みんなが同じ道を通るせいで埋まらないところ。" },
+    { type:"image", src:"/w/art_02_DIVIDE.png", title:"DIVIDE",
+      note:"÷2 のところだけ。半分になるたび、一段落ちる。240本。" },
+    { type:"image", src:"/w/art_03_FLIGHT.png", title:"FLIGHT",
+      note:"27 の軌道。1本だけ。111歩あるいて、9232 で頂点、そこから 1 へ落ちる。" },
+    { type:"image", src:"/w/art_04_ODD.png", title:"ODD",
+      note:"3n+1 のところだけ。跳ねて、上へ抜けていく。" },
+    { type:"image", src:"/w/art_05_1.png", title:"1",
+      note:"点がひとつ。それだけ。" },
+    { type:"image", src:"/w/om_window.png", title:"観測窓",
+      note:"ちいさな機械を144台ならべて、1歩だけ走らせた。止まったのが27台。あとの117台は「止まらない」のではなく「1歩ではわからなかった」。窓の外は、一度も覗いていない。" },
   ];
   /* ───────────────────────────────────────────────────────── */
 
