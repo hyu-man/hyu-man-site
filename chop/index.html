@@ -62,6 +62,19 @@
         letter-spacing:.1em; color:var(--sub); }
   nav a { color:var(--sub); text-decoration:none; margin-right:12px; }
   nav a:hover { color:var(--ink); }
+
+  /* 虹 */
+  nav a, .fromrule a{
+    text-decoration:none; border-bottom:0;
+    background:linear-gradient(90deg,#ff0040,#ff8a00,#ffe600,#3ddc4a,#00b7ff,#8a4bff,#ff0040);
+    background-size:300% 100%; -webkit-background-clip:text; background-clip:text;
+    color:transparent; animation:flow 4s linear infinite;
+  }
+  nav a:hover, .fromrule a:hover{ animation-duration:1.2s; }
+  @keyframes flow{ from{background-position:0% 0} to{background-position:300% 0} }
+  @media (prefers-reduced-motion: reduce){
+    nav a, .fromrule a{ animation:none; background-position:50% 0; }
+  }
 </style>
 </head>
 <body>
