@@ -40,7 +40,7 @@
   .cap { font-family:var(--dot); font-size:9px; letter-spacing:.12em;
          color:var(--sub); margin:0 0 5px; }
   .cap em { font-style:normal; color:var(--cheek); }
-  canvas { width:100%; height:auto; display:block;
+  canvas { width:100%; height:auto; display:block; image-rendering:pixelated;
            border-top:1px solid var(--line); border-bottom:1px solid var(--line); }
   #field, #diff { aspect-ratio:4 / 3; }
   #diff { margin-bottom:2px; }
@@ -103,13 +103,12 @@
 
 <div class="wrap">
 
-  <p class="cap">ば</p>
-  <canvas id="field" width="1024" height="768"></canvas>
+  <canvas id="field" width="256" height="192"></canvas>
 
   <div class="gap"></div>
 
   <p class="cap">はじめの一つを <em>2の32乗ぶんの1</em> だけずらした、双子との差 <span id="cone"></span></p>
-  <canvas id="diff" width="1024" height="768"></canvas>
+  <canvas id="diff" width="256" height="192"></canvas>
 
   <div class="st">
     <span><b id="t">0</b> 歩</span>
@@ -126,15 +125,15 @@
   </div>
 
   <p class="note">
-    輪になった <b>128</b> 個が、両どなりと力をやりとりします。<br>
+    輪になった <b>256</b> 個が、両どなりと力をやりとりします。<br>
     i が j から受けとる力と、j が i から受けとる力は、<b>符号だけが違う</b>。<br>
     だから、一つが得た分は必ず誰かが失っていて、<b>合計は動きません</b>。<br><br>
 
     下の絵は、はじめの一つだけを <b>2の32乗ぶんの1</b>（0.000000023%）ずらした双子との差です。<br>
-    その 1ビットが、一歩ごとに <b>2.34倍</b> になって、<b>87歩</b> で全体を覆います。<br><br>
+    その 1ビットが、一歩ごとに <b>1.94倍</b> になって、<b>150歩</b> で全体を覆います。<br><br>
 
     10万歩まわしたところで ──<br>
-    <span class="q">ひとつずつは 4800億 の桁まで振れていて、</span><br>
+    <span class="q">ひとつずつは 4700億 の桁まで振れていて、</span><br>
     <b>合計は 0 のままです。</b><br>
     角度も運動量も整数で持っているので、これは「ほぼ0」ではなく <b>0</b> です。
     <hr>
@@ -149,7 +148,7 @@
 <script>
 (() => {
   "use strict";
-  const N = 128, K = 0.18, SEED = 20260902;
+  const N = 256, K = 0.18, SEED = 20260902;
   const BITS = 32, FULL = 4294967296, HALF = 2147483648;
   const KFP = Math.trunc(K * FULL);
   const TAU = 2 * Math.PI;
