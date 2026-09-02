@@ -114,15 +114,6 @@
     .panel input{ width:118px; font-size:11px; }
   }
   @media (prefers-reduced-motion:reduce){ .sub a{ animation:none; } }
-  nav { margin-top:34px; font-family:var(--dot); font-size:9px;
-        letter-spacing:.1em; color:var(--sub, #b0a8a0); }
-  nav a { color:var(--sub, #b0a8a0); text-decoration:none; margin-right:13px; }
-  nav a:hover { color:var(--ink, #1a1a1a); }
-  .fromrule { margin-top:30px; font-size:12.5px; line-height:1.9;
-              color:var(--sub, #b0a8a0); letter-spacing:.04em; }
-  .fromrule a { color:var(--ink, #1a1a1a); text-decoration:none;
-                border-bottom:1px solid var(--line, #e2ded9); }
-  .fromrule a:hover { border-bottom-color:var(--ink, #1a1a1a); }
 </style>
 </head>
 <body>
@@ -162,8 +153,10 @@
 
 <div class="sub">
   偶数なら半分 / 奇数なら3倍して1を足す<br>
-  <a href="https://hyu-man.bandcamp.com" target="_blank" rel="noopener">→ MUSIC</a>
-</div>
+  <a href="https://hyu-man.bandcamp.com" target="_blank" rel="noopener">→ MUSIC</a><br>
+    <a href="/">→ ひゅーまん</a>
+    <a href="/still/">→ とまってる 5</a>
+  </div>
 
 <div class="hint">たんじょうびを いれてみて<br>ぜんぶ 1 にかえります</div>
 
@@ -294,14 +287,5 @@
   requestAnimationFrame(frame);
 })();
 </script>
-
-
-  <p class="fromrule">
-    この規則から出たもの ── <a href="/still/">とまってる 5</a>
-  </p>
-
-<nav>
-  <a href="/">ひゅーまん</a><a href="/film/">/film/</a><a href="/still/">/still/</a>
-</nav>
 </body>
 </html>
