@@ -130,7 +130,8 @@
     だから、一つが得た分は必ず誰かが失っていて、<b>合計は動きません</b>。<br><br>
 
     下の絵は、はじめの一つだけを <b>2の32乗ぶんの1</b>（0.000000023%）ずらした双子との差です。<br>
-    その 1ビットが、一歩ごとに <b>1.94倍</b> になって、<b>150歩</b> で全体を覆います。<br><br>
+    その 1ビットが、一歩ごとに <b>1.94倍</b> になって、<b>150歩</b> で全体を覆います。<br>
+    覆いきったら双子を合わせ直して、また別のところを 1ビットずらします。<br>    <b>何度やっても、同じことが起きます。</b><br><br>
 
     10万歩まわしたところで ──<br>
     <span class="q">ひとつずつは 4700億 の桁まで振れていて、</span><br>
@@ -189,7 +190,7 @@
     for (let i = 0; i < N; i++) x[i] = mod(x[i] + p[i]);
   }
 
-  let A, B, t;
+  let A, B, t, round, at;
   const fc = $("field"), fg = fc.getContext("2d", { alpha:false });
   const dc = $("diff"),  dg = dc.getContext("2d", { alpha:false });
   const CELL = fc.width / N;                 // 8px
@@ -202,9 +203,11 @@
   }
   function reset() {
     A = make(); B = make();
-    B.x[0] = mod(B.x[0] + 1);                // たった 1 ビット
+    at = 0; round = 1;
+    B.x[at] = mod(B.x[at] + 1);              // たった 1 ビット
     t = 0; frow = 0; drow = 0;
     clear(fg, fc); clear(dg, dc);
+    $("cone").textContent = "－ 1回目";
     show();
   }
 
@@ -218,16 +221,23 @@
     fg.fillRect(0, ((frow + 1) % FROWS) * CELL, fc.width, CELL);
     frow++;
 
-    // 差は「1ビットが何をしたか」の記録なので、埋まったら止めて残す
-    if (drow < DROWS) {
-      for (let i = 0; i < N; i++) {
-        const d = Math.abs(sgn(mod(A.x[i] - B.x[i]))) / HALF;   // 0..1
-        dg.fillStyle = "rgb(" + mix(BG, CHEEK, Math.min(1, d * 1.6)) + ")";
-        dg.fillRect(i * CELL, drow * CELL, CELL, CELL);
-      }
-      drow++;
-      if (drow === DROWS) $("cone").textContent = "－ " + nf(t) + "歩ぶん";
+    // 覆いきったら双子を合わせ直して、また別のところを 1ビットずらす。
+    // 何度でも同じことが起きる。場所は 97 ずつ進める（256 と互いに素なので全部まわる）
+    if (drow >= DROWS) {
+      for (let i = 0; i < N; i++) { B.x[i] = A.x[i]; B.p[i] = A.p[i]; }
+      round++; at = (at + 97) % N;
+      B.x[at] = mod(B.x[at] + 1);
+      drow = 0;
+      $("cone").textContent = "－ " + nf(round) + "回目";
     }
+    for (let i = 0; i < N; i++) {
+      const d = Math.abs(sgn(mod(A.x[i] - B.x[i]))) / HALF;   // 0..1
+      dg.fillStyle = "rgb(" + mix(BG, CHEEK, Math.min(1, d * 1.6)) + ")";
+      dg.fillRect(i * CELL, drow * CELL, CELL, CELL);
+    }
+    dg.fillStyle = "rgb(" + mix(BG, INK, .12) + ")";
+    dg.fillRect(0, ((drow + 1) % DROWS) * CELL, dc.width, CELL);
+    drow++;
   }
 
   const nf = v => v.toLocaleString("ja-JP");
