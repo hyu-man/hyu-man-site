@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>つりあい — ひゅーまん</title>
+<meta name="description" content="一つが得た分は、必ず誰かが失っている。">
+<link rel="canonical" href="https://hyu-man.com/tsuriai/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="ひゅーまん">
+<meta property="og:title" content="つりあい — ひゅーまん">
+<meta property="og:description" content="一つが得た分は、必ず誰かが失っている。">
+<meta property="og:url" content="https://hyu-man.com/tsuriai/">
+<meta property="og:locale" content="ja_JP">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'><rect width='8' height='8' fill='%23f5f3f0'/><rect x='1' y='3' width='6' height='1' fill='%23111'/><rect x='2' y='1' width='1' height='2' fill='%23111'/><rect x='5' y='4' width='1' height='2' fill='%23ff96aa'/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Hachi+Maru+Pop&family=DotGothic16&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing:border-box; margin:0; padding:0; }
+  :root {
+    --bg:#f5f3f0; --ink:#1a1a1a; --sub:#b0a8a0; --line:#e2ded9; --cheek:#ff96aa;
+    --dot:'Press Start 2P','DotGothic16','Courier New',monospace;
+    --maru:'Hachi Maru Pop','DotGothic16',sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#0f0f0e; --ink:#efefec; --sub:#6e6a66; --line:#262624; }
+  }
+  body {
+    background:var(--bg); color:var(--ink); font-family:var(--maru);
+    display:flex; flex-direction:column; align-items:center;
+    padding:36px 16px 64px;
+  }
+  h1 { font-family:var(--dot); font-size:13px; font-weight:400;
+       letter-spacing:.3em; text-indent:.3em; margin-bottom:6px; }
+  .lead { font-size:14px; color:var(--sub); letter-spacing:.05em; margin-bottom:24px; }
+  .wrap { width:100%; max-width:760px; }
+
+  .cap { font-family:var(--dot); font-size:9px; letter-spacing:.12em;
+         color:var(--sub); margin:0 0 5px; }
+  .cap em { font-style:normal; color:var(--cheek); }
+  canvas { width:100%; height:auto; display:block;
+           border-top:1px solid var(--line); border-bottom:1px solid var(--line); }
+  #field, #diff { aspect-ratio:4 / 3; }
+  #diff { margin-bottom:2px; }
+  .gap { height:20px; }
+
+  .st { display:flex; align-items:baseline; gap:18px; flex-wrap:wrap;
+        margin-top:14px; font-size:12.5px; color:var(--sub); letter-spacing:.04em; }
+  .st b { font-family:var(--dot); font-size:15px; color:var(--ink);
+          font-variant-numeric:tabular-nums; }
+  .st .z b { color:var(--ink); }
+  .st .w { color:var(--cheek); }
+  .st .w b { color:var(--cheek); font-size:12px; }
+  .spacer { flex:1 }
+
+  .bar { display:flex; flex-wrap:wrap; gap:9px; align-items:center; margin:18px 0 4px; }
+  button {
+    font-family:var(--maru); font-size:13px; letter-spacing:.06em;
+    background:var(--bg); color:var(--ink); border:1px solid var(--ink);
+    padding:5px 15px; cursor:pointer; border-radius:2px;
+  }
+  button:hover { background:var(--ink); color:var(--bg); }
+  input[type=range] { width:150px; accent-color:var(--ink); }
+  .rate { font-family:var(--dot); font-size:9px; color:var(--sub);
+          font-variant-numeric:tabular-nums; }
+
+  .note { margin-top:22px; font-size:12.5px; line-height:2.05; color:var(--sub); }
+  .note b { color:var(--ink); font-weight:400; }
+  .note .q { color:var(--cheek); }
+  .note hr { border:0; border-top:1px solid var(--line); margin:18px 0; }
+  .last { color:var(--ink); font-size:13.5px; letter-spacing:.06em; }
+
+  .fromrule { margin-top:30px; font-size:12.5px; line-height:1.9;
+              color:var(--sub, #b0a8a0); letter-spacing:.04em; }
+  .fromrule a { color:var(--ink, #1a1a1a); text-decoration:none;
+                border-bottom:1px solid var(--line, #e2ded9); }
+
+  nav { margin-top:34px; font-family:var(--dot); font-size:9px;
+        letter-spacing:.1em; color:var(--sub, #b0a8a0); }
+  nav a { color:var(--sub, #b0a8a0); text-decoration:none; margin-right:13px; }
+  nav a:hover { color:var(--ink, #1a1a1a); }
+
+  /* 虹 */
+  nav a, .fromrule a{
+    text-decoration:none; border-bottom:0;
+    background:linear-gradient(90deg,#ff0040,#ff8a00,#ffe600,#3ddc4a,#00b7ff,#8a4bff,#ff0040);
+    background-size:300% 100%; -webkit-background-clip:text; background-clip:text;
+    color:transparent; animation:flow 4s linear infinite;
+  }
+  nav a:hover, .fromrule a:hover{ animation-duration:1.2s; }
+  @keyframes flow{ from{background-position:0% 0} to{background-position:300% 0} }
+  @media (prefers-reduced-motion: reduce){
+    nav a, .fromrule a{ animation:none; background-position:50% 0; }
+  }
+</style>
+</head>
+<body>
+
+<h1>つりあい</h1>
+<p class="lead">一つが得た分は、必ず誰かが失っている。</p>
+
+<div class="wrap">
+
+  <p class="cap">ば</p>
+  <canvas id="field" width="1024" height="768"></canvas>
+
+  <div class="gap"></div>
+
+  <p class="cap">はじめの一つを <em>2の32乗ぶんの1</em> だけずらした、双子との差 <span id="cone"></span></p>
+  <canvas id="diff" width="1024" height="768"></canvas>
+
+  <div class="st">
+    <span><b id="t">0</b> 歩</span>
+    <span class="z">ごうけい <b id="sum">0</b></span>
+    <span class="spacer"></span>
+    <span class="w">ひとつずつの振れ幅 <b id="sw">0</b></span>
+  </div>
+
+  <div class="bar">
+    <button id="play">とめる</button>
+    <button id="reset">さいしょから</button>
+    <input type="range" id="speed" min="0" max="1000" value="300" aria-label="はやさ">
+    <span class="rate" id="rate">2 /f</span>
+  </div>
+
+  <p class="note">
+    輪になった <b>128</b> 個が、両どなりと力をやりとりします。<br>
+    i が j から受けとる力と、j が i から受けとる力は、<b>符号だけが違う</b>。<br>
+    だから、一つが得た分は必ず誰かが失っていて、<b>合計は動きません</b>。<br><br>
+
+    下の絵は、はじめの一つだけを <b>2の32乗ぶんの1</b>（0.000000023%）ずらした双子との差です。<br>
+    その 1ビットが、一歩ごとに <b>2.34倍</b> になって、<b>87歩</b> で全体を覆います。<br><br>
+
+    10万歩まわしたところで ──<br>
+    <span class="q">ひとつずつは 4800億 の桁まで振れていて、</span><br>
+    <b>合計は 0 のままです。</b><br>
+    角度も運動量も整数で持っているので、これは「ほぼ0」ではなく <b>0</b> です。
+    <hr>
+    <span class="last">どちらも、同じものです。</span>
+  </p>
+
+<nav>
+  <a href="/">ひゅーまん</a><a href="/film/">/film/</a><a href="/still/">/still/</a>
+</nav>
+</div>
+
+<script>
+(() => {
+  "use strict";
+  const N = 128, K = 0.18, SEED = 20260902;
+  const BITS = 32, FULL = 4294967296, HALF = 2147483648;
+  const KFP = Math.trunc(K * FULL);
+  const TAU = 2 * Math.PI;
+  const $ = id => document.getElementById(id);
+
+  /* 32ビットの掛け算。JS の数は 2^53 までしか正確でないので、
+     s * 1103515245 をそのまま書くと桁が落ちる。上下に割ってから足す。 */
+  function lcg(s) {
+    const A = 1103515245, hi = Math.floor(s / 65536), lo = s % 65536;
+    return (((hi * A) % 65536) * 65536 + lo * A + 12345) % FULL;
+  }
+  const mod = v => ((v % FULL) + FULL) % FULL;
+  const sgn = d => (d >= HALF ? d - FULL : d);
+
+  const cs = getComputedStyle(document.documentElement);
+  const C = k => cs.getPropertyValue(k).trim();
+  const hex = h => [1,3,5].map(i => parseInt(h.slice(i,i+2),16));
+  let BG, INK, CHEEK;
+  const theme = () => { BG=hex(C('--bg')); INK=hex(C('--ink')); CHEEK=hex(C('--cheek')); };
+  theme();
+  const mix = (a,b,k) => [0,1,2].map(i => Math.round(a[i]+(b[i]-a[i])*k));
+
+  /* ---- 場 ---------------------------------------------------------- */
+  function make() {
+    let s = SEED % FULL;
+    const x = new Float64Array(N), p = new Float64Array(N);
+    for (let i = 0; i < N; i++) { s = lcg(s); x[i] = s; p[i] = 0; }
+    return { x, p };
+  }
+  function step(F) {
+    const x = F.x, p = F.p;
+    for (let i = 0; i < N; i++) {
+      const j = (i + 1) % N;
+      const f = Math.trunc(KFP * Math.sin(TAU * sgn(mod(x[j] - x[i])) / FULL));
+      p[i] += f;            // 受けとる
+      p[j] -= f;            // 返す
+    }
+    for (let i = 0; i < N; i++) x[i] = mod(x[i] + p[i]);
+  }
+
+  let A, B, t;
+  const fc = $("field"), fg = fc.getContext("2d", { alpha:false });
+  const dc = $("diff"),  dg = dc.getContext("2d", { alpha:false });
+  const CELL = fc.width / N;                 // 8px
+  const FROWS = fc.height / CELL, DROWS = dc.height / CELL;
+  let frow, drow;
+
+  function clear(g, c) {
+    g.fillStyle = "rgb(" + BG + ")";
+    g.fillRect(0, 0, c.width, c.height);
+  }
+  function reset() {
+    A = make(); B = make();
+    B.x[0] = mod(B.x[0] + 1);                // たった 1 ビット
+    t = 0; frow = 0; drow = 0;
+    clear(fg, fc); clear(dg, dc);
+    show();
+  }
+
+  function paint() {
+    for (let i = 0; i < N; i++) {
+      fg.fillStyle = "rgb(" + mix(BG, INK, A.x[i] / FULL) + ")";
+      fg.fillRect(i * CELL, (frow % FROWS) * CELL, CELL, CELL);
+    }
+    // 場は巻きもどって上書きする。いま書いた行のすぐ下を薄くして、頭がどこか示す
+    fg.fillStyle = "rgb(" + mix(BG, INK, .12) + ")";
+    fg.fillRect(0, ((frow + 1) % FROWS) * CELL, fc.width, CELL);
+    frow++;
+
+    // 差は「1ビットが何をしたか」の記録なので、埋まったら止めて残す
+    if (drow < DROWS) {
+      for (let i = 0; i < N; i++) {
+        const d = Math.abs(sgn(mod(A.x[i] - B.x[i]))) / HALF;   // 0..1
+        dg.fillStyle = "rgb(" + mix(BG, CHEEK, Math.min(1, d * 1.6)) + ")";
+        dg.fillRect(i * CELL, drow * CELL, CELL, CELL);
+      }
+      drow++;
+      if (drow === DROWS) $("cone").textContent = "－ " + nf(t) + "歩ぶん";
+    }
+  }
+
+  const nf = v => v.toLocaleString("ja-JP");
+  function show() {
+    let sum = 0, lo = Infinity, hi = -Infinity;
+    for (let i = 0; i < N; i++) {
+      sum += A.p[i];
+      if (A.p[i] < lo) lo = A.p[i];
+      if (A.p[i] > hi) hi = A.p[i];
+    }
+    $("t").textContent = nf(t);
+    $("sum").textContent = nf(sum);
+    $("sw").textContent = "±" + nf(Math.round(Math.max(Math.abs(lo), Math.abs(hi))));
+  }
+
+  let run = true, rate = 2;
+  const speedOf = v => Math.max(1, Math.round(Math.pow(10, v / 1000 * 1.7)));
+
+  function frame() {
+    if (run) {
+      for (let k = 0; k < rate; k++) { step(A); step(B); t++; paint(); }
+      show();
+    }
+    requestAnimationFrame(frame);
+  }
+
+  $("play").onclick = e => { run = !run; e.target.textContent = run ? "とめる" : "うごかす"; };
+  $("reset").onclick = () => reset();
+  $("speed").oninput = e => { rate = speedOf(+e.target.value); $("rate").textContent = rate + " /f"; };
+  if (window.matchMedia) {
+    const mq = window.matchMedia("(prefers-color-scheme: dark)");
+    const oc = () => { theme(); };
+    mq.addEventListener ? mq.addEventListener("change", oc) : mq.addListener(oc);
+  }
+
+  rate = speedOf(+$("speed").value); $("rate").textContent = rate + " /f";
+  reset();
+  if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    run = false; $("play").textContent = "うごかす";
+  }
+  requestAnimationFrame(frame);
+
+  window.__tsuriai = { step, make, mod, sgn, lcg, N, K, KFP, FULL, HALF };
+})();
+</script>
+</body>
+</html>
