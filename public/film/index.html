@@ -59,6 +59,13 @@
   .frame video, .frame img {
     width:100%; height:auto; display:block; image-rendering:pixelated;
   }
+  .frame img.yt { image-rendering:auto; }
+  .frame.yt { cursor:pointer; }
+  .frame.yt::after {
+    content:"▶ YouTube"; position:absolute; right:8px; bottom:8px;
+    font-family:var(--dot); font-size:8px; letter-spacing:.1em; line-height:1;
+    color:#fff; background:rgba(0,0,0,.55); padding:6px 8px; border-radius:2px;
+  }
   .err {
     font-family:var(--maru); font-size:12px; line-height:1.9;
     color:var(--cheek); padding:20px; text-align:center; word-break:break-all;
@@ -140,6 +147,8 @@
       src:["/v/halt_20s.mp4"] },
     { rule:"列が何人なのかを、だれも知りません。となりとしか話せません。",
       src:["/v/burn.mp4"] },
+    { rule:"うた。規則で作った映像を、曲に合わせた。YouTube にあります。",
+      src:["yt:Qp2EuiAjcvI", "yt:V-VsJKHg7xc", "yt:CQq7wBUQVmU"] },
   ];
 
   const WORKS = [
@@ -157,6 +166,12 @@
       note:"B3/S23。左は41世代で死ぬ。右はブリンカーで組んだので、崩れない。" },
     { type:"video", src:"/v/ant_two.mp4", title:"ふたり",
       note:"ラングトンの蟻を二匹。決まっているのに、いつ会うかわからない。" },
+    { type:"yt", src:"yt:Qp2EuiAjcvI", title:"Sora",
+      note:"盤を 2×2 の升に区切って、まわす。次の一歩は半マスずらして、まわす。戻せる規則なので、ハートは崩れて、また戻る。1:31。" },
+    { type:"yt", src:"yt:V-VsJKHg7xc", title:"むかしも いまも",
+      note:"正の字で、かぞえる。拍のたびに一画。最後の拍で紙が埋まり、引くと、その紙は大きな正の一升だった。0:58。" },
+    { type:"yt", src:"yt:CQq7wBUQVmU", title:"A|ready",
+      note:"点の群れ。2:26。" },
   ];
   /* ───────────────────────────────────────────────────────── */
 
@@ -174,7 +189,14 @@
     frame.className = "frame";
 
     let el;
-    if (w.type === "video") {
+    const ytId = w.type === "yt" ? w.src.slice(3) : null;
+    if (ytId) {
+      frame.classList.add("yt");
+      el = document.createElement("img");
+      el.className = "yt";
+      el.src = "https://i.ytimg.com/vi/" + ytId + "/maxresdefault.jpg";
+      el.alt = w.title; el.loading = "lazy"; el.decoding = "async";
+    } else if (w.type === "video") {
       el = document.createElement("video");
       el.src = w.src; el.muted = true; el.loop = true;
       el.playsInline = true; el.preload = "metadata";
@@ -201,6 +223,7 @@
 
     frame.addEventListener("click", () => {
       if (frame.dataset.dead) return;
+      if (ytId) { window.open("https://www.youtube.com/watch?v=" + ytId, "_blank", "noopener"); return; }
       hold.innerHTML = "";
       let b;
       if (w.type === "video") {
