@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>たたく — ひゅーまん</title>
+<meta name="description" content="ひゅーまんの曲を16に切って、たたく。規則はありません。">
+<link rel="canonical" href="https://hyu-man.com/tataku/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="ひゅーまん">
+<meta property="og:title" content="たたく — ひゅーまん">
+<meta property="og:description" content="ひゅーまんの曲を16に切って、たたく。規則はありません。">
+<meta property="og:url" content="https://hyu-man.com/tataku/">
+<meta property="og:locale" content="ja_JP">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'><rect width='8' height='8' fill='%23f5f3f0'/><rect x='1' y='1' width='2' height='2' fill='%23111'/><rect x='5' y='1' width='2' height='2' fill='%23ff96aa'/><rect x='1' y='5' width='2' height='2' fill='%23ff96aa'/><rect x='5' y='5' width='2' height='2' fill='%23111'/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Hachi+Maru+Pop&family=DotGothic16&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
+  :root {
+    --bg:#f5f3f0; --ink:#1a1a1a; --sub:#b0a8a0; --line:#e2ded9; --cheek:#ff96aa; --pad:#ece8e2;
+    --dot:'Press Start 2P','DotGothic16','Courier New',monospace;
+    --maru:'Hachi Maru Pop','DotGothic16',sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#0f0f0e; --ink:#efefec; --sub:#6e6a66; --line:#262624; --pad:#1c1c1a; }
+  }
+  body {
+    background:var(--bg); color:var(--ink); font-family:var(--maru);
+    display:flex; flex-direction:column; align-items:center;
+    padding:30px 14px 60px; touch-action:manipulation;
+  }
+  h1 { font-family:var(--dot); font-size:13px; font-weight:400;
+       letter-spacing:.3em; text-indent:.3em; margin-bottom:6px; }
+  .lead { font-size:14px; color:var(--sub); letter-spacing:.05em; margin-bottom:18px; text-align:center; }
+  .wrap { width:100%; max-width:560px; }
+
+  /* 曲をえらぶ */
+  .songs { display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin-bottom:14px; }
+  .songs button, .songs label {
+    font-family:var(--maru); font-size:13px; letter-spacing:.04em;
+    background:var(--bg); color:var(--ink); border:1px solid var(--line);
+    padding:8px 14px; border-radius:20px; cursor:pointer;
+  }
+  .songs button:hover, .songs label:hover { border-color:var(--ink); }
+  .songs button.on { background:var(--ink); color:var(--bg); border-color:var(--ink); }
+  .songs input { display:none; }
+  .msg { text-align:center; font-size:12px; color:var(--sub); min-height:1.6em; margin-bottom:8px; }
+  .msg.hot { color:var(--cheek); }
+
+  /* 顔と波 */
+  .face { text-align:center; font-family:'MS Gothic','MS PGothic',monospace; font-size:34px; line-height:1;
+          margin:4px 0 10px; transition:transform .08s ease; }
+  .face.hit { transform:scale(1.25) rotate(-6deg); }
+  #wave { width:100%; height:64px; display:block; border:1px solid var(--line); border-radius:6px; background:var(--pad); }
+
+  /* パッド */
+  .pads { display:grid; grid-template-columns:repeat(4, 1fr); gap:10px; margin-top:14px; }
+  .pad {
+    aspect-ratio:1/1; border-radius:14px; background:var(--pad); border:2px solid transparent;
+    display:flex; align-items:flex-end; justify-content:flex-start; padding:8px 10px;
+    font-family:var(--dot); font-size:9px; color:var(--sub); cursor:pointer; user-select:none;
+    position:relative; overflow:hidden; transition:transform .06s ease, background .12s ease;
+  }
+  .pad .k { position:absolute; top:8px; right:10px; font-size:8px; opacity:.6; }
+  .pad.hit { background:var(--cheek); color:#fff; transform:scale(.94); }
+  .pad.hit .k { opacity:1; }
+  .pad.empty { opacity:.3; cursor:default; }
+  .pad:nth-child(4n+1) { border-color:var(--line); }
+
+  /* ループ */
+  .loop { margin-top:18px; border-top:1px solid var(--line); padding-top:14px; }
+  .row { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+  .row + .row { margin-top:10px; }
+  button.b {
+    font-family:var(--maru); font-size:13px; letter-spacing:.05em;
+    background:var(--bg); color:var(--ink); border:1px solid var(--ink);
+    padding:9px 16px; border-radius:22px; cursor:pointer;
+  }
+  button.b:hover { background:var(--ink); color:var(--bg); }
+  button.b.on { background:var(--cheek); border-color:var(--cheek); color:#fff; }
+  button.b.rec.on { background:#e23; border-color:#e23; }
+  button.b.small { font-size:12px; padding:6px 12px; }
+  .row label { font-size:12px; color:var(--sub); display:flex; align-items:center; gap:6px; }
+  .row input[type=range] { width:120px; accent-color:var(--cheek); }
+  .row b { font-family:var(--dot); font-size:9px; color:var(--ink); }
+  .steps { display:grid; grid-template-columns:repeat(16, 1fr); gap:4px; margin-top:10px; }
+  .steps i { display:block; height:10px; border-radius:3px; background:var(--pad); }
+  .steps i.q { background:var(--line); }
+  .steps i.on { background:var(--ink); }
+  .steps i.now { background:var(--cheek); }
+  .dl { font-size:12px; color:var(--sub); }
+  .dl a { font-family:var(--dot); font-size:9px; color:var(--ink); }
+
+  .note { margin-top:26px; font-size:12.5px; line-height:2.05; color:var(--sub); }
+  .note b { color:var(--ink); font-weight:400; }
+  .note .q { color:var(--cheek); }
+  .note hr { border:0; border-top:1px solid var(--line); margin:14px 0; }
+
+  nav { margin-top:40px; font-family:var(--dot); font-size:9px; letter-spacing:.1em; color:var(--sub); }
+  nav a { color:var(--sub); text-decoration:none; margin-right:13px; }
+  nav a, .fromrule a{
+    text-decoration:none; border-bottom:0;
+    background:linear-gradient(90deg,#ff0040,#ff8a00,#ffe600,#3ddc4a,#00b7ff,#8a4bff,#ff0040);
+    background-size:300% 100%; -webkit-background-clip:text; background-clip:text;
+    color:transparent; animation:flow 4s linear infinite;
+  }
+  nav a:hover, .fromrule a:hover{ animation-duration:1.2s; }
+  @keyframes flow{ from{background-position:0% 0} to{background-position:300% 0} }
+  @media (prefers-reduced-motion: reduce){
+    nav a, .fromrule a{ animation:none; background-position:50% 0; }
+    .face { transition:none; }
+  }
+</style>
+</head>
+<body>
+
+<h1>たたく</h1>
+<p class="lead">曲を 16 に切って、たたく。規則はありません。</p>
+
+<div class="wrap">
+  <div class="songs" id="songs"></div>
+  <div class="msg" id="msg">曲をえらんでね</div>
+
+  <div class="face" id="face">(◍-ω-◍)</div>
+  <canvas id="wave" width="1120" height="128"></canvas>
+
+  <div class="pads" id="pads"></div>
+
+  <div class="loop">
+    <div class="row">
+      <button class="b" id="play">ループ</button>
+      <button class="b rec" id="rec">ろくおん</button>
+      <button class="b small" id="clear">けす</button>
+      <label>はやさ <input type="range" id="bpm" min="70" max="160" value="100"> <b id="bpmV">100</b></label>
+    </div>
+    <div class="steps" id="steps"></div>
+    <div class="row">
+      <label>音の高さ</label>
+      <button class="b small sp" data-r="0.5">ひくく</button>
+      <button class="b small sp on" data-r="1">ふつう</button>
+      <button class="b small sp" data-r="2">たかく</button>
+      <button class="b small" id="rev">ぎゃく</button>
+    </div>
+    <div class="row">
+      <button class="b small" id="wav">WAV にする</button>
+      <span class="dl" id="dl"></span>
+    </div>
+  </div>
+
+  <p class="note">
+    曲をえらぶと、音が立ち上がるところを探して <b>16 に切ります</b>。パッドを押すと、その切れはしが鳴ります。<br>
+    キーボードは <b>1234 / QWER / ASDF / ZXCV</b>。スマホは指で。<br><br>
+    <b>ループ</b>を押すと 2小節がまわります。<b>ろくおん</b>を点けてパッドを押すと、押した所に入って、次からまわるたびに鳴ります。<br>
+    気に入らなければ<b>けす</b>。ぜんぶ消えます。<br>
+    <span class="q">じぶんの曲</span>で自分のファイルをえらべます。どこにも送りません。この画面の中だけで鳴ります。
+    <hr>
+    WAV にすると、いまのループを4回まわした音が落とせます。
+  </p>
+
+<nav>
+  <a href="/">ひゅーまん</a><a href="/daw/">/daw/</a><a href="/chop/">/chop/</a><a href="/omega/">/omega/</a>
+</nav>
+</div>
+
+<script>
+(() => {
+  "use strict";
+  const $ = id => document.getElementById(id);
+  const SONGS = [
+    { name:"(◍-ω-◍)", src:"/v/ep_01_omega.mp3" },
+    { name:"Oracle",   src:"/v/ep_02_oracle.mp3" },
+    { name:"4.5",      src:"/v/ep_03_45.mp3" },
+    { name:"Still",    src:"/v/ep_04_still.mp3" },
+    { name:"three",    src:"/v/ep_05_three.mp3" },
+    { name:"A|ready",  src:"/v/01_already.mp3" },
+  ];
+  const KEYS = "1234qwerasdfzxcv";
+  const NP = 16, STEPS = 32;                          // パッド16、ループは2小節（16分×32）
+
+  let ac = null, master = null, buf = null, rbuf = null, slices = [], rate = 1, rev = false;
+  let loopOn = false, recOn = false, timer = null, step = 0, sched = 0, nextT = 0, seq = [];   // step は表示の位置、sched は予約した歩数
+  for (let i = 0; i < STEPS; i++) seq.push([]);
+  const hits = new Set();
+
+  function audio() {
+    if (ac) { if (ac.state === "suspended") ac.resume(); return; }
+    ac = new (window.AudioContext || window.webkitAudioContext)();
+    master = ac.createGain(); master.gain.value = 0.9; master.connect(ac.destination);
+  }
+
+  // ── 曲をえらぶ ──
+  const songsEl = $("songs");
+  SONGS.forEach((s, i) => {
+    const b = document.createElement("button"); b.textContent = s.name;
+    b.onclick = () => { audio(); pick(b); load(fetch(s.src).then(r => { if (!r.ok) throw new Error(r.status); return r.arrayBuffer(); }), s.name); };
+    songsEl.appendChild(b);
+  });
+  const lab = document.createElement("label"); lab.innerHTML = 'じぶんの曲 <input type="file" accept="audio/*">';
+  lab.querySelector("input").onchange = e => {
+    const f = e.target.files[0]; if (!f) return; audio(); pick(lab);
+    load(f.arrayBuffer(), f.name.replace(/\.[^.]+$/, ""));
+  };
+  songsEl.appendChild(lab);
+  function pick(el) { songsEl.querySelectorAll("button,label").forEach(x => x.classList.remove("on")); el.classList.add("on"); }
+
+  function load(p, name) {
+    msg("よみこみちゅう…");
+    p.then(ab => new Promise((res, rej) => ac.decodeAudioData(ab, res, rej)))
+     .then(b => { buf = b; rbuf = reverse(b); slices = chop(b); drawWave(); buildPads(); msg(name + "　16 に切りました。たたいてね", true); })
+     .catch(e => msg("よみこめませんでした（" + e + "）"));
+  }
+  function msg(s, hot) { $("msg").textContent = s; $("msg").classList.toggle("hot", !!hot); }
+
+  function reverse(b) {
+    const r = ac.createBuffer(b.numberOfChannels, b.length, b.sampleRate);
+    for (let c = 0; c < b.numberOfChannels; c++) { const s = b.getChannelData(c), d = r.getChannelData(c); for (let i = 0, n = b.length; i < n; i++) d[i] = s[n - 1 - i]; }
+    return r;
+  }
+
+  // ── 音の立ち上がりで 16 に切る ──
+  function chop(b) {
+    const sr = b.sampleRate, hop = 512, n = Math.floor(b.length / hop), env = new Float32Array(n);
+    const chs = []; for (let c = 0; c < b.numberOfChannels; c++) chs.push(b.getChannelData(c));
+    for (let i = 0; i < n; i++) {
+      let s = 0;
+      for (let c = 0; c < chs.length; c++) { const d = chs[c]; for (let j = i * hop, e = j + hop; j < e; j++) s += d[j] * d[j]; }
+      env[i] = Math.sqrt(s / (hop * chs.length));
+    }
+    // 立ち上がり = 前より大きくなった分
+    const on = new Float32Array(n);
+    for (let i = 2; i < n; i++) on[i] = Math.max(0, env[i] - Math.max(env[i - 1], env[i - 2]));
+    const gap = Math.round(0.12 * sr / hop), peaks = [];
+    for (let i = 1; i < n - 1; i++) {
+      if (on[i] > on[i - 1] && on[i] >= on[i + 1] && on[i] > 0.01) {
+        if (peaks.length && i - peaks[peaks.length - 1].i < gap) { if (on[i] > peaks[peaks.length - 1].v) peaks[peaks.length - 1] = { i, v:on[i] }; }
+        else peaks.push({ i, v:on[i] });
+      }
+    }
+    peaks.sort((a, c) => c.v - a.v);
+    let pts = peaks.slice(0, NP).map(p => p.i * hop / sr).sort((a, c) => a - c);
+    if (pts.length < NP) {                                            // 足りなければ、等分で埋める
+      const need = NP - pts.length, L = b.duration;
+      for (let k = 0; k < need; k++) pts.push((k + 0.5) / need * L);
+      pts.sort((a, c) => a - c);
+    }
+    return pts.map((t, k) => ({ t, d:Math.min(1.5, (k + 1 < pts.length ? pts[k + 1] : b.duration) - t) }));
+  }
+
+  // ── 絵 ──
+  const wv = $("wave"), wx = wv.getContext("2d");
+  const cs = getComputedStyle(document.documentElement);
+  const C = k => cs.getPropertyValue(k).trim();
+  let playing = -1;
+  function drawWave() {
+    const W = wv.width, H = wv.height;
+    wx.fillStyle = C("--pad"); wx.fillRect(0, 0, W, H);
+    if (!buf) return;
+    const d = buf.getChannelData(0), per = Math.floor(d.length / W);
+    wx.fillStyle = C("--sub");
+    for (let x = 0; x < W; x++) {
+      let m = 0; for (let i = x * per, e = i + per; i < e; i += 8) { const a = Math.abs(d[i]); if (a > m) m = a; }
+      const h = Math.max(1, m * H * 0.95); wx.fillRect(x, (H - h) / 2, 1, h);
+    }
+    slices.forEach((s, k) => {
+      const x = s.t / buf.duration * W;
+      if (k === playing) { wx.fillStyle = "rgba(255,150,170,.35)"; wx.fillRect(x, 0, Math.max(2, s.d / buf.duration * W), H); }
+      wx.fillStyle = k === playing ? C("--cheek") : C("--ink"); wx.fillRect(x, 0, 2, H);
+    });
+  }
+  function buildPads() {
+    const el = $("pads"); el.innerHTML = "";
+    for (let k = 0; k < NP; k++) {
+      const p = document.createElement("div"); p.className = "pad" + (k < slices.length ? "" : " empty");
+      p.innerHTML = String(k + 1).padStart(2, "0") + '<span class="k">' + KEYS[k].toUpperCase() + '</span>';
+      const down = e => { e.preventDefault(); hit(k); };
+      p.addEventListener("pointerdown", down);
+      el.appendChild(p);
+    }
+  }
+  buildPads();
+  const stEl = $("steps");
+  for (let i = 0; i < 16; i++) { const s = document.createElement("i"); if (i % 4 === 0) s.className = "q"; stEl.appendChild(s); }
+  function drawSteps() {
+    const bar = Math.floor(step / 16) % 2, kids = stEl.children;
+    for (let i = 0; i < 16; i++) {
+      const s = bar * 16 + i;
+      kids[i].className = (s === step % STEPS ? "now" : seq[s].length ? "on" : i % 4 === 0 ? "q" : "");
+    }
+  }
+
+  // ── 鳴らす ──
+  function voice(ctx, dest, k, t, r, rv) {
+    const s = slices[k]; if (!s) return;
+    const b = rv ? rbuf : buf, src = ctx.createBufferSource(), g = ctx.createGain();
+    src.buffer = b; src.playbackRate.value = r;
+    const off = rv ? Math.max(0, b.duration - s.t - s.d) : s.t, len = s.d / r;
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(1, t + 0.005);
+    g.gain.setValueAtTime(1, t + len - 0.03); g.gain.exponentialRampToValueAtTime(0.0001, t + len);
+    src.connect(g).connect(dest); src.start(t, off, s.d); src.stop(t + len + 0.01);
+  }
+  function hit(k) {
+    if (!buf || !slices[k]) return;
+    audio();
+    voice(ac, master, k, ac.currentTime, rate, rev);
+    flash(k);
+    if (loopOn && recOn) {                                          // いちばん近い 16分に入れる
+      const s16 = 60 / bpm() / 4, pos = (ac.currentTime - loopT0) / s16;
+      const st = ((Math.round(pos) % STEPS) + STEPS) % STEPS;
+      if (seq[st].indexOf(k) < 0) seq[st].push(k);
+      drawSteps();
+    }
+  }
+  function flash(k) {
+    const p = $("pads").children[k]; if (!p) return;
+    p.classList.add("hit"); setTimeout(() => p.classList.remove("hit"), 110);
+    const f = $("face"); f.textContent = "(◍•ω•◍)"; f.classList.add("hit");
+    clearTimeout(flash.t); flash.t = setTimeout(() => { f.classList.remove("hit"); f.textContent = "(◍-ω-◍)"; }, 260);
+    playing = k; drawWave(); clearTimeout(flash.w); flash.w = setTimeout(() => { playing = -1; drawWave(); }, 400);
+  }
+  document.addEventListener("keydown", e => {
+    if (e.repeat || e.metaKey || e.ctrlKey || e.altKey) return;
+    if (e.target && /INPUT|TEXTAREA/.test(e.target.tagName)) return;
+    const k = KEYS.indexOf(e.key.toLowerCase()); if (k >= 0) { hit(k); e.preventDefault(); }
+    if (e.key === " ") { $("play").click(); e.preventDefault(); }
+  });
+
+  // ── ループ ──
+  const bpm = () => +$("bpm").value;
+  let loopT0 = 0;
+  $("bpm").oninput = () => { $("bpmV").textContent = bpm(); };
+  function schedule() {
+    const s16 = 60 / bpm() / 4;
+    while (nextT < ac.currentTime + 0.2) {
+      const st = sched % STEPS;
+      if (st === 0) loopT0 = nextT;
+      seq[st].forEach(k => { voice(ac, master, k, nextT, rate, rev); });
+      const t = nextT, s = st, ks = seq[st].slice();
+      setTimeout(() => { if (loopOn) { step = s; drawSteps(); ks.forEach(flash); } }, Math.max(0, (t - ac.currentTime) * 1000));
+      sched++; nextT += s16;
+    }
+  }
+  $("play").onclick = () => {
+    audio();
+    loopOn = !loopOn; $("play").classList.toggle("on", loopOn);
+    if (loopOn) { step = 0; sched = 0; nextT = ac.currentTime + 0.05; loopT0 = nextT; schedule(); timer = setInterval(schedule, 40); }
+    else { clearInterval(timer); step = 0; drawSteps(); }
+  };
+  $("rec").onclick = () => { recOn = !recOn; $("rec").classList.toggle("on", recOn); if (recOn && !loopOn) $("play").click(); };
+  $("clear").onclick = () => { seq.forEach(s => s.length = 0); drawSteps(); };
+  document.querySelectorAll(".sp").forEach(b => b.onclick = () => {
+    document.querySelectorAll(".sp").forEach(x => x.classList.remove("on")); b.classList.add("on"); rate = +b.dataset.r;
+  });
+  $("rev").onclick = () => { rev = !rev; $("rev").classList.toggle("on", rev); };
+  drawSteps();
+
+  // ── WAV ──
+  $("wav").onclick = () => {
+    if (!buf) { msg("さきに曲をえらんでね"); return; }
+    const s16 = 60 / bpm() / 4, loops = 4, dur = STEPS * s16 * loops + 2, sr = buf.sampleRate;
+    const oc = new OfflineAudioContext(2, Math.ceil(dur * sr), sr);
+    const m = oc.createGain(); m.gain.value = 0.9; m.connect(oc.destination);
+    let any = 0;
+    for (let L = 0; L < loops; L++) for (let st = 0; st < STEPS; st++) seq[st].forEach(k => { any++; voice(oc, m, k, 0.05 + (L * STEPS + st) * s16, rate, rev); });
+    if (!any) { msg("ループがからっぽ。ろくおんしてから"); return; }
+    $("dl").textContent = "計算中…";
+    oc.startRendering().then(rb => {
+      const n = rb.length, out = new DataView(new ArrayBuffer(44 + n * 4));
+      const w = (o, s) => { for (let i = 0; i < s.length; i++) out.setUint8(o + i, s.charCodeAt(i)); };
+      w(0, "RIFF"); out.setUint32(4, 36 + n * 4, true); w(8, "WAVE"); w(12, "fmt ");
+      out.setUint32(16, 16, true); out.setUint16(20, 1, true); out.setUint16(22, 2, true);
+      out.setUint32(24, sr, true); out.setUint32(28, sr * 4, true); out.setUint16(32, 4, true); out.setUint16(34, 16, true);
+      w(36, "data"); out.setUint32(40, n * 4, true);
+      const Lc = rb.getChannelData(0), Rc = rb.getChannelData(1);
+      for (let i = 0, o = 44; i < n; i++, o += 4) { out.setInt16(o, Math.max(-1, Math.min(1, Lc[i])) * 32767, true); out.setInt16(o + 2, Math.max(-1, Math.min(1, Rc[i])) * 32767, true); }
+      const url = URL.createObjectURL(new Blob([out], { type:"audio/wav" })), name = "tataku_" + bpm() + ".wav";
+      $("dl").innerHTML = '<a href="' + url + '" download="' + name + '">' + name + '</a>　' + ((44 + n * 4) / 1024 | 0) + ' KB';
+    });
+  };
+
+  if (window.matchMedia) {
+    const mq = window.matchMedia("(prefers-color-scheme: dark)");
+    const oc = () => drawWave();
+    mq.addEventListener ? mq.addEventListener("change", oc) : mq.addListener(oc);
+  }
+  drawWave();
+})();
+</script>
+</body>
+</html>
