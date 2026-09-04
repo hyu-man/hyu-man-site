@@ -153,7 +153,7 @@
   <p class="note">
     曲をえらぶと、音が立ち上がるところを探して <b>16 に切ります</b>。パッドを押すと、その切れはしが鳴ります。<br>
     キーボードは <b>1234 / QWER / ASDF / ZXCV</b>。スマホは指で。<br><br>
-    <b>ループ</b>を押すと 2小節がまわります。<b>ろくおん</b>を点けてパッドを押すと、押した所に入って、次からまわるたびに鳴ります。<br>
+    <b>ループ</b>を押すと 2小節がまわります（コッ、コッ、と拍が鳴ります。小節の頭は高い音）。<b>ろくおん</b>を点けてパッドを押すと、押した所に入って、次からまわるたびに鳴ります。<br>
     気に入らなければ<b>けす</b>。ぜんぶ消えます。<br>
     <span class="q">じぶんの曲</span>で自分のファイルをえらべます。どこにも送りません。この画面の中だけで鳴ります。
     <hr>
@@ -301,6 +301,12 @@
     g.gain.setValueAtTime(1, t + len - 0.03); g.gain.exponentialRampToValueAtTime(0.0001, t + len);
     src.connect(g).connect(dest); src.start(t, off, s.d); src.stop(t + len + 0.01);
   }
+  function click(t, head) {                                        // メトロノーム。WAV には入れない
+    const o = ac.createOscillator(), g = ac.createGain();
+    o.type = "sine"; o.frequency.value = head ? 1760 : 1175;
+    g.gain.setValueAtTime(head ? 0.12 : 0.06, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.04);
+    o.connect(g).connect(master); o.start(t); o.stop(t + 0.05);
+  }
   function hit(k) {
     if (!buf || !slices[k]) return;
     audio();
@@ -336,6 +342,7 @@
     while (nextT < ac.currentTime + 0.2) {
       const st = sched % STEPS;
       if (st === 0) loopT0 = nextT;
+      if (st % 4 === 0) click(nextT, st % 16 === 0);                 // 拍の音。小節の頭は高い
       seq[st].forEach(k => { voice(ac, master, k, nextT, rate, rev); });
       const t = nextT, s = st, ks = seq[st].slice();
       setTimeout(() => { if (loopOn) { step = s; drawSteps(); ks.forEach(flash); } }, Math.max(0, (t - ac.currentTime) * 1000));
