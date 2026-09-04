@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ならす — ひゅーまん</title>
+<meta name="description" content="規則を重ねると、曲になる。音符は置かない。規則と種を置く。">
+<link rel="canonical" href="https://hyu-man.com/daw/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="ひゅーまん">
+<meta property="og:title" content="ならす — ひゅーまん">
+<meta property="og:description" content="規則を重ねると、曲になる。音符は置かない。規則と種を置く。">
+<meta property="og:url" content="https://hyu-man.com/daw/">
+<meta property="og:locale" content="ja_JP">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'><rect width='8' height='8' fill='%23f5f3f0'/><rect x='1' y='5' width='1' height='2' fill='%23111'/><rect x='3' y='3' width='1' height='4' fill='%23111'/><rect x='5' y='1' width='1' height='6' fill='%23ff96aa'/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Hachi+Maru+Pop&family=DotGothic16&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing:border-box; margin:0; padding:0; }
+  :root {
+    --bg:#f5f3f0; --ink:#1a1a1a; --sub:#b0a8a0; --line:#e2ded9; --cheek:#ff96aa;
+    --dot:'Press Start 2P','DotGothic16','Courier New',monospace;
+    --maru:'Hachi Maru Pop','DotGothic16',sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#0f0f0e; --ink:#efefec; --sub:#6e6a66; --line:#262624; }
+  }
+  body {
+    background:var(--bg); color:var(--ink); font-family:var(--maru);
+    display:flex; flex-direction:column; align-items:center;
+    padding:36px 16px 64px;
+  }
+  h1 { font-family:var(--dot); font-size:13px; font-weight:400;
+       letter-spacing:.3em; text-indent:.3em; margin-bottom:6px; }
+  .lead { font-size:14px; color:var(--sub); letter-spacing:.05em; margin-bottom:24px; }
+  .wrap { width:100%; max-width:760px; }
+
+  /* ── 上の段。とめる／はやさ／かきだす ── */
+  .bar { display:flex; align-items:center; gap:12px; flex-wrap:wrap;
+         padding:12px 0; border-top:1px solid var(--line); border-bottom:1px solid var(--line); }
+  button {
+    font-family:var(--maru); font-size:12px; letter-spacing:.06em;
+    background:var(--bg); color:var(--ink); border:1px solid var(--ink);
+    padding:6px 14px; border-radius:2px; cursor:pointer;
+  }
+  button:hover { background:var(--ink); color:var(--bg); }
+  button.big { font-family:var(--dot); font-size:11px; padding:10px 18px; }
+  button.on { background:var(--cheek); border-color:var(--cheek); color:#fff; }
+  .bar label { font-size:11px; color:var(--sub); letter-spacing:.08em; display:flex; align-items:center; gap:6px; }
+  .bar input[type=range] { width:110px; accent-color:var(--cheek); }
+  .bar b { font-family:var(--dot); font-size:9px; color:var(--ink); min-width:3.2em; text-align:right; }
+  .bar .spacer { flex:1; }
+  .bar .pos { font-family:var(--dot); font-size:9px; color:var(--sub); letter-spacing:.1em; }
+
+  /* ── トラック ── */
+  .tracks { margin-top:4px; }
+  .tr { display:grid; grid-template-columns:96px 1fr; gap:14px; align-items:start;
+        padding:16px 0; border-bottom:1px solid var(--line); }
+  .tr canvas { width:96px; height:96px; image-rendering:pixelated; display:block;
+               border:1px solid var(--line); background:var(--bg); }
+  .tr.off canvas { opacity:.35; }
+  .tr .head { display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; }
+  .tr .nm { font-size:15px; letter-spacing:.08em; }
+  .tr .en { font-family:var(--dot); font-size:7px; color:var(--sub); letter-spacing:.1em; }
+  .tr .en a { color:inherit; text-decoration:none; }
+  .tr .en a:hover { color:var(--ink); }
+  .tr .rl { font-size:12px; line-height:1.85; color:var(--sub); margin-top:4px; }
+  .tr .rl b { color:var(--ink); font-weight:400; }
+  .tr .ctl { display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-top:8px; }
+  .tr .ctl label { font-size:11px; color:var(--sub); display:flex; align-items:center; gap:6px; }
+  .tr input[type=number] {
+    font-family:var(--dot); font-size:9px; width:6.5em; padding:5px 6px;
+    background:var(--bg); color:var(--ink); border:1px solid var(--line); border-radius:2px;
+  }
+  .tr input[type=range] { width:80px; accent-color:var(--cheek); }
+  .tr .st { font-family:var(--dot); font-size:8px; color:var(--sub); letter-spacing:.08em; min-width:9em; }
+  .tr .st.hot { color:var(--cheek); }
+  .tr button.mute { padding:4px 10px; font-size:11px; }
+  .tr.off .nm, .tr.off .rl { color:var(--sub); }
+
+  /* ── かきだす ── */
+  .out { margin-top:16px; display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+  .out label { font-size:11px; color:var(--sub); display:flex; align-items:center; gap:6px; }
+  .out .dl a { font-family:var(--dot); font-size:9px; color:var(--ink); }
+  .out .dl { font-size:11px; color:var(--sub); }
+
+  .note { margin-top:26px; font-size:12.5px; line-height:2.05; color:var(--sub); }
+  .note b { color:var(--ink); font-weight:400; }
+  .note .q { color:var(--cheek); }
+  .note hr { border:0; border-top:1px solid var(--line); margin:14px 0; }
+  .note .last { color:var(--ink); }
+
+  nav { margin-top:44px; font-family:var(--dot); font-size:9px; letter-spacing:.1em; color:var(--sub); }
+  nav a { color:var(--sub); text-decoration:none; margin-right:13px; }
+  nav a, .fromrule a{
+    text-decoration:none; border-bottom:0;
+    background:linear-gradient(90deg,#ff0040,#ff8a00,#ffe600,#3ddc4a,#00b7ff,#8a4bff,#ff0040);
+    background-size:300% 100%; -webkit-background-clip:text; background-clip:text;
+    color:transparent; animation:flow 4s linear infinite;
+  }
+  nav a:hover, .fromrule a:hover{ animation-duration:1.2s; }
+  @keyframes flow{ from{background-position:0% 0} to{background-position:300% 0} }
+  @media (prefers-reduced-motion: reduce){
+    nav a, .fromrule a{ animation:none; background-position:50% 0; }
+  }
+  @media (max-width:520px) {
+    .tr { grid-template-columns:72px 1fr; gap:10px; }
+    .tr canvas { width:72px; height:72px; }
+    .bar input[type=range] { width:80px; }
+  }
+</style>
+</head>
+<body>
+
+<h1>ならす</h1>
+<p class="lead">規則を重ねると、曲になる。音符は置かない。規則と種を置く。</p>
+
+<div class="wrap">
+
+  <div class="bar">
+    <button class="big" id="play">ならす</button>
+    <label>はやさ <input type="range" id="bpm" min="60" max="180" value="112"> <b id="bpmV">112</b></label>
+    <span class="spacer"></span>
+    <span class="pos" id="pos">0 : 0</span>
+  </div>
+
+  <div class="tracks" id="tracks"></div>
+
+  <div class="out">
+    <label>ながさ <input type="number" id="bars" min="1" max="64" value="16" style="font-family:var(--dot);font-size:9px;width:5em;padding:5px 6px;background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:2px"> 小節</label>
+    <button id="wav">WAV にする</button>
+    <button id="midi">MIDI にする</button>
+    <button id="link">この曲のリンク</button>
+    <span class="dl" id="dl"></span>
+  </div>
+
+  <p class="note">
+    4つの規則が、同じ拍で歩いています。<b>一歩が一拍</b>（蟻とそろうは 16分、コラッツは 8分、ライフは 4分）。<br>
+    音符はどこにもありません。<b>種</b>を変えると、曲が変わります。同じ種なら、何度でも同じ曲。<br>
+    乱数は入っていません。種から並びを作るのも、決まった計算です。<br><br>
+    <span class="q">ライフが全部きえたら、そのトラックは黙ります。</span> 種を変えてください。<br>
+    コラッツが 1 に帰ったら、長い音を一つ出して、休んでから、また種から出発します。<br>
+    そろうは、そろって撃ったあと 8拍休んで、また並び直します。
+    <hr>
+    WAV は、いま鳴っているのと同じ計算をもう一度回して作ります。MIDI は同じ音を音符に写したもので、DAW に持っていけます。<br>
+    「この曲のリンク」は、種と速さを URL に書きます。<span class="last">曲を送るのに、ファイルは要りません。</span>
+  </p>
+
+<nav>
+  <a href="/">ひゅーまん</a><a href="/ant/">/ant/</a><a href="/life/">/life/</a><a href="/collatz/">/collatz/</a><a href="/burn/">/burn/</a><a href="/midi/">/midi/</a>
+</nav>
+</div>
+
+<script>
+(() => {
+  "use strict";
+  const $ = id => document.getElementById(id);
+
+  // ══ 決まった「でたらめ」。種から並びを作る。乱数ではない ══════════════
+  function h32(i) {
+    i = Math.imul(i, 0x9E3779B1) >>> 0; i ^= i >>> 15;
+    i = Math.imul(i, 0x2C1B3C6D) >>> 0; i ^= i >>> 12;
+    i = Math.imul(i, 0x297A2D39) >>> 0;
+    return (i ^ (i >>> 15)) >>> 0;
+  }
+  const u01 = i => h32(i) / 4294967296;
+
+  // ══ 音の材料 ═════════════════════════════════════════════════════
+  const midiOf = hz => Math.round(69 + 12 * Math.log2(hz / 440));
+  let noiseBuf = null, noiseCtx = null;
+  function noise(ctx) {
+    if (noiseBuf && noiseCtx === ctx) return noiseBuf;
+    const n = Math.floor(ctx.sampleRate * 0.4), b = ctx.createBuffer(1, n, ctx.sampleRate), d = b.getChannelData(0);
+    for (let i = 0; i < n; i++) d[i] = u01(i + 77) * 2 - 1;           // これも決まった並び
+    noiseBuf = b; noiseCtx = ctx; return b;
+  }
+  // ev: {hz, dur, vol, type} または {drum:'tick'|'shot'}
+  function voice(ctx, dest, ev, t) {
+    if (ev.drum) {
+      const s = ctx.createBufferSource(), g = ctx.createGain();
+      s.buffer = noise(ctx);
+      const dur = ev.drum === "shot" ? 0.30 : 0.035, vol = ev.drum === "shot" ? 0.55 : 0.18;
+      g.gain.setValueAtTime(vol, t);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      s.connect(g).connect(dest); s.start(t); s.stop(t + dur + 0.02);
+      if (ev.drum === "shot") {
+        const o = ctx.createOscillator(), g2 = ctx.createGain();
+        o.type = "sine"; o.frequency.setValueAtTime(110, t); o.frequency.exponentialRampToValueAtTime(40, t + 0.25);
+        g2.gain.setValueAtTime(0.5, t); g2.gain.exponentialRampToValueAtTime(0.0001, t + 0.3);
+        o.connect(g2).connect(dest); o.start(t); o.stop(t + 0.32);
+      }
+      return;
+    }
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    o.type = ev.type || "triangle"; o.frequency.value = ev.hz;
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(ev.vol, t + 0.012);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + ev.dur);
+    o.connect(g).connect(dest); o.start(t); o.stop(t + ev.dur + 0.02);
+  }
+
+  // ══ 規則たち。advance() が一歩すすめて、鳴らす音を返す ═══════════════
+  // 蟻 ── 白なら右。黒なら左。踏んだ色を裏返して、一歩。向きが音の高さ
+  function Ant(seed) {
+    const N = 32, DX = [0,1,0,-1], DY = [-1,0,1,0], SEMI = [0,3,7,10];
+    const g = new Uint8Array(N * N);
+    for (let k = 0; k < seed; k++) g[h32(k * 7919 + 1) % (N * N)] = 1;     // 種のぶんだけ黒を置く
+    let x = N >> 1, y = N >> 1, d = 0, steps = 0;
+    return {
+      name:"蟻", en:"/ant/", div:1, N, g,
+      get pos() { return [x, y]; },
+      status() { return steps + " ほ"; },
+      advance() {
+        const i = y * N + x, c = g[i];
+        d = c ? (d + 3) & 3 : (d + 1) & 3;
+        g[i] ^= 1;
+        x = (x + DX[d] + N) % N; y = (y + DY[d] + N) % N; steps++;
+        const hz = 220 * Math.pow(2, SEMI[d] / 12) * (c ? 1 : 2);
+        return [{ hz, dur:0.14, vol:c ? 0.07 : 0.04, type:"triangle" }];
+      },
+      draw(cx, INK, BG, CHEEK) {
+        const im = cx.createImageData(N, N), p = im.data;
+        for (let i = 0; i < N * N; i++) { const col = g[i] ? INK : BG; p[i*4] = col[0]; p[i*4+1] = col[1]; p[i*4+2] = col[2]; p[i*4+3] = 255; }
+        const i = y * N + x; p[i*4] = CHEEK[0]; p[i*4+1] = CHEEK[1]; p[i*4+2] = CHEEK[2];
+        cx.putImageData(im, 0, 0);
+      }
+    };
+  }
+
+  // ライフ ── 隣が2か3ならいきる。ちょうど3でうまれる。うまれたマスが、行の高さで鳴る
+  function Life(seed) {
+    const N = 24, PIT = [147.0, 165.0, 196.0, 220.0, 262.0];         // D E G A C
+    let g = new Uint8Array(N * N), born = new Uint8Array(N * N), gen = 0, pop = 0;
+    for (let i = 0; i < N * N; i++) g[i] = u01(seed * 1000003 + i) < 0.35 ? 1 : 0;
+    for (let i = 0; i < N * N; i++) pop += g[i];
+    return {
+      name:"ライフ", en:"/life/", div:4, N,
+      status() { return pop ? gen + " せだい　" + pop : "きえた"; },
+      advance() {
+        const ng = new Uint8Array(N * N), hits = [];
+        born.fill(0);
+        for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
+          let n = 0;
+          for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+            if (dx || dy) n += g[((y + dy + N) % N) * N + (x + dx + N) % N];
+          }
+          const i = y * N + x, a = g[i] ? (n === 2 || n === 3) : n === 3;
+          ng[i] = a ? 1 : 0;
+          if (a && !g[i]) { born[i] = 1; if (hits.length < 2) hits.push(Math.min(4, Math.floor(y / N * 5))); }
+        }
+        g = ng; gen++; pop = 0; for (let i = 0; i < N * N; i++) pop += g[i];
+        return hits.map(k => ({ hz:PIT[k], dur:0.6, vol:0.09, type:"sine" }));
+      },
+      draw(cx, INK, BG, CHEEK) {
+        const im = cx.createImageData(N, N), p = im.data;
+        for (let i = 0; i < N * N; i++) { const col = born[i] ? CHEEK : g[i] ? INK : BG; p[i*4] = col[0]; p[i*4+1] = col[1]; p[i*4+2] = col[2]; p[i*4+3] = 255; }
+        cx.putImageData(im, 0, 0);
+      }
+    };
+  }
+
+  // コラッツ ── 奇数なら3倍して1。偶数なら半分。数の大きさが音の高さ。1に着いたら休む
+  function Collatz(seed) {
+    const ROOT = 110;
+    const pitchOf = v => ROOT * Math.pow(2, (((Math.log2(v) * 12) % 36) + 36) % 36 / 12);
+    let cur = seed, step = 0, rest = 0, home = false, trail = [];
+    return {
+      name:"コラッツ", en:"/collatz/", div:2,
+      status() { return home ? "1 にかえった" : cur.toLocaleString("ja-JP"); },
+      advance() {
+        if (rest > 0) { rest--; if (rest === 0) { cur = seed; step = 0; home = false; trail = []; } return []; }
+        if (cur === 1) { home = true; rest = 8; return [{ hz:ROOT, dur:1.8, vol:0.10, type:"sine" }]; }
+        cur = (cur % 2) ? 3 * cur + 1 : cur / 2; step++;
+        trail.push(Math.log2(cur)); if (trail.length > 24) trail.shift();
+        return [{ hz:pitchOf(cur), dur:0.26, vol:cur % 2 ? 0.075 : 0.055, type:"triangle" }];
+      },
+      draw(cx, INK, BG, CHEEK) {
+        const W = cx.canvas.width, H = cx.canvas.height;
+        cx.fillStyle = "rgb(" + BG.join(",") + ")"; cx.fillRect(0, 0, W, H);
+        const mx = Math.max(4, ...trail, Math.log2(seed) + 1);
+        trail.forEach((v, i) => {
+          const h = Math.max(1, Math.round(v / mx * (H - 4)));
+          cx.fillStyle = "rgb(" + ((i === trail.length - 1) ? CHEEK : INK).join(",") + ")";
+          cx.fillRect(i * 4, H - h, 3, h);
+        });
+      }
+    };
+  }
+
+  // そろう ── 一斉射撃。何人いるか、だれも知らない。となりとしか話せない（/burn/ の規則そのまま）
+  function Burn(n) {
+    const SPH = 1;
+    const blank = () => ({ w:0, GR:0, GL:0, R:0, L:0, sR:-1, sL:-1, F:0 });
+    const isWall = x => x === null || x.w === 1;
+    const meets  = x => !x.w && ((x.sR >= 0 && x.L) || (x.sL >= 0 && x.R));
+    function init(n) { const c = []; for (let i = 0; i < n; i++) c.push(blank()); c[0].w = 1; c[0].GR = 1; c[n-1].w = 1; return c; }
+    function step(cells) {
+      const n = cells.length, out = new Array(n);
+      for (let i = 0; i < n; i++) {
+        const c = cells[i], a = i > 0 ? cells[i-1] : null, b = i < n - 1 ? cells[i+1] : null, o = blank();
+        if (c.F) { o.F = 1; o.w = 1; out[i] = o; continue; }
+        o.w = c.w;
+        if (c.w && isWall(a) && isWall(b)) { o.F = 1; out[i] = o; continue; }
+        let center = 0, eL = 0, eR = 0;
+        if (!c.w) {
+          const aw = a && !a.w, bw = b && !b.w;
+          if      (c.sR >= 0 && c.L)          { center=1; eL=1; eR=1; }
+          else if (c.sL >= 0 && c.R)          { center=1; eL=1; eR=1; }
+          else if (c.sR >= 0 && bw && b.L)    { center=1; eL=1; }
+          else if (c.L    && aw && a.sR >= 0) { center=1; eR=1; }
+          else if (c.R    && bw && b.sL >= 0) { center=1; eL=1; }
+          else if (c.sL >= 0 && aw && a.R)    { center=1; eR=1; }
+        }
+        if (center) { o.w = 1; o.GL = eL; o.GR = eR; out[i] = o; continue; }
+        if (a && ((a.R && !a.w && !meets(a)) || a.GR)) o.R = 1;
+        if (b && ((b.L && !b.w && !meets(b)) || b.GL)) o.L = 1;
+        if (b && b.w && b.R) o.L = 1;
+        if (a && a.w && a.L) o.R = 1;
+        if (c.sR >= 0 && c.sR < 2) o.sR = c.sR + 1;
+        if (c.sL >= 0 && c.sL < 2) o.sL = c.sL + 1;
+        if (a && a.sR === 2 && !c.w && !meets(a)) o.sR = 0;
+        if (b && b.sL === 2 && !c.w && !meets(b)) o.sL = 0;
+        if (c.GR) o.sR = SPH;
+        if (c.GL) o.sL = SPH;
+        out[i] = o;
+      }
+      return out;
+    }
+    function history(n) {
+      if (n === 1) { const a = init(1); a[0].F = 1; return [init(1), a]; }
+      let c = init(n); const h = [c];
+      for (let t = 0; t < 12 * n + 80; t++) { c = step(c); h.push(c); if (c.every(x => x.F)) break; }
+      return h;
+    }
+    const hist = history(n);
+    const walls = row => row.reduce((s, c) => s + c.w, 0);
+    let t = 0, hold = 0;
+    return {
+      name:"そろう", en:"/burn/", div:1,
+      status() { return hist[t][0].F ? "そろった！" : t + " ほ　" + walls(hist[t]) + "/" + n; },
+      advance() {
+        if (hold > 0) { hold--; if (hold === 0) t = 0; return []; }
+        if (t >= hist.length - 1) { hold = 32; return []; }
+        const before = walls(hist[t]); t++;
+        if (hist[t][0].F) { hold = 32; return [{ drum:"shot" }]; }
+        return walls(hist[t]) > before ? [{ drum:"tick" }] : [];
+      },
+      draw(cx, INK, BG, CHEEK, SUB) {
+        const W = cx.canvas.width, H = cx.canvas.height;
+        cx.fillStyle = "rgb(" + BG.join(",") + ")"; cx.fillRect(0, 0, W, H);
+        const T = hist.length, ch = Math.max(1, Math.floor(H / T)), cw = W / n;
+        for (let k = 0; k <= t && k < T; k++) {
+          const row = hist[k];
+          for (let i = 0; i < n; i++) {
+            cx.fillStyle = "rgb(" + (row[i].F ? CHEEK : row[i].w ? INK : (row[i].R || row[i].L || row[i].sR >= 0 || row[i].sL >= 0) ? SUB : BG).join(",") + ")";
+            cx.fillRect(Math.floor(i * cw), k * ch, Math.ceil(cw), ch);
+          }
+        }
+      }
+    };
+  }
+
+  const MAKE = [
+    { key:"ant",  make:Ant,     dflt:0,  min:0, max:400,   rule:"白なら右。黒なら左。踏んだ色を裏返して、一歩。<b>向きが音の高さ</b>。白を踏むと1オクターブ上。種のぶんだけ、最初から黒いマスがある。", prog:80, ch:0 },
+    { key:"life", make:Life,    dflt:93, min:0, max:99999, rule:"隣が2か3ならいきる。ちょうど3でうまれる。<b>うまれたマスが、行の高さで鳴る</b>（5音）。1世代に2つまで。種から最初の配置を作る。", prog:11, ch:1 },
+    { key:"col",  make:Collatz, dflt:27, min:1, max:9999999, rule:"奇数なら3倍して1。偶数なら半分。<b>数の大きさが音の高さ</b>。半分は1オクターブ下、3倍して1は19半音上。1に帰ったら長い音を出して休む。", prog:38, ch:2 },
+    { key:"burn", make:Burn,    dflt:15, min:2, max:60,    rule:"何人いるか、だれも知らない。となりとしか話せない。<b>まんなかが決まるたびに、一つ</b>。そろったら、撃つ。種は人数。", prog:-1, ch:9 },
+  ];
+
+  // ══ 見た目 ═══════════════════════════════════════════════════════
+  const cs = getComputedStyle(document.documentElement);
+  const hex = s => { s = s.trim(); if (s.length === 4) s = "#"+s[1]+s[1]+s[2]+s[2]+s[3]+s[3];
+    return [parseInt(s.slice(1,3),16), parseInt(s.slice(3,5),16), parseInt(s.slice(5,7),16)]; };
+  let INK, BG, CHEEK, SUB;
+  const readTheme = () => { INK = hex(cs.getPropertyValue("--ink")); BG = hex(cs.getPropertyValue("--bg"));
+                            CHEEK = hex(cs.getPropertyValue("--cheek")); SUB = hex(cs.getPropertyValue("--sub")); };
+  readTheme();
+
+  // ══ 状態（URL に書く） ═══════════════════════════════════════════
+  const q = new URLSearchParams(location.search);
+  const state = {
+    bpm: Math.min(180, Math.max(60, parseInt(q.get("bpm")) || 112)),
+    seeds: MAKE.map(m => { const v = parseInt(q.get(m.key)); return isNaN(v) ? m.dflt : Math.min(m.max, Math.max(m.min, v)); }),
+    on: MAKE.map((m, i) => (q.get("on") || "1111")[i] !== "0"),
+    vol: MAKE.map((m, i) => { const v = parseFloat((q.get("v") || "").split(",")[i]); return isNaN(v) ? 0.8 : Math.min(1, Math.max(0, v)); }),
+  };
+  function writeURL() {
+    const p = new URLSearchParams();
+    p.set("bpm", state.bpm);
+    MAKE.forEach((m, i) => p.set(m.key, state.seeds[i]));
+    p.set("on", state.on.map(b => b ? "1" : "0").join(""));
+    p.set("v", state.vol.map(v => v.toFixed(2)).join(","));
+    history.replaceState(null, "", "?" + p.toString());
+  }
+
+  // ══ トラックの行 ═════════════════════════════════════════════════
+  const rows = [];
+  MAKE.forEach((m, i) => {
+    const tr = document.createElement("div"); tr.className = "tr" + (state.on[i] ? "" : " off");
+    tr.innerHTML =
+      '<canvas width="96" height="96"></canvas>' +
+      '<div><div class="head"><span class="nm"></span><span class="en"><a href="' + m.en + '">' + m.en + '</a></span>' +
+      '<span class="st"></span></div>' +
+      '<p class="rl">' + m.rule + '</p>' +
+      '<div class="ctl"><label>種 <input type="number" min="' + m.min + '" max="' + m.max + '" value="' + state.seeds[i] + '"></label>' +
+      '<label>おと <input type="range" min="0" max="100" value="' + Math.round(state.vol[i] * 100) + '"></label>' +
+      '<button class="mute">' + (state.on[i] ? "けす" : "ならす") + '</button></div></div>';
+    $("tracks").appendChild(tr);
+    const cv = tr.querySelector("canvas"), cx = cv.getContext("2d");
+    const row = { el:tr, cx, cv, nm:tr.querySelector(".nm"), st:tr.querySelector(".st"),
+                  seedIn:tr.querySelector("input[type=number]"), volIn:tr.querySelector("input[type=range]"),
+                  mute:tr.querySelector(".mute"), gain:null, track:null };
+    row.seedIn.onchange = () => {
+      let v = parseInt(row.seedIn.value); if (isNaN(v)) v = m.dflt;
+      v = Math.min(m.max, Math.max(m.min, v)); row.seedIn.value = v;
+      state.seeds[i] = v; rebuild(i); writeURL();
+    };
+    row.volIn.oninput = () => { state.vol[i] = row.volIn.value / 100; if (row.gain) row.gain.gain.value = state.on[i] ? state.vol[i] : 0; writeURL(); };
+    row.mute.onclick = () => {
+      state.on[i] = !state.on[i]; tr.classList.toggle("off", !state.on[i]);
+      row.mute.textContent = state.on[i] ? "けす" : "ならす";
+      if (row.gain) row.gain.gain.value = state.on[i] ? state.vol[i] : 0; writeURL();
+    };
+    rows.push(row);
+  });
+  function rebuild(i) {
+    const m = MAKE[i]; rows[i].track = m.make(state.seeds[i]);
+    rows[i].nm.textContent = rows[i].track.name;
+    paint(i);
+  }
+  function paint(i) {
+    const r = rows[i]; if (!r.track) return;
+    if (r.track.N) { r.cv.width = r.cv.height = r.track.N; } else { r.cv.width = r.cv.height = 96; }
+    r.track.draw(r.cx, INK, BG, CHEEK, SUB);
+    const s = r.track.status(); r.st.textContent = s; r.st.classList.toggle("hot", /そろった|かえった|きえた/.test(s));
+  }
+  MAKE.forEach((m, i) => rebuild(i));
+  $("bpm").value = state.bpm; $("bpmV").textContent = state.bpm;
+  $("bpm").oninput = () => { state.bpm = +$("bpm").value; $("bpmV").textContent = state.bpm; writeURL(); };
+
+  // ══ ならす。少し先まで予約しながら進む ═══════════════════════════
+  let ac = null, master = null, playing = false, timer = null, tick = 0, nextT = 0;
+  const queue = [];                                            // {t, i} 絵を更新する時刻
+  function ensureAudio() {
+    if (ac) return;
+    ac = new (window.AudioContext || window.webkitAudioContext)();
+    master = ac.createGain(); master.gain.value = 0.8; master.connect(ac.destination);
+    rows.forEach((r, i) => { r.gain = ac.createGain(); r.gain.gain.value = state.on[i] ? state.vol[i] : 0; r.gain.connect(master); });
+  }
+  function schedule() {
+    const s16 = 60 / state.bpm / 4;
+    while (nextT < ac.currentTime + 1.2) {                 // 1.2秒先まで。裏に回っても途切れない
+      rows.forEach((r, i) => {
+        if (tick % r.track.div) return;
+        const evs = r.track.advance();
+        evs.forEach(ev => voice(ac, r.gain, ev, nextT));
+        queue.push({ t:nextT, i });
+      });
+      queue.push({ t:nextT, pos:tick });
+      tick++; nextT += s16;
+    }
+    drain();
+  }
+  function drain() {                                          // 時刻が来た絵を出す
+    const now = ac.currentTime;
+    while (queue.length && queue[0].t <= now) {
+      const it = queue.shift();
+      if (it.i !== undefined) paint(it.i);
+      else $("pos").textContent = Math.floor(it.pos / 16) + " : " + (Math.floor(it.pos / 4) % 4);
+    }
+  }
+  function frame() {
+    if (!playing) return;
+    drain();
+    requestAnimationFrame(frame);
+  }
+  function start() {
+    ensureAudio(); if (ac.state === "suspended") ac.resume();
+    MAKE.forEach((m, i) => rebuild(i));
+    tick = 0; nextT = ac.currentTime + 0.05; queue.length = 0;
+    playing = true; $("play").textContent = "とめる"; $("play").classList.add("on");
+    schedule(); timer = setInterval(schedule, 25); requestAnimationFrame(frame);
+  }
+  function stop() {
+    playing = false; clearInterval(timer); timer = null;
+    $("play").textContent = "ならす"; $("play").classList.remove("on");
+  }
+  $("play").onclick = () => playing ? stop() : start();
+
+  // ══ かきだす。同じ計算をもう一度、最初から ══════════════════════════
+  function render(bars) {
+    const s16 = 60 / state.bpm / 4, n16 = bars * 16, evs = [];
+    const tracks = MAKE.map((m, i) => m.make(state.seeds[i]));
+    for (let k = 0; k < n16; k++) tracks.forEach((tr, i) => {
+      if (k % tr.div) return;
+      tr.advance().forEach(ev => evs.push({ i, k, ev }));
+    });
+    return { evs, s16, dur:n16 * s16 + 2.2 };
+  }
+  function toWav(bars) {
+    const { evs, s16, dur } = render(bars);
+    const sr = 44100, oc = new OfflineAudioContext(2, Math.ceil(dur * sr), sr);
+    const m = oc.createGain(); m.gain.value = 0.8; m.connect(oc.destination);
+    const gs = rows.map((r, i) => { const g = oc.createGain(); g.gain.value = state.on[i] ? state.vol[i] : 0; g.connect(m); return g; });
+    evs.forEach(e => voice(oc, gs[e.i], e.ev, 0.05 + e.k * s16));
+    return oc.startRendering().then(buf => {
+      const n = buf.length, out = new DataView(new ArrayBuffer(44 + n * 4));
+      const w = (o, s) => { for (let i = 0; i < s.length; i++) out.setUint8(o + i, s.charCodeAt(i)); };
+      w(0, "RIFF"); out.setUint32(4, 36 + n * 4, true); w(8, "WAVE"); w(12, "fmt ");
+      out.setUint32(16, 16, true); out.setUint16(20, 1, true); out.setUint16(22, 2, true);
+      out.setUint32(24, sr, true); out.setUint32(28, sr * 4, true); out.setUint16(32, 4, true); out.setUint16(34, 16, true);
+      w(36, "data"); out.setUint32(40, n * 4, true);
+      const L = buf.getChannelData(0), R = buf.getChannelData(1);
+      for (let i = 0, o = 44; i < n; i++, o += 4) {
+        out.setInt16(o, Math.max(-1, Math.min(1, L[i])) * 32767, true);
+        out.setInt16(o + 2, Math.max(-1, Math.min(1, R[i])) * 32767, true);
+      }
+      return new Blob([out], { type:"audio/wav" });
+    });
+  }
+  // 標準MIDI。/midi/ と同じ組み方
+  function vlq(v) { const b = [v & 0x7F]; v >>>= 7; while (v > 0) { b.unshift((v & 0x7F) | 0x80); v >>>= 7; } return b; }
+  function str(s) { const a = []; for (let i = 0; i < s.length; i++) a.push(s.charCodeAt(i) & 0x7F); return a; }
+  function chunk(id, body) { const L = body.length; return str(id).concat([(L>>>24)&255,(L>>>16)&255,(L>>>8)&255,L&255], body); }
+  function mtrk(events, name, prog, ch) {
+    const raw = [{ tick:0, data:[0xFF,0x03].concat(vlq(name.length), str(name)) }];
+    if (prog >= 0) raw.push({ tick:0, data:[0xC0|ch, prog] });
+    for (const e of events) { raw.push({ tick:e.tick, data:[0x90|ch, e.note, e.vel] }); raw.push({ tick:e.tick+e.dur, data:[0x80|ch, e.note, 0] }); }
+    raw.sort((a, b) => a.tick - b.tick || (a.data[0]&0xF0) - (b.data[0]&0xF0));
+    let t = 0; const body = [];
+    for (const e of raw) { body.push.apply(body, vlq(e.tick - t)); body.push.apply(body, e.data); t = e.tick; }
+    body.push.apply(body, vlq(0)); body.push(0xFF,0x2F,0x00);
+    return chunk("MTrk", body);
+  }
+  function toMidi(bars) {
+    const { evs, s16 } = render(bars);
+    const TPQ = 480, T16 = TPQ / 4, per = MAKE.map(() => []);
+    evs.forEach(e => {
+      if (!state.on[e.i]) return;
+      const t = e.k * T16;
+      if (e.ev.drum) per[e.i].push({ tick:t, note:e.ev.drum === "shot" ? 38 : 42, dur:Math.floor(T16/2), vel:e.ev.drum === "shot" ? 120 : 70 });
+      else per[e.i].push({ tick:t, note:Math.max(0, Math.min(127, midiOf(e.ev.hz))), dur:Math.max(10, Math.round(e.ev.dur / s16 * T16) - 5), vel:Math.round(Math.min(127, e.ev.vol * 1100)) });
+    });
+    const usq = Math.round(60000000 / state.bpm), head = [];
+    head.push.apply(head, vlq(0)); head.push(0xFF,0x51,0x03,(usq>>16)&255,(usq>>8)&255,usq&255);
+    head.push.apply(head, vlq(0)); head.push(0xFF,0x58,0x04,4,2,24,8);
+    head.push.apply(head, vlq(0)); head.push(0xFF,0x03); head.push.apply(head, vlq(7)); head.push.apply(head, str("hyu-man"));
+    head.push.apply(head, vlq(0)); head.push(0xFF,0x2F,0x00);
+    const trks = [chunk("MTrk", head)].concat(MAKE.map((m, i) => mtrk(per[i], ["ANT","LIFE","COLLATZ","BURN"][i], m.prog, m.ch)));
+    let all = chunk("MThd", [0,1, 0, trks.length, (TPQ>>8)&255, TPQ&255]);
+    for (const t of trks) all = all.concat(t);
+    return new Blob([new Uint8Array(all)], { type:"audio/midi" });
+  }
+  function offer(blob, name) {
+    const url = URL.createObjectURL(blob);
+    $("dl").innerHTML = '<a href="' + url + '" download="' + name + '">' + name + '</a>　' + (blob.size / 1024 | 0) + ' KB';
+  }
+  const stamp = () => "narasu_" + state.bpm + "_" + state.seeds.join("-");
+  $("wav").onclick = () => { $("dl").textContent = "計算中…"; toWav(+$("bars").value || 16).then(b => offer(b, stamp() + ".wav")); };
+  $("midi").onclick = () => offer(toMidi(+$("bars").value || 16), stamp() + ".mid");
+  $("link").onclick = () => {
+    writeURL();
+    const u = location.href;
+    (navigator.clipboard ? navigator.clipboard.writeText(u) : Promise.reject()).then(
+      () => { $("dl").textContent = "コピーしました"; }, () => { $("dl").textContent = u; });
+  };
+
+  if (window.matchMedia) {
+    const mq = window.matchMedia("(prefers-color-scheme: dark)");
+    const oc = () => { readTheme(); rows.forEach((r, i) => paint(i)); };
+    mq.addEventListener ? mq.addEventListener("change", oc) : mq.addListener(oc);
+  }
+  writeURL();
+})();
+</script>
+</body>
+</html>
