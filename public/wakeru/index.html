@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>わける — ひゅーまん</title>
+<meta name="description" content="光あれ。閾値を越える。創世記1章を、分岐で読む。">
+<link rel="canonical" href="https://hyu-man.com/wakeru/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="ひゅーまん">
+<meta property="og:title" content="わける — ひゅーまん">
+<meta property="og:description" content="光あれ。閾値を越える。創世記1章を、分岐で読む。">
+<meta property="og:url" content="https://hyu-man.com/wakeru/">
+<meta property="og:locale" content="ja_JP">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'><rect width='8' height='8' fill='%23f5f3f0'/><rect x='3' y='1' width='2' height='3' fill='%23111'/><rect x='1' y='4' width='2' height='3' fill='%23111'/><rect x='5' y='4' width='2' height='3' fill='%23ff96aa'/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Hachi+Maru+Pop&family=DotGothic16&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing:border-box; margin:0; padding:0; }
+  :root {
+    --bg:#f5f3f0; --ink:#1a1a1a; --sub:#b0a8a0; --line:#e2ded9; --cheek:#ff96aa;
+    --dot:'Press Start 2P','DotGothic16','Courier New',monospace;
+    --maru:'Hachi Maru Pop','DotGothic16',sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#0f0f0e; --ink:#efefec; --sub:#6e6a66; --line:#262624; }
+  }
+  body {
+    background:var(--bg); color:var(--ink); font-family:var(--maru);
+    display:flex; flex-direction:column; align-items:center;
+    padding:36px 16px 64px;
+  }
+  h1 { font-family:var(--dot); font-size:13px; font-weight:400;
+       letter-spacing:.3em; text-indent:.3em; margin-bottom:6px; }
+  .lead { font-size:14px; color:var(--sub); letter-spacing:.05em; margin-bottom:22px; }
+  .wrap { width:100%; max-width:720px; }
+
+  /* 息 */
+  .breath { position:sticky; top:0; z-index:5; background:var(--bg);
+            padding:12px 0 10px; border-bottom:1px solid var(--line); margin-bottom:6px; }
+  .breath .row { display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
+  .breath label { font-size:13px; letter-spacing:.08em; }
+  .breath input[type=range] { flex:1; min-width:180px; accent-color:var(--cheek); }
+  .breath b { font-family:var(--dot); font-size:10px; min-width:4em; text-align:right; }
+  .breath button {
+    font-family:var(--maru); font-size:12px; letter-spacing:.06em;
+    background:var(--bg); color:var(--ink); border:1px solid var(--ink);
+    padding:5px 13px; border-radius:2px; cursor:pointer;
+  }
+  .breath button:hover { background:var(--ink); color:var(--bg); }
+  .breath button.on { background:var(--cheek); border-color:var(--cheek); color:#fff; }
+  .breath .st { font-size:12px; color:var(--sub); margin-top:6px; letter-spacing:.04em; min-height:1.6em; }
+  .breath .st b { color:var(--cheek); font-weight:400; font-family:var(--maru); font-size:12px; }
+
+  /* 日 */
+  .day { border-top:1px solid var(--line); padding:20px 0 16px; }
+  .day:first-of-type { border-top:none; }
+  .day .h { display:flex; align-items:baseline; gap:12px; margin-bottom:8px; }
+  .day .n { font-family:var(--dot); font-size:9px; color:var(--sub); letter-spacing:.14em; }
+  .day .t { font-size:15px; letter-spacing:.06em; }
+  .day .v { font-size:11.5px; color:var(--sub); letter-spacing:.03em; margin-left:auto; }
+  .day canvas { width:100%; height:auto; display:block; image-rendering:pixelated;
+                border:1px solid var(--line); background:var(--bg); }
+  .day .w { margin-top:9px; font-size:12.5px; line-height:1.95; color:var(--sub); letter-spacing:.03em; }
+  .day .w b { color:var(--ink); font-weight:400; }
+  .day .w .q { color:var(--cheek); }
+  .day .w .m { font-family:var(--dot); font-size:9px; color:var(--ink); }
+  .day.off canvas { opacity:.45; }
+  .day.off .t { color:var(--sub); }
+
+  .last { margin-top:26px; padding-top:18px; border-top:1px solid var(--line);
+          font-size:13px; line-height:2.1; color:var(--sub); letter-spacing:.04em; }
+  .last b { color:var(--ink); font-weight:400; }
+  .last .eq { font-family:var(--dot); font-size:8px; line-height:2.2; color:var(--ink);
+              margin:10px 0 14px; letter-spacing:.06em; white-space:pre; overflow-x:auto; }
+  .last .who { color:var(--ink); font-size:14px; margin-top:14px; }
+
+  nav { margin-top:40px; font-family:var(--dot); font-size:9px; letter-spacing:.1em; color:var(--sub); }
+  nav a { color:var(--sub); text-decoration:none; margin-right:13px; }
+  nav a, .fromrule a{
+    text-decoration:none; border-bottom:0;
+    background:linear-gradient(90deg,#ff0040,#ff8a00,#ffe600,#3ddc4a,#00b7ff,#8a4bff,#ff0040);
+    background-size:300% 100%; -webkit-background-clip:text; background-clip:text;
+    color:transparent; animation:flow 4s linear infinite;
+  }
+  nav a:hover, .fromrule a:hover{ animation-duration:1.2s; }
+  @keyframes flow{ from{background-position:0% 0} to{background-position:300% 0} }
+  @media (prefers-reduced-motion: reduce){
+    nav a, .fromrule a{ animation:none; background-position:50% 0; }
+  }
+</style>
+</head>
+<body>
+
+<h1>わける</h1>
+<p class="lead">光あれ。閾値を越える。</p>
+
+<div class="wrap">
+
+  <div class="breath">
+    <div class="row">
+      <label>息</label>
+      <input type="range" id="mu" min="0" max="1000" value="0" aria-label="息（駆動項）">
+      <b id="muV">0.00</b>
+      <button id="shake">ゆらす</button>
+      <button id="rest">第七の日</button>
+    </div>
+    <div class="st" id="st">はじめに、場だけがある。息はゼロ。</div>
+  </div>
+
+  <div id="days"></div>
+
+  <div class="last">
+    <span id="lastTop">七つの日は、ぜんぶ息（つまみ）が動かしています。</span>
+    <div class="eq" id="eq"></div>
+    けれど、<b>ベクトル場を書いたのは、誰なのか。</b><br>
+    その一行だけは、この比喩の外側に落ちます。<br>
+    <span class="who">そこは、この部屋にはありません。</span>
+  </div>
+
+  <p class="fromrule">この規則から出たもの ── まだ。歌にする前に、部屋にしました。</p>
+
+<nav>
+  <a href="/">ひゅーまん</a><a href="/omega/">/omega/</a><a href="/collatz/">/collatz/</a><a href="/film/">/film/</a>
+</nav>
+</div>
+
+<script>
+(() => {
+  "use strict";
+  const $ = id => document.getElementById(id);
+  const cs = getComputedStyle(document.documentElement);
+  const C = k => cs.getPropertyValue(k).trim();
+  let INK, BG, SUB, CHEEK, LINE;
+  const theme = () => { INK=C('--ink'); BG=C('--bg'); SUB=C('--sub'); CHEEK=C('--cheek'); LINE=C('--line'); };
+  theme();
+
+  // 息（駆動項）。0 なら何も起きない。1 で第六日まで。第七日は手が離れる
+  let mu = 0, rested = false, t = 0;
+  let shake = 0;
+
+  // 決まった「でたらめ」。乱数ではない
+  function h32(i) {
+    i = Math.imul(i, 0x9E3779B1) >>> 0; i ^= i >>> 15;
+    i = Math.imul(i, 0x2C1B3C6D) >>> 0; i ^= i >>> 12;
+    i = Math.imul(i, 0x297A2D39) >>> 0;
+    return ((i ^ (i >>> 15)) >>> 0) / 4294967296;
+  }
+  let seedk = 1;
+  const rnd = () => h32(seedk++);
+
+  // ── 日 ──
+  const DAYS = [
+    { n:"第一の日", t:"分ける", v:"1:3–5",
+      w:'ひとつの井戸が ふたつに割れる。<b>ピッチフォーク</b>。光の谷、やみの谷、あいだに線。<br>' +
+        '玉は谷の底で待つ。少し揺らしても戻ってくる ── <span class="q">それが「良し」の意味。</span> ' +
+        '<span id="lyap" class="m"></span><br>息が強いと、ゆっくり傾いて、一気に渡る。夕となり、朝となる。' },
+    { n:"第二の日", t:"写像が写像を呼ぶ", v:"1:6–8",
+      w:'同じ演算子を、もう一度かける。割れた谷が、また割れる。<br>' +
+        '<b>x → r x (1 − x)</b>。r を息で上げていくと、1 が 2 に、2 が 4 に。分けて、名づけて、また分ける。' },
+    { n:"第三の日", t:"草は種を、種は草を", v:"1:9–13",
+      w:'四つの写像を、でたらめな順で何度もかける。<b>反復関数系</b>。入れ子の自己相似。<br>点の数は息のぶんだけ。' },
+    { n:"第四の日", t:"回る", v:"1:14–19",
+      w:'渡るだけだった往復が、自分で回りはじめる。<b>ホップ分岐</b>。不動点が、円になる。<br>' +
+        'しるしのため、季節のため。時を刻む振動子。 <span id="period" class="m"></span>' },
+    { n:"第五・六の日", t:"増えよ", v:"1:20–28",
+      w:'産めよ、増えよ、地に満ちよ。<b>正のフィードバック</b>、増殖項。となりへ、となりへ。<br>' +
+        'そして、系の中から系を見る者 ── <span class="q">いま見ているあなた。</span>' },
+  ];
+
+  const days = DAYS.map((d, i) => {
+    const el = document.createElement("div"); el.className = "day off";
+    el.innerHTML = '<div class="h"><span class="n">' + d.n + '</span><span class="t">' + d.t + '</span><span class="v">' + d.v + '</span></div>' +
+                   '<canvas width="360" height="' + (i === 2 ? 110 : 80) + '"></canvas><p class="w">' + d.w + '</p>';
+    $("days").appendChild(el);
+    return { el, cv: el.querySelector("canvas"), g: el.querySelector("canvas").getContext("2d") };
+  });
+
+  // ── 第一の日: V(x) = −a x²/2 + x⁴/4、a = 息 − 0.3。玉は勾配を下る ──
+  let x1 = 0.02, bias = 0;
+  function day1(g, W, H) {
+    const a = mu - 0.3;
+    g.fillStyle = BG; g.fillRect(0, 0, W, H);
+    // 井戸の絵
+    g.fillStyle = LINE;
+    const V = x => -a * x * x / 2 + x * x * x * x / 4 - bias * x;
+    let vmin = 1e9, vmax = -1e9;
+    for (let i = 0; i <= W; i++) { const x = (i / W - 0.5) * 3; const v = V(x); if (v < vmin) vmin = v; if (v > vmax) vmax = v; }
+    const span = Math.max(0.05, vmax - vmin);
+    for (let i = 0; i < W; i++) {
+      const x = (i / W - 0.5) * 3; const y = H - 12 - (V(x) - vmin) / span * (H - 30);
+      g.fillRect(i, y | 0, 1, H);
+    }
+    // 息で、ゆっくり傾く（夕となり、朝となる）
+    bias = a > 0 ? 0.32 * Math.sin(t * 0.045 * (0.5 + mu)) * Math.sqrt(a) : 0;
+    // 玉。勾配を下る。ゆらしはこの一回だけ
+    const dV = x => -a * x + x * x * x - bias;
+    for (let s = 0; s < 4; s++) x1 -= 0.06 * dV(x1);
+    if (shake > 0) { x1 += (rnd() - 0.5) * 0.9; }
+    x1 = Math.max(-1.5, Math.min(1.5, x1));
+    const px = ((x1 / 3 + 0.5) * W) | 0, py = (H - 12 - (V(x1) - vmin) / span * (H - 30)) | 0;
+    g.fillStyle = CHEEK; g.fillRect(px - 3, py - 7, 6, 6);
+    g.fillStyle = INK; g.fillRect(px - 2, py - 5, 1, 1); g.fillRect(px + 1, py - 5, 1, 1);
+    // リアプノフ指数（局所の曲率の符号を反転）
+    const lam = -(-a + 3 * x1 * x1);
+    const el = $("lyap"); if (el) el.textContent = "λ = " + lam.toFixed(2) + (lam < 0 ? "  良し" : "  まだ");
+    if (a > 0 && Math.abs(x1) > 0.3) { g.fillStyle = SUB; g.fillRect(W / 2, 0, 1, H); }   // セパラトリクス
+  }
+
+  // ── 第二の日: ロジスティック写像の分岐図。r = 2.8 + 1.2 × 息 まで ──
+  let d2img = null;
+  function day2(g, W, H) {
+    g.fillStyle = BG; g.fillRect(0, 0, W, H);
+    const rmax = 2.8 + 1.2 * mu;
+    g.fillStyle = INK;
+    for (let i = 0; i < W; i++) {
+      const r = 2.8 + 1.2 * i / W;
+      if (r > rmax) break;
+      let x = 0.37;
+      for (let k = 0; k < 120; k++) x = r * x * (1 - x);
+      for (let k = 0; k < 40; k++) { x = r * x * (1 - x); g.fillRect(i, (H - 4 - x * (H - 8)) | 0, 1, 1); }
+    }
+    g.fillStyle = CHEEK; g.fillRect((W * mu) | 0, 0, 1, H);
+  }
+
+  // ── 第三の日: バーンズリーのシダ。点の数は息 × 6000 ──
+  const fernPts = [];
+  let fx = 0, fy = 0;
+  function day3(g, W, H) {
+    const want = (mu * 6000) | 0;
+    while (fernPts.length < want) {
+      const p = rnd();
+      let nx, ny;
+      if (p < 0.01)      { nx = 0; ny = 0.16 * fy; }
+      else if (p < 0.86) { nx = 0.85 * fx + 0.04 * fy; ny = -0.04 * fx + 0.85 * fy + 1.6; }
+      else if (p < 0.93) { nx = 0.2 * fx - 0.26 * fy; ny = 0.23 * fx + 0.22 * fy + 1.6; }
+      else               { nx = -0.15 * fx + 0.28 * fy; ny = 0.26 * fx + 0.24 * fy + 0.44; }
+      fx = nx; fy = ny; fernPts.push([fx, fy]);
+    }
+    if (fernPts.length > want) fernPts.length = want;
+    g.fillStyle = BG; g.fillRect(0, 0, W, H);
+    g.fillStyle = INK;
+    for (const [px, py] of fernPts) g.fillRect((W / 2 + px * 22) | 0, (H - 4 - py * 10) | 0, 1, 1);
+  }
+
+  // ── 第四の日: ホップ。r' = r(m − r²), θ' = 1。m = 息 − 0.5 ──
+  let hx = 0.02, hy = 0.0; const trail = [];
+  function day4(g, W, H) {
+    const m = mu - 0.5;
+    for (let s = 0; s < 3; s++) {
+      const r2 = hx * hx + hy * hy;
+      const dx = m * hx - hy - hx * r2, dy = hx + m * hy - hy * r2;
+      hx += 0.05 * dx; hy += 0.05 * dy;
+      if (shake > 0) { hx += (rnd() - 0.5) * 0.4; hy += (rnd() - 0.5) * 0.4; }
+    }
+    trail.push([hx, hy]); if (trail.length > 160) trail.shift();
+    g.fillStyle = BG; g.fillRect(0, 0, W, H);
+    const cx = W / 2, cy = H / 2, sc = 30;
+    g.fillStyle = LINE; g.fillRect(cx, 0, 1, H); g.fillRect(0, cy, W, 1);
+    trail.forEach(([px, py], i) => { g.fillStyle = i > 150 ? CHEEK : (i > 100 ? INK : SUB); g.fillRect((cx + px * sc) | 0, (cy - py * sc) | 0, 2, 2); });
+    const el = $("period"); if (el) el.textContent = m > 0 ? "半径 " + Math.sqrt(m).toFixed(2) + "　周期 6.28" : "円は、まだ";
+  }
+
+  // ── 第五・六の日: となりへ増える。u' = 息 × u(1−u) + 拡散 ──
+  const GW = 90, GH = 20; let U = new Float32Array(GW * GH);
+  U[(GH >> 1) * GW + (GW >> 1)] = 0.6;
+  function day5(g, W, H) {
+    const r = Math.max(0, mu - 0.15) * 0.9;
+    const N = new Float32Array(GW * GH);
+    for (let y = 0; y < GH; y++) for (let x = 0; x < GW; x++) {
+      const i = y * GW + x, u = U[i];
+      const l = U[y * GW + (x + GW - 1) % GW], rr = U[y * GW + (x + 1) % GW];
+      const up = U[((y + GH - 1) % GH) * GW + x], dn = U[((y + 1) % GH) * GW + x];
+      N[i] = u + r * u * (1 - u) + 0.12 * (l + rr + up + dn - 4 * u);
+      if (shake > 0) N[i] *= 0.7;
+    }
+    U = N;
+    g.fillStyle = BG; g.fillRect(0, 0, W, H);
+    const cw = W / GW, ch = H / GH;
+    for (let y = 0; y < GH; y++) for (let x = 0; x < GW; x++) {
+      const u = U[y * GW + x];
+      if (u < 0.05) continue;
+      g.fillStyle = u > 0.6 ? INK : (u > 0.3 ? SUB : LINE);
+      g.fillRect((x * cw) | 0, (y * ch) | 0, Math.ceil(cw) - 1, Math.ceil(ch) - 1);
+    }
+    let tot = 0; for (let i = 0; i < U.length; i++) tot += U[i];
+    return tot / (GW * GH);
+  }
+
+  const FN = [day1, day2, day3, day4, day5];
+  const THR = [0.3, 0.05, 0.02, 0.5, 0.15];
+
+  function status(fill) {
+    let s;
+    if (rested) s = "第七の日。手が離れた。それでも回りつづける。<b>流れは、もう中にある。</b>";
+    else if (mu < 0.02) s = "はじめに、場だけがある。息はゼロ。形なく、むなしく、ただ対称な解。";
+    else if (mu < 0.3) s = "息が吹く。まだ閾値の手前。玉は真ん中の、退屈な不動点。";
+    else if (mu < 0.5) s = "<b>光あれ。</b> 井戸が割れた。玉はどちらかの谷にいる。ゆらしてみてください。";
+    else if (mu < 0.85) s = "円が立った。渡るだけだった往復が、自分で回っている。";
+    else s = "地に満ちる。いま " + (fill * 100).toFixed(0) + "% 。";
+    $("st").innerHTML = s;
+  }
+
+  function frame() {
+    t++;
+    let fill = 0;
+    FN.forEach((f, i) => {
+      const d = days[i]; const W = d.cv.width, H = d.cv.height;
+      const r = f(d.g, W, H); if (i === 4) fill = r;
+      d.el.classList.toggle("off", mu < THR[i]);
+    });
+    if (shake > 0) shake--;
+    status(fill);
+    requestAnimationFrame(frame);
+  }
+
+  $("mu").oninput = e => { if (rested) return; mu = +e.target.value / 1000; $("muV").textContent = mu.toFixed(2); };
+  $("shake").onclick = () => { shake = 2; };
+  $("rest").onclick = () => {
+    rested = !rested;
+    $("rest").classList.toggle("on", rested);
+    $("mu").disabled = rested;
+    $("rest").textContent = rested ? "手が離れた" : "第七の日";
+    $("lastTop").textContent = rested
+      ? "手は離れました。つまみは動きません。それでも、五つの日は回りつづけています。外から入る力はゼロ。自律系。"
+      : "七つの日は、ぜんぶ息（つまみ）が動かしています。";
+  };
+  $("eq").textContent =
+    "V(x)  = -a x^2/2 + x^4/4        a = mu - 0.3\n" +
+    "x    -> r x (1 - x)              r = 2.8 + 1.2 mu\n" +
+    "fern : 4 affine maps, p = .01 .85 .07 .07\n" +
+    "r'   = r (m - r^2), th' = 1      m = mu - 0.5\n" +
+    "u'   = g u (1 - u) + D lap u     g = 0.9 (mu - 0.15)";
+
+  if (window.matchMedia) {
+    const mq = window.matchMedia("(prefers-color-scheme: dark)");
+    const oc = () => theme();
+    mq.addEventListener ? mq.addEventListener("change", oc) : mq.addListener(oc);
+  }
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
