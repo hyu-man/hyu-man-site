@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>うたう — ひゅーまん</title>
+<meta name="description" content="規則から生まれていないもの。曲と歌詞と、うた。">
+<link rel="canonical" href="https://hyu-man.com/uta/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="ひゅーまん">
+<meta property="og:title" content="うたう — ひゅーまん">
+<meta property="og:description" content="規則から生まれていないもの。曲と歌詞と、うた。">
+<meta property="og:url" content="https://hyu-man.com/uta/">
+<meta property="og:locale" content="ja_JP">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'><rect width='8' height='8' fill='%23f5f3f0'/><rect x='2' y='1' width='4' height='5' rx='1' fill='%23111'/><rect x='3' y='3' width='1' height='1' fill='%23ff96aa'/><rect x='5' y='3' width='1' height='1' fill='%23ff96aa'/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Hachi+Maru+Pop&family=DotGothic16&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing:border-box; margin:0; padding:0; }
+  :root {
+    --bg:#f5f3f0; --ink:#1a1a1a; --sub:#b0a8a0; --line:#e2ded9; --cheek:#ff96aa;
+    --dot:'Press Start 2P','DotGothic16','Courier New',monospace;
+    --maru:'Hachi Maru Pop','DotGothic16',sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --ink:#f2f2f2; --bg:#0a0a0a; --sub:#777; --line:#2a2a2a; }
+  }
+  body {
+    background:var(--bg); color:var(--ink); font-family:var(--maru);
+    padding:38px 18px 70px; display:flex; flex-direction:column; align-items:center;
+  }
+  h1 { font-family:var(--dot); font-size:13px; font-weight:400;
+       letter-spacing:.3em; text-indent:.3em; margin-bottom:6px; }
+  .lead { font-size:13px; color:var(--sub); letter-spacing:.05em; margin-bottom:26px; text-align:center; line-height:1.9; }
+  .wrap { width:100%; max-width:1000px; }
+
+  /* テレビ（YouTube）。まんなかに大きく */
+  .listen { display:flex; justify-content:center; margin:6px 0 26px; }
+  .listen a { display:inline-flex; flex-direction:column; align-items:center; gap:9px;
+              text-decoration:none; color:var(--ink);
+              font-size:14px; letter-spacing:.14em; text-indent:.14em;
+              border-bottom:2px solid var(--ink); padding:0 6px 6px; }
+  .listen a:hover { color:var(--cheek); border-color:var(--cheek); }
+  .listen svg { display:block; width:66px; height:60px; transition:transform .18s ease; }
+  .listen .ec { display:none; }
+  .listen a:hover .eo { display:none; }
+  .listen a:hover .ec { display:block; }
+  .listen a:hover svg { transform:rotate(-4deg); }
+
+  /* 作 */
+  .albums { display:flex; justify-content:center; gap:20px; font-size:12px; margin-bottom:34px; flex-wrap:wrap; }
+  .albums a { color:var(--ink); text-decoration:none; letter-spacing:.1em;
+              border-bottom:1px solid var(--line); padding-bottom:3px; }
+  .albums a:hover { background:var(--ink); color:var(--bg); border-color:transparent; }
+  .albums a i { font-style:normal; color:var(--cheek); }
+  @keyframes blush { 0%,100%{ text-shadow:0 0 0 transparent } 50%{ text-shadow:0 0 7px var(--cheek) } }
+  .albums a i { animation:blush 4.2s ease-in-out infinite; }
+  .albums a i:last-of-type { animation-delay:.35s; }
+  @media (prefers-reduced-motion: reduce){ .albums a i { animation:none; } }
+  .albums a:hover i { color:var(--bg); animation:none; text-shadow:none; }
+
+  .ghead { font-size:13px; line-height:1.85; color:var(--sub); letter-spacing:.05em; margin:18px 0 12px; }
+  .ghead b { color:var(--ink); font-weight:400; }
+
+  /* うた（YouTube） */
+  .grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(300px, 1fr)); gap:26px; }
+  figure { margin:0; }
+  .frame { position:relative; border:1px solid var(--line); background:var(--bg); overflow:hidden; line-height:0; cursor:pointer; }
+  .frame:hover { border-color:var(--cheek); }
+  .frame img { width:100%; height:auto; display:block; }
+  .frame::after {
+    content:"▶ YouTube"; position:absolute; right:8px; bottom:8px;
+    font-family:var(--dot); font-size:8px; letter-spacing:.1em; line-height:1;
+    color:#fff; background:rgba(0,0,0,.55); padding:6px 8px; border-radius:2px;
+  }
+  figcaption { margin-top:9px; font-size:13px; letter-spacing:.04em; line-height:1.7; }
+  figcaption .no { font-family:var(--dot); font-size:8px; color:var(--sub); letter-spacing:.1em; margin-right:8px; }
+  figcaption .note { display:block; font-size:12px; color:var(--sub); margin-top:2px; }
+
+  /* 道具 */
+  .out { margin-top:14px; display:flex; gap:20px; flex-wrap:wrap; }
+  .out a { display:flex; flex-direction:column; gap:2px; text-decoration:none; color:var(--sub); line-height:1.3; }
+  .out .jp { font-size:14px; letter-spacing:.05em; }
+  .out .en { font-family:var(--dot); font-size:7px; letter-spacing:.06em; opacity:.7; }
+  .out a:hover .jp { color:var(--cheek); }
+  .out a:hover .en { color:var(--ink); }
+
+  .foot { margin-top:34px; font-size:12.5px; line-height:2; color:var(--sub); letter-spacing:.04em; border-top:1px solid var(--line); padding-top:16px; }
+  .foot b { color:var(--ink); font-weight:400; }
+  .foot a { color:var(--ink); text-decoration:none; border-bottom:1px solid var(--line); }
+  .foot a:hover { border-bottom-color:var(--ink); }
+
+  nav { margin-top:44px; font-family:var(--dot); font-size:9px; letter-spacing:.1em; color:var(--sub); }
+  nav a { color:var(--sub); text-decoration:none; margin-right:13px; }
+  nav a{
+    text-decoration:none; border-bottom:0;
+    background:linear-gradient(90deg,#ff0040,#ff8a00,#ffe600,#3ddc4a,#00b7ff,#8a4bff,#ff0040);
+    background-size:300% 100%; -webkit-background-clip:text; background-clip:text;
+    color:transparent; animation:flow 4s linear infinite;
+  }
+  nav a:hover{ animation-duration:1.2s; }
+  @keyframes flow{ from{background-position:0% 0} to{background-position:300% 0} }
+  @media (prefers-reduced-motion: reduce){ nav a{ animation:none; background-position:50% 0; } }
+</style>
+</head>
+<body>
+
+<h1>うたう</h1>
+<p class="lead">規則から生まれていないもの。曲と歌詞と、うた。<br>絵は規則が描いています。歌は、そうではありません。</p>
+
+<div class="wrap">
+
+  <div class="listen">
+    <a href="https://www.youtube.com/@hyumancom" target="_blank" rel="noopener" aria-label="YouTube。まだ、うごいてます">
+      <svg width="22" height="20" viewBox="0 0 22 20" aria-hidden="true">
+        <rect x="5"  y="0" width="1" height="4" fill="currentColor"/>
+        <rect x="16" y="0" width="1" height="4" fill="currentColor"/>
+        <rect x="2" y="4" width="18" height="15" rx="2" fill="currentColor"/>
+        <g class="eo">
+          <rect x="6"  y="8" width="3" height="3" fill="var(--bg)"/>
+          <rect x="13" y="8" width="3" height="3" fill="var(--bg)"/>
+        </g>
+        <g class="ec">
+          <rect x="6"  y="9" width="3" height="2" fill="var(--bg)"/>
+          <rect x="13" y="9" width="3" height="2" fill="var(--bg)"/>
+        </g>
+        <rect x="3"  y="12" width="3" height="2" fill="var(--cheek)"/>
+        <rect x="16" y="12" width="3" height="2" fill="var(--cheek)"/>
+        <rect x="10" y="12" width="1" height="5" fill="var(--bg)"/>
+        <rect x="11" y="13" width="1" height="3" fill="var(--bg)"/>
+        <rect x="12" y="14" width="1" height="1" fill="var(--bg)"/>
+      </svg>
+      まだ、うごいてます
+    </a>
+  </div>
+
+  <div class="albums">
+    <a href="/omega/">(<i>◍</i>-ω-<i>◍</i>)</a>
+    <a href="https://hyu-man.bandcamp.com/album/not-yet">(not yet)</a>
+    <a href="https://hyu-man.bandcamp.com/album/life">LIFE</a>
+    <a href="https://hyu-man.bandcamp.com/album/collatz">Collatz</a>
+  </div>
+
+  <p class="ghead"><b>うた。</b>規則で作った映像を、曲に合わせた。押すと YouTube が開きます。</p>
+  <div class="grid" id="grid"></div>
+
+  <p class="ghead" style="margin-top:34px"><b>ここだけ、規則はありません。</b>曲を16に切って、たたく。こどもでも。</p>
+  <div class="out">
+    <a href="/tataku/"><span class="jp">たたく</span><span class="en">/tataku/</span></a>
+  </div>
+
+  <p class="foot">
+    音源は <a href="https://hyu-man.bandcamp.com/" target="_blank" rel="noopener">Bandcamp</a> に。配信は各サービスで「ひゅーまん」。<br>
+    歌詞は それぞれの EP のページと、動画の説明文に。
+  </p>
+
+<nav>
+  <a href="/">ひゅーまん</a><a href="/film/">/film/</a><a href="/still/">/still/</a><a href="/omega/">/omega/</a>
+</nav>
+</div>
+
+<script>
+(() => {
+  "use strict";
+  const SONGS = [
+    { id:"Qp2EuiAjcvI", title:"Sora",
+      note:"盤を 2×2 の升に区切って、まわす。次の一歩は半マスずらして、まわす。戻せる規則なので、ハートは崩れて、また戻る。1:31。" },
+    { id:"V-VsJKHg7xc", title:"むかしも いまも",
+      note:"正の字で、かぞえる。拍のたびに一画。最後の拍で紙が埋まり、引くと、その紙は大きな正の一升だった。0:58。" },
+    { id:"CQq7wBUQVmU", title:"A|ready",
+      note:"点の群れ。2:26。" },
+    { id:"cmal01GZYIU", title:"(◍-ω-◍)",
+      note:"顔の絵は、どこにも保存していない。あるのは、マスとマスの色の差だけ。殴っても、消しても、裏返しても、寝たまま戻ってくる。最後だけ、直り切る前に寝る。1:15。" },
+    { id:"EhAcjUPVtDs", title:"Oracle",
+      note:"(◍-ω-◍) の対。「止まるか」を当てる箱 H と、反対をする機械。箱は本当に決めている（2状態の機械は 6歩で全部決まる）。ピンクだけ決められず、砕けて、落ちる。瓦礫に同じ規則をかけると、寝てる子が出てくる。1:20。" },
+    { id:"6l3lCiYPN4c", title:"Halt.",
+      note:"失恋の詩に見えて、停止性問題。わたしは 5じょうたいの子（47,176,870 歩で とまる。この歌の中では とまれない）。あなたは とまらない子。HALT? と聞かれても、ふたりとも固まるだけ。最後は同じ線の上に並んで、still running。2:19。" },
+    { id:"Z4ojdevNCfM", title:"1",
+      note:"夏の終わりの帰り道。角の数で次の角が決まる。偶数なら半分、奇数なら3倍して1。1 が家。でも 1 も数で、玄関を入ると裏から 4 に出て、2、また同じ家。曲が終わっても 4、2、1 と刻まれ続ける。0:47。" },
+    { id:"o9YGf3T7tcE", title:"Attractor",
+      note:"ふたりの子が、同じ形の上を、ちがう所から跳ぶ。ピンクの道は赤茶の道の名前を回したもの。鏡じゃない。stay close で手をつなぎ、差が広がって離れ、back で戻る。最後に盤を 120° 回すと、足あとがマスひとつ違わず重なる。おかえり。1:29。" },
+  ];
+  const grid = document.getElementById("grid");
+  SONGS.forEach((s, i) => {
+    const fig = document.createElement("figure");
+    const fr = document.createElement("div"); fr.className = "frame";
+    const im = document.createElement("img");
+    im.src = "https://i.ytimg.com/vi/" + s.id + "/maxresdefault.jpg"; im.alt = s.title; im.loading = "lazy"; im.decoding = "async";
+    fr.appendChild(im);
+    fr.addEventListener("click", () => window.open("https://www.youtube.com/watch?v=" + s.id, "_blank", "noopener"));
+    fig.appendChild(fr);
+    const cap = document.createElement("figcaption");
+    cap.innerHTML = '<span class="no">' + String(i + 1).padStart(2, "0") + '</span>' + s.title + '<span class="note">' + s.note + '</span>';
+    fig.appendChild(cap);
+    grid.appendChild(fig);
+  });
+})();
+</script>
+</body>
+</html>
