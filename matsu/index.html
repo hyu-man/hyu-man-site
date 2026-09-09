@@ -106,7 +106,7 @@
     <button id="play">とめる</button>
     <button id="reset">さいしょから</button>
     <input type="range" id="speed" min="0" max="1000" value="330" aria-label="はやさ">
-    <span class="rate" id="rate">6 /f</span>
+    <span class="rate" id="rate">6 歩/コマ</span>
   </div>
 
   <p class="note">
@@ -205,14 +205,14 @@
 
   $("play").onclick = e => { run = !run; e.target.textContent = run ? "とめる" : "あるかせる"; };
   $("reset").onclick = () => reset();
-  $("speed").oninput = e => { rate = speedOf(+e.target.value); $("rate").textContent = rate + " /f"; };
+  $("speed").oninput = e => { rate = speedOf(+e.target.value); $("rate").textContent = rate + " 歩/コマ"; };
   if (window.matchMedia) {
     const mq = window.matchMedia("(prefers-color-scheme: dark)");
     const oc = () => { theme(); draw(); };
     mq.addEventListener ? mq.addEventListener("change", oc) : mq.addListener(oc);
   }
 
-  rate = speedOf(+$("speed").value); $("rate").textContent = rate + " /f";
+  rate = speedOf(+$("speed").value); $("rate").textContent = rate + " 歩/コマ";
   reset();
   if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
     run = false; $("play").textContent = "あるかせる";

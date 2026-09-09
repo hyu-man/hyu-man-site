@@ -99,7 +99,7 @@
     <button id="rec" class="rec" disabled>ろくおん</button>
     <button id="reset">さいしょから</button>
     <input type="range" id="speed" min="2" max="14" value="6" aria-label="はやさ">
-    <span class="rate" id="rate">6 /s</span>
+    <span class="rate" id="rate">6 歩/秒</span>
   </div>
   <div id="dl"></div>
 
@@ -347,7 +347,7 @@
 
   $("play").onclick = e => { run = !run; e.target.textContent = run ? "とめる" : "あるかせる"; };
   $("reset").onclick = () => { reset(); render(); };
-  $("speed").oninput = e => { per = +e.target.value; $("rate").textContent = per + " /s"; };
+  $("speed").oninput = e => { per = +e.target.value; $("rate").textContent = per + " 歩/秒"; };
   $("snd").onclick = e => {
     initAudio();
     if (ac.state === "suspended") ac.resume();
