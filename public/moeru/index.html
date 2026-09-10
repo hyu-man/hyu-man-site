@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>もえる — ひゅーまん</title>
+<meta name="description" content="終わらない音と、終わらないうず。全部、規則です。">
+<link rel="canonical" href="https://hyu-man.com/moeru/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="ひゅーまん">
+<meta property="og:title" content="もえる — ひゅーまん">
+<meta property="og:description" content="終わらない音と、終わらないうず。全部、規則です。">
+<meta property="og:url" content="https://hyu-man.com/moeru/">
+<meta property="og:locale" content="ja_JP">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'><rect width='8' height='8' fill='%23f5f3f0'/><rect x='3' y='1' width='2' height='2' fill='%23ff96aa'/><rect x='1' y='3' width='2' height='2' fill='%23111'/><rect x='5' y='3' width='2' height='2' fill='%23111'/><rect x='3' y='5' width='2' height='2' fill='%23ff96aa'/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Hachi+Maru+Pop&family=DotGothic16&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
+  :root {
+    --bg:#f5f3f0; --ink:#1a1a1a; --sub:#b0a8a0; --line:#e2ded9; --cheek:#ff96aa; --pad:#ece8e2;
+    --dot:'Press Start 2P','DotGothic16','Courier New',monospace;
+    --maru:'Hachi Maru Pop','DotGothic16',sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#0f0f0e; --ink:#efefec; --sub:#6e6a66; --line:#262624; --pad:#1c1c1a; }
+  }
+  body {
+    background:var(--bg); color:var(--ink); font-family:var(--maru);
+    display:flex; flex-direction:column; align-items:center;
+    padding:30px 14px 60px; touch-action:manipulation;
+  }
+  h1 { font-family:var(--dot); font-size:13px; font-weight:400;
+       letter-spacing:.3em; text-indent:.3em; margin-bottom:6px; }
+  .lead { font-size:14px; color:var(--sub); letter-spacing:.05em; margin-bottom:18px; text-align:center; line-height:1.8; }
+  .wrap { width:100%; max-width:620px; }
+
+  /* 盤 */
+  .stage { position:relative; width:100%; aspect-ratio:1/1; border:1px solid var(--line); background:var(--pad); overflow:hidden; }
+  canvas { display:block; width:100%; height:100%; image-rendering:pixelated; }
+  .veil {
+    position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px;
+    background:var(--pad); cursor:pointer; color:var(--ink);
+  }
+  .veil b { font-family:var(--dot); font-size:12px; font-weight:400; letter-spacing:.24em; text-indent:.24em; }
+  .veil span { font-size:12.5px; color:var(--sub); letter-spacing:.05em; }
+  .veil.off { display:none; }
+
+  /* 数 */
+  .nums { display:flex; justify-content:space-between; gap:10px; margin-top:12px; font-size:12px; color:var(--sub); letter-spacing:.04em; }
+  .nums b { color:var(--ink); font-weight:400; font-family:var(--dot); font-size:11px; }
+
+  /* ボタン */
+  .row { display:flex; gap:10px; margin-top:16px; flex-wrap:wrap; }
+  button {
+    font-family:var(--maru); font-size:14px; letter-spacing:.08em; color:var(--ink);
+    background:var(--bg); border:1px solid var(--line); padding:10px 18px; cursor:pointer;
+  }
+  button:hover { border-color:var(--cheek); color:var(--cheek); }
+  button:disabled { opacity:.4; cursor:default; }
+  .vol { display:flex; align-items:center; gap:8px; font-size:12px; color:var(--sub); }
+  .vol input { width:120px; accent-color:var(--cheek); }
+
+  .note { margin-top:22px; font-size:12.5px; line-height:2; color:var(--sub); letter-spacing:.04em; border-top:1px solid var(--line); padding-top:14px; }
+  .note b { color:var(--ink); font-weight:400; }
+
+  nav { margin-top:40px; font-family:var(--dot); font-size:9px; letter-spacing:.1em; }
+  nav a {
+    text-decoration:none; margin-right:13px;
+    background:linear-gradient(90deg,#ff0040,#ff8a00,#ffe600,#3ddc4a,#00b7ff,#8a4bff,#ff0040);
+    background-size:300% 100%; -webkit-background-clip:text; background-clip:text;
+    color:transparent; animation:flow 4s linear infinite;
+  }
+  nav a:hover{ animation-duration:1.2s; }
+  @keyframes flow{ from{background-position:0% 0} to{background-position:300% 0} }
+  @media (prefers-reduced-motion: reduce){ nav a{ animation:none; background-position:50% 0; } }
+</style>
+</head>
+<body>
+
+<h1>もえる</h1>
+<p class="lead">終わらない音と、終わらないうず。<br>全部、規則です。乱数は入っていません。</p>
+
+<div class="wrap">
+  <div class="stage">
+    <canvas id="cv" width="128" height="128"></canvas>
+    <div class="veil" id="veil">
+      <b>ならす</b>
+      <span>押すと、はじまります。とめるまで、終わりません。</span>
+    </div>
+  </div>
+
+  <div class="nums">
+    <span>拍 <b id="nb">0</b></span>
+    <span>音 <b id="nn">0</b></span>
+    <span>ループ <b id="nl">53 61 71 79</b> 拍</span>
+    <span>ぜんぶ揃うまで <b id="ny">…</b></span>
+  </div>
+
+  <div class="row">
+    <button id="go">ならす</button>
+    <button id="seed">たねを変える</button>
+    <div class="vol"><span>おと</span><input type="range" id="vol" min="0" max="100" value="70"></div>
+  </div>
+
+  <p class="note">
+    <b>音。</b>/daw/ の規則そのまま（蟻・ライフ・コラッツ・そろう）。どの音が鳴るかは規則が決めています。
+    変えたのは、いつ鳴るか。トラックごとに <b>53・61・71・79 拍</b>でループします。どれも素数なので、
+    ぜんぶが同じ並びに戻るのは 53×61×71×79 ＝ 18,133,897 拍あと。1拍 2.4秒で、<b>1.4年</b>かかります。<br>
+    音の高さは、いちばん近い A・C・D・E・G に丸めています。外れないので、ずっと鳴らしておけます。<br>
+    <b>絵。</b>三つの色が順ぐりに食べます。ピンクは茶色を、紙はピンクを、茶色は紙を。
+    となりに自分を食べる色があると、その色になる。ただし、なってから 5歩は食べられません。<br>
+    色がひとつなら止まります。ふたつでも止まります。<b>三つが一点で出会うと、うずが巻いて、止まりません。</b>
+  </p>
+
+<nav>
+  <a href="/">ひゅーまん</a><a href="/daw/">/daw/</a><a href="/tataku/">/tataku/</a><a href="/uta/">/uta/</a>
+</nav>
+</div>
+
+<script>
+(() => {
+  "use strict";
+
+  /* ══ /daw/ と同じ決まった数（乱数ではない） ═══════════════════════ */
+  function h32(n) { n = (n ^ 61) ^ (n >>> 16); n = (n + (n << 3)) | 0; n ^= n >>> 4; n = Math.imul(n, 0x27d4eb2d); n ^= n >>> 15; return n >>> 0; }
+  const u01 = n => h32(n) / 4294967296;
+
+  /* ══ 規則。/daw/ の四つ ═══════════════════════════════════════════ */
+  function Ant(seed) {
+    const N = 32, DX = [0,1,0,-1], DY = [-1,0,1,0], SEMI = [0,3,7,10];
+    const g = new Uint8Array(N * N);
+    for (let k = 0; k < seed; k++) g[h32(k * 7919 + 1) % (N * N)] = 1;
+    let x = N >> 1, y = N >> 1, d = 0;
+    return { div:1, advance() {
+      const i = y * N + x, c = g[i];
+      d = c ? (d + 3) & 3 : (d + 1) & 3;
+      g[i] ^= 1; x = (x + DX[d] + N) % N; y = (y + DY[d] + N) % N;
+      return [{ hz: 220 * Math.pow(2, SEMI[d] / 12) * (c ? 1 : 2), vol: c ? 0.07 : 0.04 }];
+    } };
+  }
+  function Life(seed) {
+    const N = 24, PIT = [147.0, 165.0, 196.0, 220.0, 262.0];
+    let g = new Uint8Array(N * N);
+    for (let i = 0; i < N * N; i++) g[i] = u01(seed * 1000003 + i) < 0.35 ? 1 : 0;
+    return { div:4, advance() {
+      const ng = new Uint8Array(N * N), hits = [];
+      for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
+        let n = 0;
+        for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++)
+          if (dx || dy) n += g[((y + dy + N) % N) * N + (x + dx + N) % N];
+        const i = y * N + x, a = g[i] ? (n === 2 || n === 3) : n === 3;
+        ng[i] = a ? 1 : 0;
+        if (a && !g[i] && hits.length < 2) hits.push(Math.min(4, Math.floor(y / N * 5)));
+      }
+      g = ng;
+      return hits.map(k => ({ hz: PIT[k], vol: 0.09 }));
+    } };
+  }
+  function Collatz(seed) {
+    const ROOT = 110, pitchOf = v => ROOT * Math.pow(2, (((Math.log2(v) * 12) % 36) + 36) % 36 / 12);
+    let cur = seed, rest = 0;
+    return { div:2, advance() {
+      if (rest > 0) { rest--; if (rest === 0) cur = seed; return []; }
+      if (cur === 1) { rest = 8; return [{ hz: ROOT, vol: 0.10 }]; }
+      cur = (cur % 2) ? 3 * cur + 1 : cur / 2;
+      return [{ hz: pitchOf(cur), vol: cur % 2 ? 0.075 : 0.055 }];
+    } };
+  }
+  function Burn(n) {                                   /* そろう。撃った人数が音になる */
+    const blank = () => ({ w:0, GR:0, GL:0, R:0, L:0, sR:-1, sL:-1, F:0 });
+    const isWall = x => x === null || x.w === 1;
+    const meets = x => !x.w && ((x.sR >= 0 && x.L) || (x.sL >= 0 && x.R));
+    function init(n) { const c = []; for (let i = 0; i < n; i++) c.push(blank()); c[0].w = 1; c[0].GR = 1; c[n-1].w = 1; return c; }
+    function step(cells) {
+      const N = cells.length, out = [];
+      for (let i = 0; i < N; i++) {
+        const c = cells[i], l = i > 0 ? cells[i-1] : null, r = i < N-1 ? cells[i+1] : null, o = blank();
+        o.w = c.w;
+        if (c.w) { o.GR = c.GR; o.GL = c.GL; out.push(o); continue; }
+        o.GR = (l && (l.GR || (l.w && l.GR))) ? 1 : 0;
+        o.GL = (r && r.GL) ? 1 : 0;
+        o.R = (l && (l.GR || l.R)) ? 1 : 0;
+        o.L = (r && (r.GL || r.L)) ? 1 : 0;
+        o.sR = (l && l.sR >= 0) ? (l.sR + 1) % 3 : (l && l.GR ? 0 : -1);
+        o.sL = (r && r.sL >= 0) ? (r.sL + 1) % 3 : (r && r.GL ? 0 : -1);
+        o.F = (c.F || meets(c)) ? 1 : 0;
+        out.push(o);
+      }
+      return out;
+    }
+    let cells = init(Math.max(6, n | 0 || 15)), fired = 0;
+    return { div:4, advance() {
+      cells = step(cells);
+      let f = 0; for (const c of cells) f += c.F;
+      const got = f > fired ? [{ hz: 110 * Math.pow(2, ((f % 12)) / 12), vol: 0.06 }] : [];
+      fired = f;
+      if (f >= cells.length - 2) { cells = init(cells.length); fired = 0; }
+      return got;
+    } };
+  }
+
+  /* ══ 音階。A Aeolian の5音に丸める ═══════════════════════════════ */
+  const SCALE = [0, 3, 5, 7, 10], A0 = 55.0;
+  function snap(hz) {
+    const st = Math.round(12 * Math.log2(hz / A0)), oct = Math.floor(st / 12), pc = ((st % 12) + 12) % 12;
+    let best = SCALE[0], bd = 99;
+    for (const s of SCALE) { const d = Math.abs(s - pc); if (d < bd) { bd = d; best = s; } }
+    let n = oct * 12 + best;
+    while (A0 * Math.pow(2, n / 12) < 90) n += 12;
+    while (A0 * Math.pow(2, n / 12) > 900) n -= 12;
+    return A0 * Math.pow(2, n / 12);
+  }
+
+  /* ══ 素数のループ ═══════════════════════════════════════════════ */
+  const BEAT = 2.4;
+  const LOOPS = [53, 61, 71, 79];
+  const SPEC = [
+    { loop:53, every:1, gain:0.30, len:6.0,  type:"sine",     pan:-0.35 },
+    { loop:61, every:2, gain:0.40, len:9.0,  type:"sine",     pan: 0.35 },
+    { loop:71, every:3, gain:0.26, len:7.0,  type:"triangle", pan:-0.15 },
+    { loop:79, every:4, gain:0.20, len:12.0, type:"sine",     pan: 0.15 },
+  ];
+  const $ = id => document.getElementById(id);
+  const total = LOOPS.reduce((a, b) => a * b, 1);          /* 素数どうしなので、かけ算がそのまま最小公倍数 */
+  const days = total * BEAT / 86400;
+  $("ny").textContent = days >= 365 ? (days / 365).toFixed(1) + "年" : Math.round(days) + "日";
+  $("nl").textContent = LOOPS.join(" ");
+
+  /* ══ 音 ═══════════════════════════════════════════════════════ */
+  let ac = null, bus = null, verb = null, tracks = [], beat = 0, notes = 0, timer = null, running = false;
+  let seeds = [0, 93, 27, 15];
+
+  function buildTracks() {
+    const mk = [Ant(seeds[0]), Life(seeds[1]), Collatz(seeds[2]), Burn(seeds[3])];
+    tracks = SPEC.map((sp, i) => {
+      const evs = [];
+      for (let b = 0; b < sp.loop; b++) {
+        if (b % sp.every) continue;
+        for (const ev of (mk[i].advance() || [])) evs.push({ beat:b, hz:snap(ev.hz), vol:ev.vol });
+      }
+      return Object.assign({}, sp, { evs });
+    });
+  }
+
+  function makeVerb() {                                /* 部屋の響き。決まった形（乱数なし） */
+    const sec = 3.4, len = Math.floor(ac.sampleRate * sec), buf = ac.createBuffer(2, len, ac.sampleRate);
+    for (let ch = 0; ch < 2; ch++) {
+      const d = buf.getChannelData(ch);
+      for (let i = 0; i < len; i++) {
+        const t = i / ac.sampleRate;
+        const s = Math.sin(2 * Math.PI * (i * (ch ? 0.4372 : 0.3719)));   /* 決まった並び */
+        d[i] = s * Math.pow(1 - t / sec, 3.4) * 0.5;
+      }
+    }
+    const c = ac.createConvolver(); c.buffer = buf; return c;
+  }
+
+  function note(t0, hz, len, g, type, pan, detune) {
+    const o1 = ac.createOscillator(), o2 = ac.createOscillator(), gn = ac.createGain(), pn = ac.createStereoPanner();
+    o1.type = type; o1.frequency.value = hz;
+    o2.type = type; o2.frequency.value = hz * detune;
+    const g2 = ac.createGain(); g2.gain.value = 0.5;
+    pn.pan.value = pan;
+    const atk = Math.min(1.2, len * 0.25);
+    gn.gain.setValueAtTime(0.0001, t0);
+    gn.gain.linearRampToValueAtTime(g, t0 + atk);
+    gn.gain.exponentialRampToValueAtTime(0.0001, t0 + len);
+    o1.connect(gn); o2.connect(g2); g2.connect(gn); gn.connect(pn); pn.connect(bus);
+    o1.start(t0); o2.start(t0); o1.stop(t0 + len + 0.05); o2.stop(t0 + len + 0.05);
+  }
+
+  function schedule() {                                 /* 先の 4秒ぶんだけ予約する */
+    const ahead = ac.currentTime + 4.0;
+    while (t0Next < ahead) {
+      for (const tr of tracks) {
+        const inLoop = beat % tr.loop, cyc = Math.floor(beat / tr.loop);
+        for (const ev of tr.evs) {
+          if (ev.beat !== inLoop) continue;
+          const detune = 1 + 0.004 * Math.sin(cyc * 0.7);
+          const g = tr.gain * ev.vol * 8 * (0.8 + 0.2 * Math.sin(cyc * 0.31 + tr.loop));
+          note(t0Next, ev.hz, tr.len, g, tr.type, tr.pan, detune);
+          notes++;
+        }
+      }
+      beat++; t0Next += BEAT;
+      $("nb").textContent = beat.toLocaleString("ja-JP");
+      $("nn").textContent = notes.toLocaleString("ja-JP");
+    }
+  }
+  let t0Next = 0;
+
+  /* ══ 絵。三つの色が順ぐりに食べる ═══════════════════════════════ */
+  const G = 128, AGE = 5;
+  const COL = [[138,58,46], [255,107,138], [247,240,228]];              /* 0 茶 1 ピンク 2 紙 */
+  let grid = null, age = null, tick = 0, cv = $("cv"), cx = cv.getContext("2d"), im = cx.createImageData(G, G);
+
+  function seedBoard() {
+    grid = new Uint8Array(G * G).fill(2);
+    age = new Int16Array(G * G).fill(99);
+    /* 三つの色が一点で出会う所を、四つ。位置は種から決まる（乱数ではない） */
+    const spots = [[42, 44, 0], [92, 40, 1], [40, 92, 1], [92, 92, 0]];
+    spots.forEach(([cxp, cyp, flip], si) => {
+      const r = 9 + (seeds[si % 4] % 5);
+      for (let y = -r; y <= r; y++) for (let x = -r; x <= r; x++) {
+        if (x * x + y * y > r * r) continue;
+        const gx = (cxp + x + G) % G, gy = (cyp + y + G) % G;
+        let a = Math.atan2(y, x) + Math.PI;
+        let s = Math.floor(a / (2 * Math.PI) * 3) % 3;
+        if (flip) s = (3 - s) % 3;
+        grid[gy * G + gx] = s;
+      }
+    });
+  }
+
+  function stepBoard() {
+    const nxt = grid.slice(), odd = tick & 1;
+    for (let y = 0; y < G; y++) {
+      const yu = ((y - 1 + G) % G) * G, yd = ((y + 1) % G) * G, yc = y * G;
+      for (let x = 0; x < G; x++) {
+        const i = yc + x;
+        if (age[i] < AGE) continue;
+        const c = grid[i], eat = (c + 1) % 3;
+        const xl = (x - 1 + G) % G, xr = (x + 1) % G;
+        let hit = grid[yu + x] === eat || grid[yd + x] === eat || grid[yc + xl] === eat || grid[yc + xr] === eat;
+        if (!hit && odd) hit = grid[yu + xl] === eat || grid[yu + xr] === eat || grid[yd + xl] === eat || grid[yd + xr] === eat;
+        if (hit) nxt[i] = eat;
+      }
+    }
+    for (let i = 0; i < G * G; i++) { if (nxt[i] !== grid[i]) age[i] = 0; else if (age[i] < 999) age[i]++; }
+    grid = nxt; tick++;
+  }
+
+  function paint() {
+    const p = im.data;
+    for (let i = 0; i < G * G; i++) {
+      const c = COL[grid[i]];
+      p[i*4] = c[0]; p[i*4+1] = c[1]; p[i*4+2] = c[2]; p[i*4+3] = 255;
+    }
+    cx.putImageData(im, 0, 0);
+  }
+
+  let last = 0, acc = 0;
+  function frame(ts) {
+    if (!running) return;
+    if (!last) last = ts;
+    acc += (ts - last) / 1000; last = ts;
+    let n = 0;
+    while (acc > 0.09 && n < 4) { stepBoard(); acc -= 0.09; n++; }   /* 11歩/秒。ゆっくり */
+    if (n) paint();
+    requestAnimationFrame(frame);
+  }
+
+  /* ══ 動かす ═══════════════════════════════════════════════════ */
+  function start() {
+    if (!ac) {
+      ac = new (window.AudioContext || window.webkitAudioContext)();
+      bus = ac.createGain(); bus.gain.value = +$("vol").value / 100 * 0.9;
+      verb = makeVerb();
+      const wet = ac.createGain(); wet.gain.value = 0.5;
+      const lp = ac.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = 2600;
+      bus.connect(lp); lp.connect(ac.destination);
+      bus.connect(verb); verb.connect(wet); wet.connect(ac.destination);
+    }
+    ac.resume();
+    if (!tracks.length) buildTracks();
+    if (!grid) { seedBoard(); paint(); }
+    t0Next = ac.currentTime + 0.2;
+    running = true; last = 0;
+    $("veil").classList.add("off");
+    $("go").textContent = "とめる";
+    timer = setInterval(schedule, 800);
+    schedule();
+    requestAnimationFrame(frame);
+  }
+  function stop() {
+    running = false;
+    if (timer) { clearInterval(timer); timer = null; }
+    if (ac) ac.suspend();
+    $("go").textContent = "ならす";
+  }
+
+  $("veil").addEventListener("click", start);
+  $("go").addEventListener("click", () => running ? stop() : start());
+  $("vol").addEventListener("input", e => { if (bus) bus.gain.value = +e.target.value / 100 * 0.9; });
+  $("seed").addEventListener("click", () => {
+    seeds = seeds.map((s, i) => (h32(s * 7919 + beat + i * 131) % 120) + 1);
+    tracks = []; buildTracks(); seedBoard(); paint();
+    beat = 0; notes = 0; $("nb").textContent = "0"; $("nn").textContent = "0";
+    if (running && ac) t0Next = ac.currentTime + 0.2;
+  });
+  document.addEventListener("visibilitychange", () => { if (document.hidden && running) { /* 鳴らしたまま。止めない */ } });
+
+  seedBoard(); paint();
+})();
+</script>
+</body>
+</html>
