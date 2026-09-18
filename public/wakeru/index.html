@@ -70,6 +70,20 @@
   .day.off canvas { opacity:.45; }
   .day.off .t { color:var(--sub); }
 
+  /* μ の歌詞 */
+  .ly { font-family:var(--dot); font-size:8.5px; line-height:2.0; letter-spacing:.05em;
+        color:var(--ink); margin:12px 0 2px; white-space:pre-line; }
+  .ly .q { color:var(--cheek); }
+  .day.off .ly { color:var(--sub); }
+  .whole { margin-top:30px; padding:20px 18px 16px; border:1px solid var(--line); }
+  .whole h2 { font-family:var(--dot); font-size:10px; font-weight:400;
+              letter-spacing:.2em; margin-bottom:4px; }
+  .whole .note { font-size:12px; color:var(--sub); letter-spacing:.04em; margin-bottom:14px; }
+  .whole .txt { font-family:var(--dot); font-size:8px; line-height:2.05; letter-spacing:.04em;
+                white-space:pre-line; column-count:3; column-gap:28px; }
+  .whole .txt .q { color:var(--cheek); }
+  @media (max-width:560px) { .whole .txt { column-count:2; column-gap:20px; } }
+
   .last { margin-top:26px; padding-top:18px; border-top:1px solid var(--line);
           font-size:13px; line-height:2.1; color:var(--sub); letter-spacing:.04em; }
   .last b { color:var(--ink); font-weight:400; }
@@ -112,7 +126,107 @@
 
   <div id="days"></div>
 
+  <div class="whole">
+    <h2>μ ── 一望</h2>
+    <p class="note">この部屋の歌。分岐の書が、そのまま曲になったものです。上の五つの日と、同じ順番。</p>
+    <div class="txt">In the beginning:
+
+one symmetric solution.
+A trivial fixed point.
+
+Then—
+
+the forcing term wakes.
+<span class="q">Let there be light.</span>
+
+Pitchfork bifurcation.
+
+One well becomes two.
+
+Light.
+Dark.
+
+Two basins.
+One separatrix.
+And God saw
+that it was good.
+
+Perturb it.
+
+It returns.
+
+Lyapunov exponent:
+negative.
+Evening.
+Morning.
+
+Valley to valley—
+
+a heteroclinic cycle.
+
+The first day.
+Divide again.
+
+Above.
+Below.
+
+Water.
+Land.
+
+Iterate.
+
+Self-similar.
+
+The second.
+The third.
+Day.
+Night.
+
+The fixed point
+begins to turn.
+
+Hopf bifurcation.
+
+A limit cycle.
+
+The fourth day.
+Be fruitful.
+Multiply.
+
+Positive feedback.
+
+Then—
+
+an observer
+inside the system.
+
+The fifth.
+The sixth.
+The hand let go.
+
+The flow continued.
+
+A dissipative structure
+standing in the flow.
+
+The seventh day.
+Who wrote
+
+the vector field?</div>
+  </div>
+
   <div class="last">
+    <div class="ly">The hand let go.
+
+The flow continued.
+
+A dissipative structure
+standing in the flow.
+
+The seventh day.
+Who wrote
+
+the vector field?</div>
     <span id="lastTop">七つの日は、ぜんぶ息（つまみ）が動かしています。</span>
     <div class="eq" id="eq"></div>
     けれど、<b>ベクトル場を書いたのは、誰なのか。</b><br>
@@ -120,7 +234,7 @@
     <span class="who">そこは、この部屋にはありません。</span>
   </div>
 
-  <p class="fromrule">この規則から出たもの ── まだ。歌にする前に、部屋にしました。</p>
+  <p class="fromrule">この規則から出たもの ── μ（wakeru、準備中）。部屋が先にできて、歌があとから来ました。</p>
 
 <nav>
   <a href="/">ひゅーまん</a><a href="/omega/">/omega/</a><a href="/collatz/">/collatz/</a><a href="/film/">/film/</a>
@@ -154,18 +268,23 @@
   // ── 日 ──
   const DAYS = [
     { n:"第一の日", t:"分ける", v:"1:3–5",
+      ly:'In the beginning:\n\none symmetric solution.\nA trivial fixed point.\n\nThen—\n\nthe forcing term wakes.\n<span class="q">Let there be light.</span>\n\nPitchfork bifurcation.\n\nOne well becomes two.\n\nLight.\nDark.\n\nTwo basins.\nOne separatrix.\nAnd God saw\nthat it was good.\n\nPerturb it.\n\nIt returns.\n\nLyapunov exponent:\nnegative.\nEvening.\nMorning.\n\nValley to valley—\n\na heteroclinic cycle.\n\nThe first day.',
       w:'ひとつの井戸が ふたつに割れる。<b>ピッチフォーク</b>。光の谷、やみの谷、あいだに線。<br>' +
         '玉は谷の底で待つ。少し揺らしても戻ってくる ── <span class="q">それが「良し」の意味。</span> ' +
         '<span id="lyap" class="m"></span><br>息が強いと、ゆっくり傾いて、一気に渡る。夕となり、朝となる。' },
     { n:"第二の日", t:"写像が写像を呼ぶ", v:"1:6–8",
+      ly:'Divide again.\n\nAbove.\nBelow.\n\nWater.\nLand.\n\nIterate.',
       w:'同じ演算子を、もう一度かける。割れた谷が、また割れる。<br>' +
         '<b>x → r x (1 − x)</b>。r を息で上げていくと、1 が 2 に、2 が 4 に。分けて、名づけて、また分ける。' },
     { n:"第三の日", t:"草は種を、種は草を", v:"1:9–13",
+      ly:'Self-similar.\n\nThe second.\nThe third.\nDay.\nNight.',
       w:'四つの写像を、でたらめな順で何度もかける。<b>反復関数系</b>。入れ子の自己相似。<br>点の数は息のぶんだけ。' },
     { n:"第四の日", t:"回る", v:"1:14–19",
+      ly:'The fixed point\nbegins to turn.\n\nHopf bifurcation.\n\nA limit cycle.\n\nThe fourth day.',
       w:'渡るだけだった往復が、自分で回りはじめる。<b>ホップ分岐</b>。不動点が、円になる。<br>' +
         'しるしのため、季節のため。時を刻む振動子。 <span id="period" class="m"></span>' },
     { n:"第五・六の日", t:"増えよ", v:"1:20–28",
+      ly:'Be fruitful.\nMultiply.\n\nPositive feedback.\n\nThen—\n\nan observer\ninside the system.\n\nThe fifth.\nThe sixth.',
       w:'産めよ、増えよ、地に満ちよ。<b>正のフィードバック</b>、増殖項。となりへ、となりへ。<br>' +
         'そして、系の中から系を見る者 ── <span class="q">いま見ているあなた。</span>' },
   ];
@@ -173,7 +292,8 @@
   const days = DAYS.map((d, i) => {
     const el = document.createElement("div"); el.className = "day off";
     el.innerHTML = '<div class="h"><span class="n">' + d.n + '</span><span class="t">' + d.t + '</span><span class="v">' + d.v + '</span></div>' +
-                   '<canvas width="360" height="' + (i === 2 ? 110 : 80) + '"></canvas><p class="w">' + d.w + '</p>';
+                   '<canvas width="360" height="' + (i === 2 ? 110 : 80) + '"></canvas>' +
+                   '<div class="ly">' + d.ly + '</div><p class="w">' + d.w + '</p>';
     $("days").appendChild(el);
     return { el, cv: el.querySelector("canvas"), g: el.querySelector("canvas").getContext("2d") };
   });
