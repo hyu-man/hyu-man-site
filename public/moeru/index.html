@@ -249,11 +249,15 @@
     const sec = 3.4, len = Math.floor(ac.sampleRate * sec), buf = ac.createBuffer(2, len, ac.sampleRate);
     for (let ch = 0; ch < 2; ch++) {
       const d = buf.getChannelData(ch);
+      let e = 0;
       for (let i = 0; i < len; i++) {
         const t = i / ac.sampleRate;
-        const s = Math.sin(2 * Math.PI * (i * (ch ? 0.4372 : 0.3719)));   /* 決まった並び */
-        d[i] = s * Math.pow(1 - t / sec, 3.4) * 0.5;
+        const s = u01(i * 2 + ch + 777) * 2 - 1;      /* 決まった並び（ハッシュ。乱数ではない） */
+        d[i] = s * Math.pow(1 - t / sec, 3.4);
+        e += d[i] * d[i];
       }
+      const k = 1 / Math.sqrt(e);                     /* 響きの総エネルギーを1に。量は wet が決める */
+      for (let i = 0; i < len; i++) d[i] *= k;
     }
     const c = ac.createConvolver(); c.buffer = buf; return c;
   }
