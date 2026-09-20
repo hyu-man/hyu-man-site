@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ふるえる — ひゅーまん</title>
+<meta name="description" content="両端を留められた、一本のひも。はじくと倍音が立ち、完全なサイン波にはなりません。">
+<link rel="canonical" href="https://hyu-man.com/furueru/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="ひゅーまん">
+<meta property="og:title" content="ふるえる — ひゅーまん">
+<meta property="og:description" content="両端を留められた、一本のひも。はじくと倍音が立ち、完全なサイン波にはなりません。">
+<meta property="og:url" content="https://hyu-man.com/furueru/">
+<meta property="og:locale" content="ja_JP">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'><rect width='8' height='8' fill='%23f5f3f0'/><rect x='0' y='4' width='1' height='1' fill='%23111'/><rect x='1' y='3' width='1' height='1' fill='%23111'/><rect x='2' y='2' width='1' height='1' fill='%23ff96aa'/><rect x='3' y='3' width='1' height='1' fill='%23111'/><rect x='4' y='4' width='1' height='1' fill='%23111'/><rect x='5' y='5' width='1' height='1' fill='%23111'/><rect x='6' y='5' width='1' height='1' fill='%23111'/><rect x='7' y='4' width='1' height='1' fill='%23111'/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Hachi+Maru+Pop&family=DotGothic16&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing:border-box; margin:0; padding:0; }
+  :root {
+    --bg:#f5f3f0; --ink:#1a1a1a; --sub:#b0a8a0; --line:#e2ded9; --cheek:#ff96aa;
+    --dot:'Press Start 2P','DotGothic16','Courier New',monospace;
+    --maru:'Hachi Maru Pop','DotGothic16',sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#0f0f0e; --ink:#efefec; --sub:#6e6a66; --line:#262624; }
+  }
+  body {
+    background:var(--bg); color:var(--ink); font-family:var(--maru);
+    display:flex; flex-direction:column; align-items:center;
+    padding:36px 16px 64px;
+  }
+  h1 { font-family:var(--dot); font-size:13px; font-weight:400;
+       letter-spacing:.3em; text-indent:.3em; margin-bottom:6px; }
+  .lead { font-size:14px; color:var(--sub); letter-spacing:.05em; margin-bottom:22px; }
+  .wrap { width:100%; max-width:720px; }
+
+  /* つまみ */
+  .knobs { position:sticky; top:0; z-index:5; background:var(--bg);
+           padding:12px 0 10px; border-bottom:1px solid var(--line); margin-bottom:6px; }
+  .knobs .row { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:4px; }
+  .knobs label { font-size:13px; letter-spacing:.08em; min-width:3em; }
+  .knobs input[type=range] { flex:1; min-width:120px; accent-color:var(--cheek); }
+  .knobs b { font-family:var(--dot); font-size:9px; min-width:5.5em; text-align:right; font-weight:400; }
+  .knobs button {
+    font-family:var(--maru); font-size:12px; letter-spacing:.06em;
+    background:var(--bg); color:var(--ink); border:1px solid var(--ink);
+    padding:5px 13px; border-radius:2px; cursor:pointer;
+  }
+  .knobs button:hover { background:var(--ink); color:var(--bg); }
+  .knobs button.on { background:var(--cheek); border-color:var(--cheek); color:#fff; }
+  .st { font-size:12.5px; color:var(--sub); margin-top:7px; letter-spacing:.04em;
+        min-height:3.2em; line-height:1.8; }
+  .st b { color:var(--ink); font-weight:400; }
+  .st .q { color:var(--cheek); }
+  .st .m { font-family:var(--dot); font-size:9px; color:var(--ink); }
+
+  .room { border-top:1px solid var(--line); padding:20px 0 8px; }
+  .room .h { display:flex; align-items:baseline; gap:12px; margin-bottom:8px; }
+  .room .n { font-family:var(--dot); font-size:9px; color:var(--sub); letter-spacing:.14em; }
+  .room .t { font-size:15px; letter-spacing:.06em; }
+  canvas { width:100%; height:auto; display:block; image-rendering:pixelated;
+           border:1px solid var(--line); background:var(--bg); touch-action:none; }
+  #str { cursor:crosshair; }
+  #sp { margin-top:8px; }
+  .modes { margin-top:6px; font-family:var(--dot); font-size:8px; line-height:2.0;
+           color:var(--sub); letter-spacing:.04em; min-height:1.6em; }
+  .modes b { color:var(--ink); font-weight:400; }
+  .modes .q { color:var(--cheek); }
+  .w { margin-top:9px; font-size:12.5px; line-height:1.95; color:var(--sub); letter-spacing:.03em; }
+  .w b { color:var(--ink); font-weight:400; }
+
+  .last { margin-top:26px; padding-top:18px; border-top:1px solid var(--line);
+          font-size:13px; line-height:2.1; color:var(--sub); letter-spacing:.04em; }
+  .last b { color:var(--ink); font-weight:400; }
+  .last .who { color:var(--ink); font-size:14px; margin-top:14px; display:inline-block; }
+
+  nav { margin-top:40px; font-family:var(--dot); font-size:9px; letter-spacing:.1em; color:var(--sub); }
+  nav a { color:var(--sub); text-decoration:none; margin-right:13px; }
+  nav a, .fromrule a{
+    text-decoration:none; border-bottom:0;
+    background:linear-gradient(90deg,#ff0040,#ff8a00,#ffe600,#3ddc4a,#00b7ff,#8a4bff,#ff0040);
+    background-size:300% 100%; -webkit-background-clip:text; background-clip:text;
+    color:transparent; animation:flow 4s linear infinite;
+  }
+  nav a:hover, .fromrule a:hover{ animation-duration:1.2s; }
+  @keyframes flow{ from{background-position:0% 0} to{background-position:300% 0} }
+  @media (prefers-reduced-motion: reduce){
+    nav a, .fromrule a{ animation:none; background-position:50% 0; }
+  }
+  .fromrule { margin-top:26px; font-size:12px; color:var(--sub); letter-spacing:.04em; }
+</style>
+</head>
+<body>
+
+<h1>ふるえる</h1>
+<p class="lead">ひもは有限。だから、音色がある。</p>
+
+<div class="wrap">
+
+  <div class="knobs">
+    <div class="row">
+      <label>息</label><input type="range" id="br" min="0" max="1000" value="0" aria-label="息（駆動項）">
+      <b id="brV">0.00</b>
+      <button id="snd" class="on">おと</button>
+    </div>
+    <div class="row">
+      <label>張力</label><input type="range" id="tn" min="0" max="1000" value="380" aria-label="張力">
+      <b id="tnV"></b>
+      <button id="calm">しずめる</button>
+    </div>
+    <div class="row">
+      <label>長さ</label><input type="range" id="ln" min="0" max="1000" value="1000" aria-label="長さ">
+      <b id="lnV"></b>
+    </div>
+    <div class="st" id="st">両端を、留めてあります。弦を、指ではじいてください。</div>
+  </div>
+
+  <div class="room">
+    <div class="h"><span class="n">ひも</span><span class="t">両端固定・波動方程式・実時間</span></div>
+    <canvas id="str" width="384" height="150" aria-label="弦。クリックではじく"></canvas>
+    <canvas id="sp" width="384" height="52" aria-label="倍音の内訳"></canvas>
+    <p class="modes" id="modes">倍音の内訳は、はじくと出ます。</p>
+    <p class="w">はじいた場所で、立つ倍音が決まります。まんなかをはじくと奇数番だけ。<br>
+       端に寄るほど、高い倍音が混ざります。<b>乱数はゼロ。数字は全部、この弦の実測です。</b></p>
+  </div>
+
+  <div class="last">
+    サイン波は、始まりも終わりもなく続く、無限の夢です。<br>
+    ここにあるのは、両端を留められた有限のひもだけ。<br>
+    <b>留めてあるから、倍音が立つ。逃がしているから、鳴り止む。</b><br>
+    音色は、そこからしか生まれません。<br>
+    <span class="who">ふるえは、ことばより先にあります。</span>
+  </div>
+
+  <p class="fromrule">この規則から出たもの ── まだ。歌にする前に、部屋にしました。二度目です。</p>
+
+<nav>
+  <a href="/">ひゅーまん</a><a href="/wakeru/">/wakeru/</a><a href="/omega/">/omega/</a><a href="/film/">/film/</a>
+</nav>
+</div>
+
+<script>
+(() => {
+  "use strict";
+  const $ = id => document.getElementById(id);
+  const cs = getComputedStyle(document.documentElement);
+  const C = k => cs.getPropertyValue(k).trim();
+  let INK, BG, SUB, CHEEK, LINE;
+  const theme = () => { INK=C('--ink'); BG=C('--bg'); SUB=C('--sub'); CHEEK=C('--cheek'); LINE=C('--line'); };
+  theme();
+
+  // ── ひも。両端固定の 1 次元波動方程式（差分法）──
+  const N = 192;                       // 全マス
+  const STEPS_PER_SEC = 360;           // 実時間 1 秒 = 360 ステップ（固定）
+  const GAMMA = 0.0022;                // 減衰。世界の性質なので、つまみにしない
+  const MODES = 7;                     // 数える倍音
+  let y = new Float64Array(N), v = new Float64Array(N);
+  let k2 = 0.20;                       // 張力（波速の二乗）
+  let NL = N;                          // いま張ってある長さ（マス数）
+  let brAmp = 0;                       // 息の強さ
+  const F_B = 0.0014;                  // 息の周波数（サイクル/ステップ）＝ 0.504 Hz
+  let stepCount = 0, plucked = false;
+
+  function step() {
+    const bi = Math.max(2, Math.floor(0.18 * NL));      // 息を当てる場所
+    const drive = brAmp * Math.sin(2 * Math.PI * F_B * stepCount);
+    for (let i = 1; i < NL - 1; i++) {
+      let a = k2 * (y[i-1] - 2*y[i] + y[i+1]) - GAMMA * v[i];
+      if (i === bi) a += drive;
+      v[i] += a;
+    }
+    for (let i = 1; i < NL - 1; i++) y[i] += v[i];
+    y[0] = 0; y[NL-1] = 0;
+    for (let i = NL; i < N; i++) { y[i] = 0; v[i] = 0; }
+    stepCount++;
+  }
+
+  // ── 実測：倍音への分解（いまの形を sin(kπx/L) に射影）──
+  const amp = new Float64Array(MODES + 1);
+  function project() {
+    for (let m = 1; m <= MODES; m++) {
+      let s = 0;
+      for (let i = 0; i < NL; i++) s += y[i] * Math.sin(m * Math.PI * i / (NL - 1));
+      amp[m] = 2 * s / NL;
+    }
+  }
+  function fractions() {
+    let tot = 0; for (let m = 1; m <= MODES; m++) tot += amp[m]*amp[m];
+    const f = [0];
+    for (let m = 1; m <= MODES; m++) f.push(tot > 1e-12 ? amp[m]*amp[m]/tot : 0);
+    return { f, tot };
+  }
+
+  // ── 実測：基本振動の周波数（1 番の係数の符号が変わる間隔を数える）──
+  let lastSign = 0, lastCross = 0, periods = [];
+  function measureF1(nowMs) {
+    const s = Math.sign(amp[1]);
+    if (s !== 0 && lastSign !== 0 && s !== lastSign) {
+      if (lastCross > 0) {
+        periods.push(2 * (nowMs - lastCross));          // 半周期 → 周期
+        if (periods.length > 6) periods.shift();
+      }
+      lastCross = nowMs;
+    }
+    if (s !== 0) lastSign = s;
+    if (periods.length < 2) return null;
+    const mean = periods.reduce((a,b)=>a+b,0) / periods.length;
+    return 1000 / mean;                                  // Hz
+  }
+  const fBreath = F_B * STEPS_PER_SEC;                   // 0.504 Hz（固定）
+
+  // ── はじく（クリック位置に三角の形。乱数なし）──
+  const cv = $('str'), g = cv.getContext('2d');
+  const W = cv.width, H = cv.height, MID = H >> 1;
+  cv.addEventListener('pointerdown', e => {
+    const r = cv.getBoundingClientRect();
+    const px = (e.clientX - r.left) / r.width * W;
+    const py = (e.clientY - r.top) / r.height * H;
+    const p = Math.max(2, Math.min(NL - 3, Math.round(px / 2)));
+    if (p >= NL - 2) return;
+    let a = MID - py;                                    // 上にはじけば上へ
+    a = Math.max(-52, Math.min(52, a)); if (Math.abs(a) < 6) a = a < 0 ? -6 : 6;
+    for (let i = 1; i < NL - 1; i++) {
+      y[i] = i <= p ? a * i / p : a * (NL - 1 - i) / (NL - 1 - p);
+      v[i] = 0;
+    }
+    plucked = true; periods = []; lastSign = 0; lastCross = 0;
+    project(); pluckSound();
+  });
+
+  // ── おと：はじいた瞬間の倍音の実測を、そのまま波形にする ──
+  let audioOn = true, actx = null;
+  $('snd').onclick = () => { audioOn = !audioOn; $('snd').classList.toggle('on', audioOn); };
+  function pluckSound() {
+    if (!audioOn) return;
+    try {
+      actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+      if (actx.state === 'suspended') actx.resume();
+      const re = new Float32Array(MODES + 1), im = new Float32Array(MODES + 1);
+      let peak = 0;
+      for (let m = 1; m <= MODES; m++) peak = Math.max(peak, Math.abs(amp[m]));
+      if (peak < 1e-6) return;
+      for (let m = 1; m <= MODES; m++) im[m] = amp[m] / peak;
+      const wave = actx.createPeriodicWave(re, im, { disableNormalization: false });
+      const osc = actx.createOscillator(), gn = actx.createGain();
+      const f1 = Math.sqrt(k2) / (2 * (NL - 1)) * STEPS_PER_SEC;   // 理論値で音高だけ決める
+      osc.setPeriodicWave(wave);
+      osc.frequency.value = Math.min(880, Math.max(55, f1 * 260));
+      gn.gain.setValueAtTime(0.16, actx.currentTime);
+      gn.gain.exponentialRampToValueAtTime(0.0002, actx.currentTime + 2.6);
+      osc.connect(gn); gn.connect(actx.destination);
+      osc.start(); osc.stop(actx.currentTime + 2.7);
+    } catch (e) {}
+  }
+
+  // ── つまみ ──
+  $('br').oninput = e => { brAmp = +e.target.value / 1000 * 0.012; $('brV').textContent = (+e.target.value/1000).toFixed(2); };
+  $('tn').oninput = e => { k2 = 0.05 + (+e.target.value / 1000) * 0.40; showTn(); };
+  $('ln').oninput = e => {
+    NL = 96 + Math.round((+e.target.value / 1000) * (N - 96));
+    for (let i = NL; i < N; i++) { y[i] = 0; v[i] = 0; }
+    y[NL-1] = 0; periods = []; showLn();
+  };
+  $('calm').onclick = () => { y.fill(0); v.fill(0); periods = []; };
+  const f1th = () => Math.sqrt(k2) / (2 * (NL - 1)) * STEPS_PER_SEC;
+  const showTn = () => { $('tnV').textContent = k2.toFixed(2); };
+  const showLn = () => { $('lnV').textContent = NL + "/" + N; };
+  showTn(); showLn();
+
+  // ── 描く ──
+  const sp = $('sp'), gs = sp.getContext('2d');
+  function draw(fr) {
+    g.fillStyle = BG; g.fillRect(0, 0, W, H);
+    g.fillStyle = LINE; g.fillRect(0, MID, NL * 2, 1);
+    g.fillStyle = SUB;
+    g.fillRect(0, MID - 26, 2, 52); g.fillRect(NL*2 - 2, MID - 26, 2, 52);   // 留め
+    if (NL < N) { g.fillStyle = LINE; for (let i = NL; i < N; i += 4) g.fillRect(i*2, MID, 2, 1); }
+    g.fillStyle = INK;
+    for (let i = 0; i < NL; i++) {
+      const yy = Math.round(MID - y[i]);
+      g.fillRect(i * 2, Math.min(yy, MID), 2, Math.max(2, Math.abs(yy - MID)) );
+    }
+    // ふし：一つの倍音がほとんどのとき、動かない点を桃で
+    let dom = 0, dv = 0;
+    for (let m = 1; m <= MODES; m++) if (fr[m] > dv) { dv = fr[m]; dom = m; }
+    if (plucked && dom >= 2 && dv > 0.7) {
+      g.fillStyle = CHEEK;
+      for (let j = 1; j < dom; j++) {
+        const i = Math.round(j * (NL - 1) / dom);
+        g.fillRect(i * 2 - 1, MID - 2, 4, 4);
+      }
+    }
+    // スペクトル
+    gs.fillStyle = BG; gs.fillRect(0, 0, sp.width, sp.height);
+    const bw = 40, gap = 12, x0 = 8;
+    for (let m = 1; m <= MODES; m++) {
+      const h = Math.round(fr[m] * 44);
+      gs.fillStyle = (m === dom && plucked) ? CHEEK : INK;
+      gs.fillRect(x0 + (m-1)*(bw+gap), sp.height - 4 - h, bw, Math.max(plucked ? 1 : 0, h));
+      gs.fillStyle = LINE;
+      gs.fillRect(x0 + (m-1)*(bw+gap), sp.height - 4, bw, 1);
+    }
+    return dom;
+  }
+
+  // ── ことば ──
+  function words(fr, tot, dom, f1m) {
+    if (!plucked && brAmp === 0) return;
+    const pct = m => (fr[m]*100).toFixed(0);
+    let mtxt = "";
+    for (let m = 1; m <= MODES; m++) {
+      const cls = (m === dom) ? "q" : (fr[m] > 0.005 ? "b" : "");
+      mtxt += (cls === "q" ? `<span class="q">${m}番 ${pct(m)}%</span>` :
+               cls === "b" ? `<b>${m}番 ${pct(m)}%</b>` : `${m}番 ${pct(m)}%`) + "　";
+    }
+    $('modes').innerHTML = mtxt;
+    let s;
+    if (tot < 1e-7 && brAmp === 0) {
+      s = "鳴り止みました。ふるえは、逃げた熱のぶんだけ短い。もう一度どうぞ。";
+      plucked = false;
+    } else if (dom >= 2 && fr[dom] > 0.7) {
+      s = `いま、ほとんど <b>${dom}番</b> だけでふるえています。それでも <span class="q">動かない点</span> が ${dom-1} つある——ふし。全身でふるえているのに、動かない場所。`;
+    } else if (brAmp > 0) {
+      const d = f1m ? Math.abs(f1m - fBreath) : null;
+      if (d !== null && d < 0.04) {
+        s = `<span class="q">息と合いました。</span>小さな息で、大きくふるえてしまう。その周波数にだけ、応えてしまう。 <span class="m">ひも ${f1m.toFixed(2)}Hz / 息 ${fBreath.toFixed(2)}Hz</span>`;
+      } else {
+        s = `息で揺すっています。まだ合っていません。張力と長さで、この子の高さを息に近づけてください。 <span class="m">ひも ${(f1m||f1th()).toFixed(2)}Hz / 息 ${fBreath.toFixed(2)}Hz</span>`;
+      }
+    } else {
+      const f = f1m ? f1m.toFixed(2) + "Hz（実測）" : f1th().toFixed(2) + "Hz";
+      s = `どの倍音も、一本では 100% になりません。サイン波は一本だけが 100% の夢——ここでは、なりません。 <span class="m">基本 ${f}</span>`;
+    }
+    $('st').innerHTML = s;
+  }
+
+  // ── まわす（実時間固定：1 秒 = 360 ステップ）──
+  let prev = performance.now(), acc = 0, wordT = 0;
+  function frame(now) {
+    const dt = Math.min(0.1, (now - prev) / 1000); prev = now;
+    acc += dt * STEPS_PER_SEC;
+    let n = 0;
+    while (acc >= 1 && n < 900) { step(); acc -= 1; n++; }
+    project();
+    const { f, tot } = fractions();
+    const f1m = measureF1(now);
+    const dom = draw(f);
+    if (now - wordT > 250) { words(f, tot, dom, f1m); wordT = now; }
+    requestAnimationFrame(frame);
+  }
+
+  if (window.matchMedia) {
+    const mq = window.matchMedia("(prefers-color-scheme: dark)");
+    const oc = () => theme();
+    mq.addEventListener ? mq.addEventListener("change", oc) : mq.addListener(oc);
+  }
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
