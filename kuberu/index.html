@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>くべる — ひゅーまん</title>
+<meta name="description" content="薪をくべると、もえます。くべないと、やみます。音は全部その場で作っています（サンプルなし・乱数なし）。">
+<link rel="canonical" href="https://hyu-man.com/kuberu/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="ひゅーまん">
+<meta property="og:title" content="くべる — ひゅーまん">
+<meta property="og:description" content="薪をくべると、もえます。くべないと、やみます。">
+<meta property="og:url" content="https://hyu-man.com/kuberu/">
+<meta property="og:locale" content="ja_JP">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'><rect width='8' height='8' fill='%23f5f3f0'/><rect x='3' y='2' width='2' height='2' fill='%23ff96aa'/><rect x='2' y='3' width='1' height='2' fill='%23ff96aa'/><rect x='5' y='3' width='1' height='2' fill='%23ff96aa'/><rect x='2' y='5' width='4' height='2' fill='%238a3a2e'/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Hachi+Maru+Pop&family=DotGothic16&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing:border-box; margin:0; padding:0; }
+  :root {
+    --bg:#f5f3f0; --ink:#1a1a1a; --sub:#b0a8a0; --line:#e2ded9; --cheek:#ff96aa;
+    --dot:'Press Start 2P','DotGothic16','Courier New',monospace;
+    --maru:'Hachi Maru Pop','DotGothic16',sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#0f0f0e; --ink:#efefec; --sub:#6e6a66; --line:#262624; }
+  }
+  body {
+    background:var(--bg); color:var(--ink); font-family:var(--maru);
+    display:flex; flex-direction:column; align-items:center;
+    padding:36px 16px 64px;
+  }
+  h1 { font-family:var(--dot); font-size:13px; font-weight:400;
+       letter-spacing:.3em; text-indent:.3em; margin-bottom:6px; }
+  .lead { font-size:14px; color:var(--sub); letter-spacing:.05em; margin-bottom:22px; }
+  .wrap { width:100%; max-width:720px; }
+
+  .bar { display:flex; align-items:center; gap:12px; flex-wrap:wrap;
+         padding:10px 0; border-bottom:1px solid var(--line); margin-bottom:6px; }
+  .bar button {
+    font-family:var(--maru); font-size:12px; letter-spacing:.06em;
+    background:var(--bg); color:var(--ink); border:1px solid var(--ink);
+    padding:5px 13px; border-radius:2px; cursor:pointer;
+  }
+  .bar button:hover { background:var(--ink); color:var(--bg); }
+  .bar button.on { background:var(--cheek); border-color:var(--cheek); color:#fff; }
+  .nums { font-family:var(--dot); font-size:9px; color:var(--sub); letter-spacing:.06em; line-height:2; }
+  .nums b { color:var(--ink); font-weight:400; }
+  .nums .q { color:var(--cheek); }
+
+  canvas { width:100%; height:auto; display:block; image-rendering:pixelated;
+           border:1px solid var(--line); background:var(--bg); touch-action:none; cursor:pointer; }
+
+  .st { font-size:12.5px; color:var(--sub); margin-top:8px; letter-spacing:.04em;
+        min-height:1.9em; line-height:1.8; }
+  .st b { color:var(--ink); font-weight:400; }
+  .st .q { color:var(--cheek); }
+  .w { margin-top:9px; font-size:12.5px; line-height:1.95; color:var(--sub); letter-spacing:.03em; }
+  .w b { color:var(--ink); font-weight:400; }
+
+  .last { margin-top:26px; padding-top:18px; border-top:1px solid var(--line);
+          font-size:13px; line-height:2.1; color:var(--sub); letter-spacing:.04em; }
+  .last b { color:var(--ink); font-weight:400; }
+  .last .who { color:var(--ink); font-size:14px; margin-top:14px; display:inline-block; }
+
+  nav { margin-top:40px; font-family:var(--dot); font-size:9px; letter-spacing:.1em; color:var(--sub); }
+  nav a { color:var(--sub); text-decoration:none; margin-right:13px; }
+  nav a, .fromrule a{
+    text-decoration:none; border-bottom:0;
+    background:linear-gradient(90deg,#ff0040,#ff8a00,#ffe600,#3ddc4a,#00b7ff,#8a4bff,#ff0040);
+    background-size:300% 100%; -webkit-background-clip:text; background-clip:text;
+    color:transparent; animation:flow 4s linear infinite;
+  }
+  nav a:hover, .fromrule a:hover{ animation-duration:1.2s; }
+  @keyframes flow{ from{background-position:0% 0} to{background-position:300% 0} }
+  @media (prefers-reduced-motion: reduce){
+    nav a, .fromrule a{ animation:none; background-position:50% 0; }
+  }
+  .fromrule { margin-top:26px; font-size:12px; color:var(--sub); letter-spacing:.04em; }
+</style>
+</head>
+<body>
+
+<h1>くべる</h1>
+<p class="lead">くべないと、やみます。</p>
+
+<div class="wrap">
+
+  <div class="bar">
+    <button id="snd" class="on">おと</button>
+    <span class="nums" id="nums">薪 <b>0</b>本　いま <b>0:00</b>　さいちょう <b>0:00</b>　灰 <b>0</b>本ぶん</span>
+  </div>
+
+  <canvas id="fire" width="384" height="256" aria-label="火。押すと薪をくべる"></canvas>
+  <p class="st" id="st">火は、まだありません。押して、最初の一本をくべてください。</p>
+  <p class="w">つまみはありません。手だけです。押した場所に薪が入ります。<br>
+     炎も音も、その場で規則が作っています。<b>サンプルなし。乱数のかわりに、決まったでたらめ。</b></p>
+
+  <div class="last">
+    火は、燃料と時間の交換です。<br>
+    くべたぶんだけ、もえます。くべなければ、やみます。<br>
+    <b>消えても、灰と記録は残ります。ここでも、消さないので。</b><br>
+    <span class="who">となりの部屋の火（もえる）は、止まりません。こっちの火は、あなたの手で続きます。</span>
+  </div>
+
+  <p class="fromrule">規則は、ありません。あそんでください。</p>
+
+<nav>
+  <a href="/">ひゅーまん</a><a href="/moeru/">/moeru/</a><a href="/tataku/">/tataku/</a><a href="/wakeru/">/wakeru/</a>
+</nav>
+</div>
+
+<script>
+(() => {
+  "use strict";
+  const $ = id => document.getElementById(id);
+  const cs = getComputedStyle(document.documentElement);
+  const C = k => cs.getPropertyValue(k).trim();
+  let BG, INK, SUB, LINE, CHEEK;
+  const theme = () => { BG=C('--bg'); INK=C('--ink'); SUB=C('--sub'); LINE=C('--line'); CHEEK=C('--cheek'); };
+  theme();
+
+  // 決まった「でたらめ」。乱数ではない
+  function h32(i) {
+    i = Math.imul(i, 0x9E3779B1) >>> 0; i ^= i >>> 15;
+    i = Math.imul(i, 0x2C1B3C6D) >>> 0; i ^= i >>> 12;
+    i = Math.imul(i, 0x297A2D39) >>> 0;
+    return ((i ^ (i >>> 15)) >>> 0) / 4294967296;
+  }
+  let seedk = 1;
+  const rnd = () => h32(seedk++);
+
+  // ── 火の格子（下から上へ熱が立ちのぼる規則）──
+  const GW = 96, GH = 64, CELL = 4;
+  const cv = $('fire'), g = cv.getContext('2d');
+  const heat = new Uint8Array(GW * GH);         // 0..36
+  const MAXH = 36;
+
+  // 薪と灰
+  let logs = [];            // {x0, w, fuel, cap}
+  let fed = 0, ash = 0;
+  let burnNow = 0, burnBest = 0, wasBurning = false;
+
+  // 色（炎は動画の色：赤茶と桃。灰は部屋の色）
+  const FIRE_COLS = [
+    [3,  () => LINE],
+    [7,  () => SUB],
+    [15, () => '#8a3a2e'],
+    [27, () => '#ff96aa'],
+    [37, () => '#ffdce6'],
+  ];
+  const colOf = h => { for (const [t, f] of FIRE_COLS) if (h < t) return f(); return '#ffdce6'; };
+
+  cv.addEventListener('pointerdown', e => {
+    const r = cv.getBoundingClientRect();
+    const gx = Math.floor((e.clientX - r.left) / r.width * GW);
+    if (logs.length >= 7) { say('くべすぎです。燃えるのを、待ってください。'); return; }
+    const w = 10 + Math.floor(rnd() * 5);
+    const x0 = Math.max(1, Math.min(GW - w - 1, gx - (w >> 1)));
+    const cap = 900 + Math.floor(rnd() * 400);   // 15〜21秒ぶんの燃料
+    logs.push({ x0, w, fuel: cap, cap });
+    fed++; ensureAudio();
+  });
+
+  // ── 一歩（60歩/秒）──
+  let frame = 0;
+  function step() {
+    frame++;
+    // 薪が下段に熱を入れる
+    const bottom = (GH - 1) * GW;
+    for (let x = 0; x < GW; x++) heat[bottom + x] = Math.max(0, heat[bottom + x] - 2);
+    let power = 0;
+    for (const L of logs) {
+      L.fuel--;
+      const p = Math.max(0.25, L.fuel / L.cap);         // 燃え尽きかけは弱い
+      power += p * L.w;
+      for (let x = L.x0; x < L.x0 + L.w; x++) {
+        const flick = h32(frame * 131 + x * 7);
+        heat[bottom + x] = Math.min(MAXH, Math.round(MAXH * p * (0.75 + flick * 0.35)));
+      }
+    }
+    const died = logs.filter(L => L.fuel <= 0).length;
+    if (died) { ash += died; logs = logs.filter(L => L.fuel > 0); }
+    // 立ちのぼる（下の熱を、横に揺れながら引き継いで、少し冷める）
+    for (let y = 0; y < GH - 1; y++) {
+      const row = y * GW, below = (y + 1) * GW;
+      for (let x = 0; x < GW; x++) {
+        const r1 = h32(frame * 2654435 + y * 977 + x * 31);
+        const sway = (r1 * 3 | 0) - 1;                   // -1, 0, +1
+        const sx = Math.max(0, Math.min(GW - 1, x + sway));
+        const cool = (r1 * 3.6) | 0;                     // 0..3
+        const h = heat[below + sx] - cool;
+        heat[row + x] = h > 0 ? h : 0;
+      }
+    }
+    return power;
+  }
+
+  // ── 描く ──
+  function draw() {
+    g.fillStyle = BG; g.fillRect(0, 0, cv.width, cv.height);
+    // 灰の山（燃やしたぶんだけ育つ。消えない）
+    if (ash > 0) {
+      g.fillStyle = SUB;
+      const aw = Math.min(GW - 8, 10 + ash * 3), ah = Math.min(9, 2 + (ash >> 2));
+      for (let j = 0; j < ah; j++) {
+        const w = Math.max(2, Math.round(aw * (1 - j / ah)));
+        g.fillRect(((GW - w) >> 1) * CELL, (GH - 1 - j) * CELL, w * CELL, CELL);
+      }
+    }
+    // 炎
+    for (let y = 0; y < GH; y++) for (let x = 0; x < GW; x++) {
+      const h = heat[y * GW + x];
+      if (h < 1) continue;
+      g.fillStyle = colOf(h);
+      g.fillRect(x * CELL, y * CELL, CELL, CELL);
+    }
+    // 薪
+    for (const L of logs) {
+      const p = L.fuel / L.cap;
+      g.fillStyle = '#5c2a20';
+      g.fillRect(L.x0 * CELL, (GH - 3) * CELL, L.w * CELL, 2 * CELL);
+      g.fillStyle = '#8a3a2e';
+      g.fillRect(L.x0 * CELL, (GH - 3) * CELL, Math.max(CELL, Math.round(L.w * CELL * p)), CELL);
+    }
+  }
+
+  // ── おと（全部その場で合成。ごおー＝低い雑音、ぱち＝短い雑音の粒）──
+  let audioOn = true, actx = null, bedGain = null, hissGain = null, noiseBuf = null, nextPop = 0;
+  $('snd').onclick = () => { audioOn = !audioOn; $('snd').classList.toggle('on', audioOn);
+    if (bedGain) bedGain.gain.setTargetAtTime(0, actx.currentTime, 0.1);
+    if (hissGain) hissGain.gain.setTargetAtTime(0, actx.currentTime, 0.1); };
+  function ensureAudio() {
+    if (actx || !audioOn) return;
+    try {
+      actx = new (window.AudioContext || window.webkitAudioContext)();
+      const n = actx.sampleRate * 2;
+      noiseBuf = actx.createBuffer(1, n, actx.sampleRate);
+      const d = noiseBuf.getChannelData(0);
+      for (let i = 0; i < n; i++) d[i] = h32(i) * 2 - 1;
+      const mk = (freq, q, type) => {
+        const src = actx.createBufferSource(); src.buffer = noiseBuf; src.loop = true;
+        const f = actx.createBiquadFilter(); f.type = type; f.frequency.value = freq; f.Q.value = q;
+        const gn = actx.createGain(); gn.gain.value = 0;
+        src.connect(f); f.connect(gn); gn.connect(actx.destination); src.start();
+        return gn;
+      };
+      bedGain = mk(300, 0.4, 'lowpass');       // ごおー
+      hissGain = mk(1700, 0.7, 'bandpass');    // しゅう
+      nextPop = actx.currentTime + 0.1;
+    } catch (e) {}
+  }
+  function crackle(t, k) {
+    const src = actx.createBufferSource(); src.buffer = noiseBuf;
+    src.playbackRate.value = 0.7 + h32(k * 3 + 1) * 1.6;
+    const f = actx.createBiquadFilter(); f.type = 'bandpass';
+    f.frequency.value = 900 + h32(k * 3 + 2) * 2600; f.Q.value = 1.1;
+    const gn = actx.createGain();
+    const peak = 0.05 + h32(k * 3) * 0.22;
+    gn.gain.setValueAtTime(peak, t);
+    gn.gain.exponentialRampToValueAtTime(0.0008, t + 0.025 + h32(k * 7) * 0.07);
+    src.connect(f); f.connect(gn); gn.connect(actx.destination);
+    const off = h32(k * 11) * 1.5;
+    src.start(t, off, 0.15);
+  }
+  function sound(intensity) {
+    if (!actx || !audioOn) return;
+    bedGain.gain.setTargetAtTime(0.14 * intensity, actx.currentTime, 0.25);
+    hissGain.gain.setTargetAtTime(0.028 * intensity, actx.currentTime, 0.3);
+    if (intensity > 0.02) {
+      while (nextPop < actx.currentTime + 0.25) {
+        crackle(nextPop, seedk++);
+        nextPop += (0.03 + h32(seedk * 13) * 0.35) / (0.25 + intensity * 1.9);
+      }
+    } else { nextPop = actx.currentTime + 0.2; }
+  }
+
+  // ── ことば ──
+  let lastSay = '';
+  function say(s) { if (s !== lastSay) { $('st').innerHTML = s; lastSay = s; } }
+  const mmss = s => Math.floor(s / 60) + ':' + String(Math.floor(s % 60)).padStart(2, '0');
+
+  // ── まわす ──
+  let prev = performance.now(), acc = 0, lastPower = 0;
+  function loop(now) {
+    const dt = Math.min(0.1, (now - prev) / 1000); prev = now;
+    acc += dt * 60;
+    let n = 0;
+    while (acc >= 1 && n < 180) { lastPower = step(); acc -= 1; n++; }
+    const intensity = Math.min(1, lastPower / 26);
+    if (intensity > 0.02) { burnNow += dt; burnBest = Math.max(burnBest, burnNow); wasBurning = true; }
+    else if (wasBurning) { wasBurning = false; burnNow = 0;
+      say(`<b>消えました。</b>灰と記録は残っています——灰 ${ash}本ぶん、さいちょう ${mmss(burnBest)}。もう一本どうぞ。`); }
+    draw(); sound(intensity);
+    $('nums').innerHTML =
+      `薪 <b>${fed}</b>本　いま <b>${mmss(burnNow)}</b>　さいちょう <b>${mmss(burnBest)}</b>　灰 <b>${ash}</b>本ぶん　火 <b>${Math.round(intensity*100)}</b>%`;
+    if (intensity > 0.02) {
+      if (intensity < 0.18 && logs.length <= 1) say('弱ってきました。<span class="q">くべるなら、いまです。</span>');
+      else say(`もえています。<span class="q">${logs.length}本</span>が火の中。放っておくと、やみます。`);
+    }
+    requestAnimationFrame(loop);
+  }
+
+  if (window.matchMedia) {
+    const mq = window.matchMedia("(prefers-color-scheme: dark)");
+    const oc = () => theme();
+    mq.addEventListener ? mq.addEventListener("change", oc) : mq.addListener(oc);
+  }
+  requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>
