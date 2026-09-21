@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ゆずる — ひゅーまん</title>
+<meta name="description" content="全員がゆずるので、だれも通れません。善意は100%のまま、さげません。入れるのは、ずれだけです（乱数なし）。">
+<link rel="canonical" href="https://hyu-man.com/yuzuru/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="ひゅーまん">
+<meta property="og:title" content="ゆずる — ひゅーまん">
+<meta property="og:description" content="全員がゆずるので、だれも通れません。善意は、さげません。">
+<meta property="og:url" content="https://hyu-man.com/yuzuru/">
+<meta property="og:locale" content="ja_JP">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'><rect width='8' height='8' fill='%23f5f3f0'/><rect x='3' y='1' width='2' height='6' fill='%231a1a1a'/><rect x='0' y='4' width='2' height='2' fill='%23ff96aa'/><rect x='6' y='4' width='2' height='2' fill='%23ff96aa'/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Hachi+Maru+Pop&family=DotGothic16&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing:border-box; margin:0; padding:0; }
+  :root {
+    --bg:#f5f3f0; --ink:#1a1a1a; --sub:#b0a8a0; --line:#e2ded9; --cheek:#ff96aa;
+    --dot:'Press Start 2P','DotGothic16','Courier New',monospace;
+    --maru:'Hachi Maru Pop','DotGothic16',sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#0f0f0e; --ink:#efefec; --sub:#6e6a66; --line:#262624; }
+  }
+  body {
+    background:var(--bg); color:var(--ink); font-family:var(--maru);
+    display:flex; flex-direction:column; align-items:center;
+    padding:36px 16px 64px;
+  }
+  h1 { font-family:var(--dot); font-size:13px; font-weight:400;
+       letter-spacing:.3em; text-indent:.3em; margin-bottom:6px; }
+  .lead { font-size:14px; color:var(--sub); letter-spacing:.05em; margin-bottom:22px; }
+  .wrap { width:100%; max-width:720px; }
+
+  .bar { display:flex; align-items:center; gap:12px; flex-wrap:wrap;
+         padding:10px 0; border-bottom:1px solid var(--line); margin-bottom:6px; }
+  .bar button {
+    font-family:var(--maru); font-size:12px; letter-spacing:.06em;
+    background:var(--bg); color:var(--ink); border:1px solid var(--ink);
+    padding:5px 13px; border-radius:2px; cursor:pointer;
+  }
+  .bar button:hover { background:var(--ink); color:var(--bg); }
+  .bar button.on { background:var(--cheek); border-color:var(--cheek); color:#fff; }
+
+  .knob { display:flex; align-items:center; gap:10px; font-size:12.5px; letter-spacing:.05em;
+          padding:8px 0; width:100%; }
+  .knob label { width:4.2em; flex:none; }
+  .knob input[type=range] { flex:1; min-width:0; accent-color:var(--cheek); }
+  .knob .val { font-family:var(--dot); font-size:9px; width:5.5em; text-align:right; flex:none; }
+  .knob.locked { color:var(--sub); }
+  .knob.locked input { accent-color:var(--sub); opacity:.55; cursor:not-allowed; }
+  .knobs { border-bottom:1px solid var(--line); margin-bottom:14px; padding-bottom:4px; }
+  .lockmsg { font-size:11.5px; color:var(--sub); letter-spacing:.04em; min-height:1.7em; }
+  .lockmsg .q { color:var(--cheek); }
+
+  .room { margin-top:18px; }
+  .room h2 { font-family:var(--maru); font-size:14px; font-weight:400; letter-spacing:.12em;
+             margin-bottom:6px; }
+  .room h2 span { color:var(--sub); font-size:12px; margin-left:.8em; letter-spacing:.04em; }
+  canvas { width:100%; height:auto; display:block; image-rendering:pixelated;
+           border:1px solid var(--line); background:var(--bg); }
+  .nums { font-family:var(--dot); font-size:9px; color:var(--sub); letter-spacing:.06em; line-height:2;
+          margin-top:6px; }
+  .nums b { color:var(--ink); font-weight:400; }
+  .st { font-size:12.5px; color:var(--sub); margin-top:2px; letter-spacing:.04em;
+        min-height:1.9em; line-height:1.8; }
+  .st b { color:var(--ink); font-weight:400; }
+  .st .q { color:var(--cheek); }
+
+  .last { margin-top:30px; padding-top:18px; border-top:1px solid var(--line);
+          font-size:13px; line-height:2.1; color:var(--sub); letter-spacing:.04em; }
+  .last b { color:var(--ink); font-weight:400; }
+  .last .who { color:var(--ink); font-size:14px; margin-top:14px; display:inline-block; }
+
+  nav { margin-top:40px; font-family:var(--dot); font-size:9px; letter-spacing:.1em; color:var(--sub); }
+  nav a { color:var(--sub); text-decoration:none; margin-right:13px; }
+  nav a, .fromrule a{
+    text-decoration:none; border-bottom:0;
+    background:linear-gradient(90deg,#ff0040,#ff8a00,#ffe600,#3ddc4a,#00b7ff,#8a4bff,#ff0040);
+    background-size:300% 100%; -webkit-background-clip:text; background-clip:text;
+    color:transparent; animation:flow 4s linear infinite;
+  }
+  nav a:hover, .fromrule a:hover{ animation-duration:1.2s; }
+  @keyframes flow{ from{background-position:0% 0} to{background-position:300% 0} }
+  @media (prefers-reduced-motion: reduce){
+    nav a, .fromrule a{ animation:none; background-position:50% 0; }
+  }
+  .fromrule { margin-top:26px; font-size:12px; color:var(--sub); letter-spacing:.04em; line-height:2; }
+</style>
+</head>
+<body>
+
+<h1>ゆずる</h1>
+<p class="lead">善意は、さげません。</p>
+
+<div class="wrap">
+
+  <div class="knobs">
+    <div class="knob locked" id="lockrow">
+      <label for="zen">善意</label>
+      <input id="zen" type="range" min="0" max="100" value="100" aria-label="善意。うごきません">
+      <span class="val">100%</span>
+    </div>
+    <div class="knob">
+      <label for="zure">ずれ</label>
+      <input id="zure" type="range" min="0" max="8" step="1" value="0" aria-label="ずれ。0から8">
+      <span class="val" id="zv">0 / 16</span>
+    </div>
+    <p class="lockmsg" id="lockmsg">全員、いい人です。全員、同じことをします。</p>
+  </div>
+
+  <div class="bar">
+    <button id="snd">おと</button>
+    <span class="nums" style="margin:0">音が出るのは、伴奏の部屋だけです。</span>
+  </div>
+
+  <section class="room">
+    <h2>とびら<span>相手がいたら、ゆずる。</span></h2>
+    <canvas id="c1" width="384" height="96" aria-label="扉の前でゆずりあう二人"></canvas>
+    <p class="nums" id="n1"></p>
+    <p class="st" id="s1"></p>
+  </section>
+
+  <section class="room">
+    <h2>ばんそう<span>相手が弾くなら、伴奏にまわる。</span></h2>
+    <canvas id="c2" width="384" height="112" aria-label="八人の伴奏。十六分の升目"></canvas>
+    <p class="nums" id="n2"></p>
+    <p class="st" id="s2"></p>
+  </section>
+
+  <section class="room">
+    <h2>おかえし<span>もらったら、かえす。</span></h2>
+    <canvas id="c3" width="384" height="112" aria-label="贈り物とお返しの山"></canvas>
+    <p class="nums" id="n3"></p>
+    <p class="st" id="s3"></p>
+  </section>
+
+  <section class="room">
+    <h2>ごめんなさい<span>あやまられたら、あやまる。</span></h2>
+    <canvas id="c4" width="384" height="112" aria-label="謝罪への謝罪"></canvas>
+    <p class="nums" id="n4"></p>
+    <p class="st" id="s4"></p>
+  </section>
+
+  <div class="last">
+    だれも、わるくありません。<br>
+    全員が同じことをすると、詰まります。詰まるのは、やさしさの量のせいではありません。<br>
+    <b>善意は 100% のまま、さわっていません。入れたのは、ずれだけです。</b><br>
+    おかえしの 8 / 16 は、半返し。日本の作法が、とっくに見つけていた数です。<br>
+    <span class="who">通れるようになっても、全員、いい人のままです。</span>
+  </div>
+
+  <p class="fromrule">
+    とびら：ずれ ÷ 16 の割合で、どちらかが「お先に」を受けとる（どちらかは、決まったでたらめ）。<br>
+    ばんそう：ひとりだけ、ずれのぶん十六分音符を後ろへ。おかえし・ごめんなさい：かえす量を 1 − ずれ ÷ 16 倍に。<br>
+    乱数はありません。同じずれなら、いつ来ても同じことが起きます。
+  </p>
+
+<nav>
+  <a href="/">ひゅーまん</a><a href="/wakeru/">/wakeru/</a><a href="/furueru/">/furueru/</a><a href="/kuberu/">/kuberu/</a>
+</nav>
+</div>
+
+<script>
+(() => {
+  "use strict";
+  const $ = id => document.getElementById(id);
+  const cs = getComputedStyle(document.documentElement);
+  const C = k => cs.getPropertyValue(k).trim();
+  let BG, INK, SUB, LINE, CHEEK;
+  const theme = () => { BG=C('--bg'); INK=C('--ink'); SUB=C('--sub'); LINE=C('--line'); CHEEK=C('--cheek'); };
+  theme();
+  const BROWN = '#8a3a2e';
+
+  // 決まった「でたらめ」。乱数ではない
+  function h32(i) {
+    i = Math.imul(i, 0x9E3779B1) >>> 0; i ^= i >>> 15;
+    i = Math.imul(i, 0x2C1B3C6D) >>> 0; i ^= i >>> 12;
+    i = Math.imul(i, 0x297A2D39) >>> 0;
+    return ((i ^ (i >>> 15)) >>> 0) / 4294967296;
+  }
+
+  const P = 2;                                  // 1マス＝2px（全部の部屋で同じ）
+  const ctx = id => $(id).getContext('2d');
+  const g1 = ctx('c1'), g2 = ctx('c2'), g3 = ctx('c3'), g4 = ctx('c4');
+  const px = (g, x, y, w, h, col) => { g.fillStyle = col; g.fillRect(x * P, y * P, w * P, h * P); };
+
+  // ── 善意のつまみは、うごかない ──
+  const zen = $('zen');
+  let lockTries = 0;
+  const lockBack = () => {
+    if (zen.value !== '100') { zen.value = 100; lockTries++;
+      $('lockmsg').innerHTML = `<span class="q">善意のつまみは、うごきません。</span>ずっと 100% です（さわった回数 ${lockTries}）。`; }
+  };
+  zen.addEventListener('input', lockBack); zen.addEventListener('change', lockBack);
+
+  // ── ずれ ──
+  let Z = 0;
+  $('zure').addEventListener('input', e => { Z = +e.target.value; $('zv').textContent = Z + ' / 16'; resetAll(); ensureAudio(); });
+
+  // ── 子（7×8。目は紙、ほおは桃）──
+  function kid(g, x, y, col, bow, cheekOn) {
+    const b = bow ? 1 : 0;
+    px(g, x + 1, y + b, 5, 1, col); px(g, x, y + 1 + b, 7, 5, col); px(g, x + 1, y + 6 + b, 5, 1, col);
+    px(g, x + 1, y + 7, 2, 1, col); px(g, x + 4, y + 7, 2, 1, col);
+    px(g, x + 1, y + 3 + b, 1, 1, BG); px(g, x + 5, y + 3 + b, 1, 1, BG);
+    if (cheekOn) { px(g, x, y + 4 + b, 1, 1, CHEEK); px(g, x + 6, y + 4 + b, 1, 1, CHEEK); }
+  }
+
+  // ════ 1. とびら ════
+  let D;
+  function resetDoor() { D = { step: 0, phase: 'face', t: 0, first: 0, passed: 0, yields: 0, wait: 0, waits: [], pair: 0 }; }
+  function tickDoor() {                          // 8分音符ごと
+    D.t++;
+    if (D.phase === 'face') {
+      if (D.t < 2) return;                       // 一拍おいてから判断
+      D.t = 0; D.step++;
+      const go = h32(D.step * 2 + 1) < Z / 16;
+      if (!go) { D.yields += 2; D.wait++; D.bow = 2; }
+      else { D.first = h32(D.step * 2 + 2) < 0.5 ? 0 : 1; D.phase = 'pass1'; D.waits.push(D.wait); D.wait = 0; }
+    } else if (D.phase === 'pass1') { if (D.t >= 4) { D.phase = 'pass2'; D.t = 0; D.passed++; } }
+    else if (D.phase === 'pass2') { if (D.t >= 4) { D.phase = 'enter'; D.t = 0; D.passed++; D.pair++; } }
+    else if (D.phase === 'enter') { if (D.t >= 3) { D.phase = 'face'; D.t = 0; } }
+    if (D.bow) D.bow--;
+  }
+  function drawDoor() {
+    const g = g1, W = 192, H = 48, cx = 96, gy = 34;
+    px(g, 0, 0, W, H, BG);
+    px(g, 0, gy + 8, W, 1, LINE);                                // 床
+    px(g, cx - 5, 8, 1, gy, INK); px(g, cx + 4, 8, 1, gy, INK); px(g, cx - 5, 8, 10, 1, INK);   // 枠
+    px(g, cx - 1, 9, 2, gy - 1, LINE);                           // 開いた扉のすきま
+    const f = D.t / 4;
+    let ax = cx - 18, bx = cx + 11, abow = false, bbow = false;
+    if (D.phase === 'face') { abow = bbow = D.bow > 0; }
+    if (D.phase === 'pass1') { if (D.first === 0) ax += Math.round(60 * f); else bx -= Math.round(60 * f); }
+    if (D.phase === 'pass2') {
+      if (D.first === 0) { ax = 999; bx -= Math.round(60 * f); } else { bx = 999; ax += Math.round(60 * f); } }
+    if (D.phase === 'enter') { const k = 1 - D.t / 3; ax -= Math.round(60 * k); bx += Math.round(60 * k); }
+    const lit = D.phase === 'pass1' || D.phase === 'pass2';
+    if (ax < 900) kid(g, ax, gy, BROWN, abow, lit || abow);
+    if (bx < 900) kid(g, bx, gy, INK, bbow, lit || bbow);
+    const avg = D.waits.length ? (D.waits.reduce((a, b) => a + b, 0) / D.waits.length).toFixed(1) : '—';
+    $('n1').innerHTML = `通った <b>${D.passed}</b>人　ゆずった <b>${D.yields}</b>回　待ち <b>${D.wait}</b>歩　平均 <b>${avg}</b>歩`;
+    $('s1').innerHTML = Z === 0
+      ? `ふたりとも、ゆずっています。<span class="q">${D.step}歩、だれも通っていません。</span>このままなら、ずっとです。`
+      : `ゆずる気持ちは、そのままです。ときどき、どちらかが「お先に」を<b>受けとります</b>。`;
+  }
+
+  // ════ 2. ばんそう ════
+  const NP = 8, SOLO = 3, BEATS = [0, 4, 8, 12];
+  let S;
+  function resetBand() { S = { pos: -1, bar: 0, alone: 0 }; }
+  const soloSteps = () => BEATS.map(b => (b + Z) % 16);
+  function aloneCount() { return soloSteps().filter(s => !BEATS.includes(s)).length; }
+  const MEL = [0, 2, 4, 7, 9, 7, 4, 2];                                  // 五音。順番は小節の番号から決まる
+  function tickBand(t) {                                                  // 16分音符ごと
+    S.pos = (S.pos + 1) % 16; if (S.pos === 0) S.bar++;
+    const comp = BEATS.includes(S.pos), solo = soloSteps().includes(S.pos);
+    if (comp) chord(t);
+    if (solo && !comp) { S.alone++; melody(t, MEL[(S.bar * 4 + soloSteps().indexOf(S.pos) + ((h32(S.bar) * 3) | 0)) % MEL.length]); }
+  }
+  function drawBand() {
+    const g = g2, W = 192, H = 56, x0 = 16, cw = 10, ch = 6, y0 = 4;
+    px(g, 0, 0, W, H, BG);
+    if (S.pos >= 0) px(g, x0 + S.pos * cw, y0 - 1, cw, NP * ch + 2, LINE);
+    const ss = soloSteps();
+    for (let r = 0; r < NP; r++) {
+      px(g, 4, y0 + r * ch + 1, 5, 4, r === SOLO && Z % 4 !== 0 ? CHEEK : (r % 2 ? INK : BROWN));   // 弾く人
+      for (let c = 0; c < 16; c++) {
+        const mine = r === SOLO ? ss.includes(c) : BEATS.includes(c);
+        const x = x0 + c * cw + 1, y = y0 + r * ch + 1;
+        if (mine) { const al = r === SOLO && !BEATS.includes(c); px(g, x, y, cw - 2, ch - 2, al ? CHEEK : INK); }
+        else px(g, x + 3, y + 1, 2, 2, LINE);
+      }
+    }
+    const a = aloneCount();
+    $('n2').innerHTML = `小節 <b>${Math.max(0, S.bar)}</b>　ひとりだけの音 <b>${a}</b>個 / 小節　これまで <b>${S.alone}</b>個`;
+    $('s2').innerHTML = a === 0
+      ? (Z === 0 ? `八人とも、伴奏です。全員が同じ拍にいます。<span class="q">旋律は、まだ始まりません。</span>`
+                 : `ずれが ${Z} / 16。ちょうど拍の上に乗ったので、<span class="q">また全員と重なりました。</span>ずれすぎても、消えます。`)
+      : `四人目だけ、${Z} / 16 うしろ。<b>だれとも重ならない音</b>が、旋律になります。えらいからでは、ありません。`;
+  }
+
+  // ════ 3. おかえし ════
+  const FIRST = 64, CAP = 40 * 44;
+  let G;
+  function resetGift() { G = { n: 0, v: FIRST, total: 0, piles: [0, 0], side: 1, done: false, over: false, rest: 0, rounds: 0 }; }
+  function tickGift() {                          // 4分音符ごと
+    if (G.done) { if (++G.rest > 16) { const r = G.rounds; resetGift(); G.rounds = r; } return; }
+    const v = G.n === 0 ? FIRST : Math.floor(G.v * (1 - Z / 16));
+    if (v < 1) { G.done = true; G.rounds++; return; }
+    G.v = v; G.n++; G.total += v; G.piles[G.side] += v; G.side ^= 1;
+    if (G.piles[0] > CAP || G.piles[1] > CAP) G.over = true;
+  }
+  function pile(g, x0, dots, col) {
+    const w = 40, base = 52; let left = Math.min(dots, CAP), y = 0;
+    while (left > 0) { const n = Math.min(w, left); px(g, x0, base - y, n, 1, col); left -= n; y++; }
+  }
+  function drawGift() {
+    const g = g3, W = 192, H = 56;
+    px(g, 0, 0, W, H, BG); px(g, 0, 53, W, 1, LINE);
+    pile(g, 14, G.piles[0], BROWN); pile(g, 138, G.piles[1], INK);
+    kid(g, 66, 45, BROWN, false, true); kid(g, 119, 45, INK, false, true);
+    if (!G.done && G.n > 0) {                                     // いま運ばれている包み
+      const s = Math.max(1, Math.round(Math.sqrt(G.v))), x = G.side === 0 ? 108 - s : 78;
+      px(g, x, 50 - s, s, s, CHEEK);
+    }
+    const ratio = (G.total / FIRST).toFixed(2);
+    $('n3').innerHTML = `かえす量 <b>×${(1 - Z / 16).toFixed(4).replace(/0+$/, '').replace(/\.$/, '')}</b>　やりとり <b>${G.n}</b>回　物の総量 <b>${G.total}</b>個（最初の <b>×${ratio}</b>）`;
+    $('s3').innerHTML = Z === 0
+      ? (G.over ? `<span class="q">棚から、あふれました。</span>それでも、かえします。同じだけ、かならず。`
+                : `もらったぶんと、同じだけ、かえします。<span class="q">物だけが、増えつづけます。</span>`)
+      : (G.done ? `<b>${G.n}回で、やみました。</b>総量は最初の ×${ratio}。気持ちは、へっていません。`
+                : `すこしだけ、へらして、かえします。${Z === 8 ? '<span class="q">半返し。</span>' : ''}`);
+  }
+
+  // ════ 4. ごめんなさい ════
+  const L0 = 16;
+  let A;
+  function resetSorry() { A = { rows: [], L: L0, n: 0, done: false, rest: 0, side: 0, total: 0 }; }
+  function tickSorry() {                         // 4分音符ごと
+    if (A.done) { if (++A.rest > 16) resetSorry(); return; }
+    const L = A.n === 0 ? L0 : Math.floor(A.L * (1 - Z / 16));
+    if (L < 1) { A.done = true; return; }
+    A.L = L; A.n++; A.total += L; A.rows.push({ L, side: A.side }); A.side ^= 1;
+    if (A.rows.length > 8) A.rows.shift();
+  }
+  function drawSorry() {
+    const g = g4, W = 192, H = 56, cw = 8;
+    px(g, 0, 0, W, H, BG);
+    A.rows.forEach((r, i) => {
+      const y = 3 + i * 6, col = r.side ? INK : BROWN;
+      for (let k = 0; k < r.L; k++) {
+        const x = r.side ? W - 32 - (k + 1) * cw : 32 + k * cw;
+        px(g, x + 1, y, cw - 2, 4, i === A.rows.length - 1 ? CHEEK : col);
+      }
+    });
+    kid(g, 10, 45, BROWN, !A.done && A.side === 1 && A.n > 0, true);
+    kid(g, 175, 45, INK, !A.done && A.side === 0 && A.n > 0, true);
+    $('n4').innerHTML = `いまの長さ <b>${A.done ? 0 : A.L}</b>音　あやまった <b>${A.n}</b>回　ぜんぶで <b>${A.total}</b>音`;
+    $('s4').innerHTML = Z === 0
+      ? `あやまられたので、同じ長さで、あやまります。<span class="q">合唱は、おわりません。</span>`
+      : (A.done ? `<b>${A.n}回で、やみました。</b>長さがへっても、ごめんなさいは、ごめんなさいです。`
+                : `すこし短く、かえします。`);
+  }
+
+  function resetAll() { resetDoor(); resetBand(); resetGift(); resetSorry(); }
+  resetAll();
+
+  // ── おと（伴奏の部屋だけ。全部その場で合成）──
+  let audioOn = false, actx = null, master = null;
+  $('snd').onclick = () => { audioOn = !audioOn; $('snd').classList.toggle('on', audioOn);
+    if (audioOn) ensureAudio(); if (master) master.gain.setTargetAtTime(audioOn ? 0.5 : 0, actx.currentTime, 0.05); };
+  function ensureAudio() {
+    if (actx || !audioOn) return;
+    try { actx = new (window.AudioContext || window.webkitAudioContext)();
+      master = actx.createGain(); master.gain.value = 0.5; master.connect(actx.destination); } catch (e) {}
+  }
+  function blip(t, hz, type, peak, len) {
+    const o = actx.createOscillator(), gn = actx.createGain();
+    o.type = type; o.frequency.value = hz;
+    gn.gain.setValueAtTime(0.0001, t); gn.gain.linearRampToValueAtTime(peak, t + 0.008);
+    gn.gain.exponentialRampToValueAtTime(0.0008, t + len);
+    o.connect(gn); gn.connect(master); o.start(t); o.stop(t + len + 0.02);
+  }
+  function chord(t) { if (!actx || !audioOn) return; [220, 277.18, 329.63].forEach(hz => blip(t, hz, 'triangle', 0.09, 0.22)); }
+  function melody(t, semi) { if (!actx || !audioOn) return; blip(t, 440 * Math.pow(2, semi / 12), 'square', 0.07, 0.3); }
+
+  // ── まわす（16分音符＝125ms。全部の部屋が同じ時計）──
+  const TICK = 0.125;
+  let prev = performance.now(), acc = 0, tick = 0;
+  function loop(now) {
+    const dt = Math.min(0.25, (now - prev) / 1000); prev = now; acc += dt;
+    let n = 0;
+    while (acc >= TICK && n < 8) {
+      acc -= TICK; n++; tick++;
+      tickBand(actx ? actx.currentTime + 0.03 : 0);
+      if (tick % 2 === 0) tickDoor();
+      if (tick % 4 === 0) { tickGift(); tickSorry(); }
+    }
+    drawDoor(); drawBand(); drawGift(); drawSorry();
+    requestAnimationFrame(loop);
+  }
+
+  if (window.matchMedia) {
+    const mq = window.matchMedia("(prefers-color-scheme: dark)");
+    const oc = () => theme();
+    mq.addEventListener ? mq.addEventListener("change", oc) : mq.addListener(oc);
+  }
+  requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>
