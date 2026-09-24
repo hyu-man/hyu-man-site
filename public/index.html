@@ -21,140 +21,29 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Hachi+Maru+Pop&family=DotGothic16&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --ink:#111; --bg:#fff; --sub:#9a9a9a; --line:#e8e8e6; --cheek:#ff96aa;
-    --dot:'Press Start 2P','DotGothic16','Courier New',monospace;
-    --maru:'Hachi Maru Pop','DotGothic16',sans-serif;
-  }
-  @media (prefers-color-scheme: dark) {
-    :root { --ink:#f2f2f2; --bg:#0a0a0a; --sub:#777; --line:#222; }
-  }
-  * { box-sizing:border-box; margin:0; padding:0; }
-  body {
-    background:var(--bg); color:var(--ink); font-family:var(--maru);
-    display:flex; flex-direction:column; align-items:center;
-    padding:0 18px 70px;
-  }
-
-  /* ── 1枚目 ───────────────────────────── */
-  .top {
-    min-height:100dvh; display:flex; flex-direction:column;
-    align-items:center; justify-content:center; gap:0;
-  }
-  h1 { font-family:var(--dot); font-size:14px; font-weight:400;
-       letter-spacing:.42em; text-indent:.42em; margin-bottom:8px; }
-  .ask { font-size:13px; color:var(--sub); letter-spacing:.06em;
-         margin-bottom:16px; min-height:1.5em; }
-  .ask b { font-family:var(--dot); font-size:13px; color:var(--ink);
-           font-variant-numeric:tabular-nums; letter-spacing:.02em; }
-  .ask.done, .ask.done b { color:var(--cheek); }
-  .stage { width:min(420px, 84vw, 48vh); }
-  canvas { image-rendering:pixelated; display:block; aspect-ratio:1/1;
-           width:100%; height:auto; }
-  .tvrow { display:flex; justify-content:center; margin-top:14px; }
-  .albums { margin-top:26px; display:flex; flex-direction:column;
-            align-items:center; gap:13px; }
-  .albums a {
-    color:var(--ink); text-decoration:none; letter-spacing:.1em;
-    border-bottom:1px solid var(--ink); padding-bottom:3px;
-  }
-  .albums a:hover { background:var(--ink); color:var(--bg); border-color:transparent; }
-  .albums .past i { font-style:normal; color:var(--cheek); }
-  /* ◍ はほお。ゆっくり息をするように滲む */
-  @media (prefers-reduced-motion: no-preference){
-    .albums .past i { animation:blush 4.2s ease-in-out infinite; }
-    .albums .past i:last-of-type { animation-delay:.35s; }
-    @keyframes blush{
-      0%,100%{ text-shadow:0 0 0 rgba(255,150,170,0); }
-      50%    { text-shadow:0 0 11px rgba(255,150,170,.9), 0 0 24px rgba(255,150,170,.4); }
-    }
-  }
-  .albums .past { display:flex; gap:20px; font-size:11px; }
-  .albums .past a { color:var(--sub); border-bottom-color:var(--line); }
-  .albums .past a:hover { background:var(--sub); color:var(--bg); border-color:transparent; }
-  .albums .past a:hover i { color:var(--bg); animation:none; text-shadow:none; }
-  /* YouTube。まんなかに、テレビを大きく */
-  .listen { margin-top:22px; }
-  .listen a { display:inline-flex; flex-direction:column; align-items:center; gap:9px;
-              text-decoration:none; color:var(--ink);
-              font-size:14px; letter-spacing:.14em; text-indent:.14em;
-              border-bottom:2px solid var(--ink); padding:0 6px 6px; }
-  .listen a:hover { color:var(--cheek); border-color:var(--cheek); }   /* 反転すると目が消えるので、ほおの色に */
-  .listen svg { display:block; width:66px; height:60px; transition:transform .18s ease; }
-  .listen .ec { display:none; }
-  .listen a:hover .eo { display:none; }
-  .listen a:hover .ec { display:block; }   /* svg の g には inline が効かない */
-  .listen a:hover svg { transform:rotate(-4deg); }
-  .scroll { margin-top:34px; font-size:11px; color:var(--sub); letter-spacing:.14em; }
-
-  /* ── 規則ごとの部屋 ───────────────────── */
-  .rules { width:100%; max-width:660px; }
-  .grp { border-top:1px solid var(--line); padding:26px 0 22px; }
-  .grp:first-child { border-top:none; }
-  .rule { font-size:13px; line-height:1.95; color:var(--sub); letter-spacing:.04em; }
-  .rule b { color:var(--ink); font-weight:400; }
-  .out { margin-top:14px; display:flex; gap:20px; flex-wrap:wrap; }
-  .out a { display:flex; flex-direction:column; gap:2px;
-           text-decoration:none; color:var(--sub); line-height:1.3; }
-  .out .jp { font-size:14px; letter-spacing:.05em; }
-  .out .en { font-family:var(--dot); font-size:7px; letter-spacing:.06em; opacity:.7; }
-  .out a:hover .jp { color:var(--cheek); }
-  .out a:hover .en { color:var(--ink); }
-
-  footer { margin-top:44px; font-family:var(--dot); font-size:9px;
-           color:var(--sub); letter-spacing:.2em; text-align:center; }
-
-  @media (max-width:600px) {
-    .rule { font-size:12px; }
-    .out { gap:15px; } .out .jp { font-size:12px; }
-    .albums .past { gap:14px; font-size:10px; }
-    .listen svg { width:55px; height:50px; }
-  }
+:root{--ink:#191918;--bg:#faf9f6;--sub:#716e68;--line:#dedbd4;--cheek:#ff96aa;--dot:'DotGothic16',monospace;--maru:'Hachi Maru Pop',sans-serif}
+*{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:25px}body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--dot);line-height:1.8}a{color:inherit;text-decoration:none}a:focus-visible,button:focus-visible{outline:2px solid #c13e65;outline-offset:5px}a:hover{color:#b83c62}button{font:inherit}.wrap{width:min(1200px,calc(100% - 80px));margin:auto}.sitehead{height:100px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--line)}.brand{font-size:22px;letter-spacing:.15em}.brand span{color:var(--cheek);margin-left:9px}nav{display:flex;gap:30px;font-size:13px}.hero{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:center;min-height:660px;padding:65px 0 70px}.eyebrow{font-size:10px;letter-spacing:.19em;color:var(--sub);margin:0 0 24px}.hero h1{font-size:clamp(38px,4.7vw,64px);font-weight:400;line-height:1.65;letter-spacing:.02em;margin:0 0 26px}.hero h1 em{font-style:normal;position:relative;white-space:nowrap}.hero h1 em:after{content:'';height:6px;background:var(--cheek);position:absolute;left:0;right:0;bottom:4px}.intro{font-family:var(--maru);font-size:13px;line-height:2.3;color:var(--sub)}.hero-links{display:flex;gap:24px;align-items:center;margin-top:33px;font-size:13px}.hero-links a{border-bottom:1px solid var(--ink);padding-bottom:7px}.hero-links a:first-child{background:var(--ink);color:var(--bg);padding:13px 21px;border:0}.hero-links a:first-child:hover{background:#713d4a}.stage{min-width:0;margin:0}.stage-top,.stage-bottom{display:flex;justify-content:space-between;font-size:10px;color:var(--sub);letter-spacing:.05em}.stage-top{border-bottom:1px solid var(--line);padding-bottom:12px}.stage canvas{width:100%;height:auto;display:block;image-rendering:pixelated;aspect-ratio:1}.stage-bottom{border-top:1px solid var(--line);padding-top:12px;gap:15px}.ask{margin:0}.ask b{font-weight:400;font-variant-numeric:tabular-nums;color:var(--ink)}.ask.done,.ask.done b{color:#b83c62}.section-title{display:flex;justify-content:space-between;align-items:baseline;gap:20px;margin:0 0 26px}.section-title h2{font-size:25px;font-weight:400;margin:0}.section-title p{font-size:11px;color:var(--sub);margin:0}.doors{display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid var(--ink);border-bottom:1px solid var(--ink);margin-bottom:100px}.door{position:relative;display:flex;flex-direction:column;padding:30px 28px 28px;min-height:235px;border-right:1px solid var(--line);transition:background .18s}.door:first-child{padding-left:0}.door:last-child{border:0}.door:hover{background:#f6e8eb;color:var(--ink)}.door small{font-size:10px;letter-spacing:.12em;color:var(--sub)}.door h2{font-size:31px;font-weight:400;margin:17px 0 12px}.door p{font-size:12px;color:var(--sub);margin:0;line-height:2}.door .arrow{position:absolute;right:24px;top:30px;font-size:22px}.door .tag{margin-top:auto;padding-top:20px;font-size:10px;color:#a14a65}.rooms{display:grid;grid-template-columns:1fr 1fr;column-gap:60px}.grp{border-top:1px solid var(--line);padding:26px 0 30px;min-width:0}.roomhead{display:flex;gap:16px;align-items:center;margin-bottom:14px}.roomhead>span{font-size:10px;color:#a14a65}.roomhead h3{font-size:17px;font-weight:400;margin:0}.rule{font-family:var(--maru);font-size:11px;line-height:2.1;color:var(--sub);margin:0}.rule b{font-weight:400;color:var(--ink)}.out{display:flex;flex-wrap:wrap;gap:12px 20px;margin-top:18px}.out a{display:flex;flex-direction:column}.jp{font-size:14px}.en{font-size:9px;color:var(--sub)}.out a:hover .jp{box-shadow:0 2px var(--cheek)}.closing{border-top:1px solid var(--ink);padding:40px 0;display:flex;justify-content:space-between;align-items:center;gap:25px;margin-top:60px}.closing p{font-family:var(--maru);font-size:13px;line-height:2;margin:0}.closing a{font-size:12px;border-bottom:1px solid var(--line)}footer{display:flex;justify-content:space-between;border-top:1px solid var(--line);padding:26px 0 40px;font-size:10px;color:var(--sub)}footer div{display:flex;gap:24px}.skip{position:absolute;top:-80px}.skip:focus{top:10px;background:var(--bg);padding:10px;z-index:2}
+@media(prefers-color-scheme:dark){:root{--ink:#eeeae4;--bg:#121212;--sub:#aaa39b;--line:#36322e}.door:hover{background:#322329}.hero-links a:first-child:hover{background:#e3a3b3;color:#121212}.hero h1 em:after{opacity:.7}.roomhead>span,.door .tag{color:var(--cheek)}}
+@media(max-width:900px){.wrap{width:calc(100% - 40px)}.hero{gap:25px;min-height:570px}.hero h1{font-size:38px}.rooms{column-gap:30px}.door{padding:24px 18px}.door h2{font-size:25px}.door .arrow{right:15px}.doors{margin-bottom:70px}}
+@media(max-width:620px){.sitehead{height:76px}.brand{font-size:18px}nav{gap:17px;font-size:11px}.hero{grid-template-columns:1fr;padding:40px 0 38px;gap:35px}.eyebrow{margin-bottom:18px;font-size:9px}.hero h1{font-size:clamp(25px,8vw,38px);line-height:1.6;margin-bottom:20px}.intro{font-size:12px}.hero-links{margin-top:24px}.stage{width:min(100%,410px);justify-self:center}.stage-bottom{font-size:9px}.doors{grid-template-columns:1fr;margin-bottom:58px}.door,.door:first-child{padding:22px 0;min-height:0;border-right:0;border-bottom:1px solid var(--line)}.door h2{margin:8px 0;font-size:27px}.door .tag{padding-top:12px}.door .arrow{right:5px;top:26px}.rooms{grid-template-columns:1fr}.section-title{align-items:flex-start;flex-direction:column;gap:5px}.section-title h2{font-size:24px}.grp{padding:23px 0}.closing{align-items:flex-start;flex-direction:column;margin-top:30px;padding:28px 0}footer{gap:20px;flex-wrap:wrap}.rule{font-size:12px}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.door{transition:none}}
 </style>
 </head>
 <body>
-
-<div class="top">
-  <h1>ひゅーまん</h1>
-  <p class="ask" id="ask">いま、なんぽ？ <b id="n">000000</b></p>
-  <div class="stage">
-    <canvas id="cv" width="486" height="486" aria-label="ラングトンの蟻"></canvas>
-    <div class="tvrow listen">
-      <a href="https://www.youtube.com/@hyumancom"
-         target="_blank" rel="noopener" aria-label="YouTube。まだ、うごいてます">
-        <svg width="22" height="20" viewBox="0 0 22 20" aria-hidden="true">
-          <rect x="5"  y="0" width="1" height="4" fill="currentColor"/>
-          <rect x="16" y="0" width="1" height="4" fill="currentColor"/>
-          <rect x="2" y="4" width="18" height="15" rx="2" fill="currentColor"/>
-          <g class="eo">
-            <rect x="6"  y="8" width="3" height="3" fill="var(--bg)"/>
-            <rect x="13" y="8" width="3" height="3" fill="var(--bg)"/>
-          </g>
-          <g class="ec">
-            <rect x="6"  y="9" width="3" height="2" fill="var(--bg)"/>
-            <rect x="13" y="9" width="3" height="2" fill="var(--bg)"/>
-          </g>
-          <rect x="3"  y="12" width="3" height="2" fill="var(--cheek)"/>
-          <rect x="16" y="12" width="3" height="2" fill="var(--cheek)"/>
-          <rect x="10" y="12" width="1" height="5" fill="var(--bg)"/>
-          <rect x="11" y="13" width="1" height="3" fill="var(--bg)"/>
-          <rect x="12" y="14" width="1" height="1" fill="var(--bg)"/>
-        </svg>
-        まだ、うごいてます
-      </a>
-    </div>
-  </div>
-  <div class="albums">
-    <div class="past">
-      <a href="https://vicugna.booth.pm/items/8848214" target="_blank" rel="noopener">both</a>
-    </div>
-  </div>
-  <div class="scroll">↓　ここから下は、規則が作っています</div>
-</div>
-
-<div class="rules">
-
-  <div class="grp">
+<a class="skip" href="#rooms">作品一覧へ</a>
+<div class="wrap">
+<header class="sitehead"><a class="brand" href="/" aria-label="ひゅーまん ホーム">ひゅーまん<span>▪</span></a><nav aria-label="メイン"><a href="/uta/">うた</a><a href="#rooms">あそぶ</a><a href="/daw/">つくる</a></nav></header>
+<main>
+<section class="hero" aria-labelledby="headline">
+<div><p class="eyebrow">HYU-MAN / MUSIC, RULES &amp; LITTLE WORLDS</p><h1 id="headline">決まっているのに、<br><em>わからない。</em></h1><p class="intro">規則を先に書いて、<br>出てきたものを、あとから読む。<br>音楽と、絵と、小さな世界。</p><div class="hero-links"><a href="/uta/">うたを聴く ↗</a><a href="#rooms">規則の中へ ↓</a></div></div>
+<figure class="stage"><div class="stage-top"><span>01 / LANGTON’S ANT</span><p class="ask" id="ask">いま、なんぽ？ <b id="n">000000</b></p></div><canvas id="cv" width="486" height="486" aria-label="ラングトンの蟻。白なら右、黒なら左へ進みます。">ラングトンの蟻が、規則に従って歩いています。</canvas><figcaption class="stage-bottom"><span>白なら右。黒なら左。一歩。</span><a href="/ant/">この子のところへ ↗</a></figcaption></figure>
+</section>
+<section class="doors" aria-label="三つの入口">
+<a class="door" href="/uta/"><small>01 / LISTEN</small><span class="arrow" aria-hidden="true">↗</span><h2>うたう。</h2><p>曲と歌詞と、規則が描いた映像。<br>ひゅーまんの音楽を、ここから。</p><span class="tag">MUSIC &amp; VIDEO</span></a>
+<a class="door" href="/daw/"><small>02 / MAKE</small><span class="arrow" aria-hidden="true">↗</span><h2>ならす。</h2><p>規則と種を置いて、曲をつくる。<br>小さな声も、いっしょに。</p><span class="tag">RULE STUDIO → WAV / MIDI</span></a>
+<a class="door" href="/moeru/"><small>03 / REST</small><span class="arrow" aria-hidden="true">↗</span><h2>もえる。</h2><p>やわらかい火と、ほどける音。<br>眠る前の、何もしない時間に。</p><span class="tag">A QUIET PLACE</span></a>
+</section>
+<section id="rooms" aria-labelledby="rooms-title"><div class="section-title"><h2 id="rooms-title">規則ごとの、小さな部屋。</h2><p>ひとつの規則から、いくつもの行き先。</p></div><div class="rooms"><article class="grp"><div class="roomhead"><span>01</span><h3>蟻のいるところ</h3></div>
     <p class="rule">
       白なら右。黒なら左。踏んだ色を裏返して、一歩。<br>
       <b>この蟻から、6つ出ています。</b>
@@ -166,10 +55,8 @@
       <a href="/play/"><span class="jp">かなでる</span><span class="en">/play/</span></a>
       <a href="/loop/"><span class="jp">まわす</span><span class="en">/loop/</span></a>
       <a href="/chop/"><span class="jp">きざむ</span><span class="en">/chop/</span></a>
-    </div>
-  </div>
-
-  <div class="grp">
+    </div></article>
+<article class="grp"><div class="roomhead"><span>02</span><h3>いきものの規則</h3></div>
     <p class="rule">
       隣が2か3ならいきる。ちょうど3でうまれる。それ以外はきえる。<br>
       <b>規則の中に、最初からカエルがいました。</b>
@@ -177,20 +64,16 @@
     <div class="out">
       <a href="/life/"><span class="jp">いきる</span><span class="en">/life/</span></a>
       <a href="/toad/"><span class="jp">かえる</span><span class="en">/toad/</span></a>
-    </div>
-  </div>
-
-  <div class="grp">
+    </div></article>
+<article class="grp"><div class="roomhead"><span>03</span><h3>帰り道の予想</h3></div>
     <p class="rule">
       偶数なら半分。奇数なら3倍して1を足す。<br>
       <b>ぜんぶ 1 にかえります。たぶん。</b>
     </p>
     <div class="out">
       <a href="/collatz/"><span class="jp">1にかえる</span><span class="en">/collatz/</span></a>
-    </div>
-  </div>
-
-  <div class="grp">
+    </div></article>
+<article class="grp"><div class="roomhead"><span>04</span><h3>止まる、とまらない</h3></div>
     <p class="rule">
       テープの上を、きまった規則どおりに歩くだけ。<br>
       <b>とまるかどうかは、調べる方法がありません。</b>
@@ -199,131 +82,106 @@
       <a href="/halt/"><span class="jp">とまる</span><span class="en">/halt/</span></a>
       <a href="/count/"><span class="jp">かぞえる</span><span class="en">/count/</span></a>
       <a href="/liar/"><span class="jp">うそつき</span><span class="en">/liar/</span></a>
-    </div>
-  </div>
-
-  <div class="grp">
+    </div></article>
+<article class="grp"><div class="roomhead"><span>05</span><h3>となりと、いっしょに</h3></div>
     <p class="rule">
       列が何人なのかを、だれも知りません。となりとしか話せません。<br>
       <b>それでも、ぜんいんが おなじ一歩で うてます。</b>
     </p>
     <div class="out">
       <a href="/burn/"><span class="jp">そろう</span><span class="en">/burn/</span></a>
-    </div>
-  </div>
-
-  <div class="grp">
+    </div></article>
+<article class="grp"><div class="roomhead"><span>06</span><h3>待っている数</h3></div>
     <p class="rule">
       戻れるなら、戻る。戻れないなら、進む。<br>
       <b>19 は、99,734歩 待っていました。</b>
     </p>
     <div class="out">
       <a href="/matsu/"><span class="jp">まつ</span><span class="en">/matsu/</span></a>
-    </div>
-  </div>
-
-  <div class="grp">
+    </div></article>
+<article class="grp"><div class="roomhead"><span>07</span><h3>つりあう世界</h3></div>
     <p class="rule">
       両どなりと力をやりとりします。受けとった分だけ、動きます。<br>
       <b>ひとつずつは 4700億の桁で振れて、合計は 0 のままです。</b>
     </p>
     <div class="out">
       <a href="/tsuriai/"><span class="jp">つりあい</span><span class="en">/tsuriai/</span></a>
-    </div>
-  </div>
-
-  <div class="grp">
+    </div></article>
+<article class="grp"><div class="roomhead"><span>08</span><h3>七つの日</h3></div>
     <p class="rule">
       息を吹くと、閾値を越えて、割れる。分けて、名づけて、夕となり、朝となる。<br>
       <b>創世記1章を、分岐で読む。七つの日。</b>
     </p>
     <div class="out">
       <a href="/wakeru/"><span class="jp">わける</span><span class="en">/wakeru/</span></a>
-    </div>
-  </div>
-  <div class="grp">
+    </div></article>
+<article class="grp"><div class="roomhead"><span>09</span><h3>一本のひも</h3></div>
     <p class="rule">
       両端を留めたひもを、はじく。倍音が立ち、減衰して、鳴り止む。<br>
       <b>どの倍音も、一本では 100% になりません。</b>
     </p>
     <div class="out">
       <a href="/furueru/"><span class="jp">ふるえる</span><span class="en">/furueru/</span></a>
-    </div>
-  </div>
-  <div class="grp">
+    </div></article>
+<article class="grp"><div class="roomhead"><span>10</span><h3>規則のかたち</h3></div>
     <p class="rule">
       規則が出した答えを、そのまま置いてあります。
     </p>
     <div class="out">
       <a href="/film/"><span class="jp">うごく</span><span class="en">/film/</span></a>
       <a href="/still/"><span class="jp">とまってる</span><span class="en">/still/</span></a>
-    </div>
-  </div>
-
-  <div class="grp">
+    </div></article>
+<article class="grp"><div class="roomhead"><span>11</span><h3>自分の曲にする</h3></div>
     <p class="rule">
       規則を重ねると、曲になる。<br>
       <b>音符は置かない。規則と種を置く。</b>
     </p>
     <div class="out">
       <a href="/daw/"><span class="jp">ならす</span><span class="en">/daw/</span></a>
-    </div>
-  </div>
-
-  <div class="grp">
+    </div></article>
+<article class="grp"><div class="roomhead"><span>12</span><h3>夜に置いておく</h3></div>
     <p class="rule">
       止まらない規則を、置いておく。<br>
       <b>音も、うずも、終わりません。</b>
     </p>
     <div class="out">
       <a href="/moeru/"><span class="jp">もえる</span><span class="en">/moeru/</span></a>
-    </div>
-  </div>
-
-  <div class="grp">
+    </div></article>
+<article class="grp"><div class="roomhead"><span>13</span><h3>灰も残る</h3></div>
     <p class="rule">
       薪をくべると、もえる。くべないと、やむ。<br>
       <b>消えても、灰と記録は残ります。</b>
     </p>
     <div class="out">
       <a href="/kuberu/"><span class="jp">くべる</span><span class="en">/kuberu/</span></a>
-    </div>
-  </div>
-
-  <div class="grp">
+    </div></article>
+<article class="grp"><div class="roomhead"><span>14</span><h3>ゆずりあう</h3></div>
     <p class="rule">
       全員がゆずるので、だれも通れない。<br>
       <b>善意は、さげません。入れるのは、ずれだけ。</b>
     </p>
     <div class="out">
       <a href="/yuzuru/"><span class="jp">ゆずる</span><span class="en">/yuzuru/</span></a>
-    </div>
-  </div>
-  </div>
-  <div class="grp">
+    </div></article>
+<article class="grp"><div class="roomhead"><span>15</span><h3>持ち帰る</h3></div>
     <p class="rule">
       ここから、外に持ち出せます。
     </p>
     <div class="out">
       <a href="/midi/"><span class="jp">かきだす</span><span class="en">/midi/</span></a>
       <a href="/canvas/"><span class="jp">うつす</span><span class="en">/canvas/</span></a>
-    </div>
-  </div>
-
-  <div class="grp">
+    </div></article>
+<article class="grp"><div class="roomhead"><span>16</span><h3>曲と歌詞と、うた</h3></div>
     <p class="rule">
       規則から生まれていないものは、こちらに。<br>
       <b>曲と歌詞と、うた。</b>
     </p>
     <div class="out">
       <a href="/uta/"><span class="jp">うたう</span><span class="en">/uta/</span></a>
-    </div>
-  </div>
-
+    </div></article></div></section>
+<div class="closing"><p>規則を先に。<br>その先にあるものは、見にいく。</p><a href="https://www.youtube.com/@hyumancom" target="_blank" rel="noopener">まだ、うごいてます。YouTube ↗</a></div>
+</main><footer><span>ひゅーまん / hyu-man</span><div><a href="https://vicugna.booth.pm/items/8848214" target="_blank" rel="noopener">both ↗</a><a href="/uta/#sora">作品の保存について</a></div></footer>
 </div>
-
-<footer>決まっているのに、わからない</footer>
-
 <script>
 (() => {
   "use strict";
