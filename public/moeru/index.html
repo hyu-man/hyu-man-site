@@ -20,12 +20,12 @@
 <style>
   * { box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
   :root {
-    --bg:#f5f3f0; --ink:#1a1a1a; --sub:#b0a8a0; --line:#e2ded9; --cheek:#ff96aa; --pad:#ece8e2;
+    --bg:#171515; --ink:#c4b7af; --sub:#998b84; --line:#342b2a; --cheek:#b77d87; --pad:#251d1d;
     --dot:'Press Start 2P','DotGothic16','Courier New',monospace;
     --maru:'Hachi Maru Pop','DotGothic16',sans-serif;
   }
   @media (prefers-color-scheme: dark) {
-    :root { --bg:#0f0f0e; --ink:#efefec; --sub:#6e6a66; --line:#262624; --pad:#1c1c1a; }
+    :root { --bg:#171515; --ink:#c4b7af; --sub:#998b84; --line:#342b2a; --pad:#251d1d; }
   }
   body {
     background:var(--bg); color:var(--ink); font-family:var(--maru);
@@ -39,6 +39,8 @@
 
   /* 盤 */
   .stage { position:relative; width:100%; aspect-ratio:1/1; border:1px solid var(--line); background:var(--pad); overflow:hidden; }
+  .stage.quiet canvas { visibility:hidden; }
+  button:focus-visible, input:focus-visible { outline:2px solid var(--cheek); outline-offset:4px; }
   canvas { display:block; width:100%; height:100%; image-rendering:pixelated; }
   .veil {
     position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px;
@@ -71,7 +73,7 @@
     text-decoration:none; margin-right:13px;
     background:linear-gradient(90deg,#ff0040,#ff8a00,#ffe600,#3ddc4a,#00b7ff,#8a4bff,#ff0040);
     background-size:300% 100%; -webkit-background-clip:text; background-clip:text;
-    color:transparent; animation:flow 4s linear infinite;
+    color:var(--sub); background:none; animation:none;
   }
   nav a:hover{ animation-duration:1.2s; }
   @keyframes flow{ from{background-position:0% 0} to{background-position:300% 0} }
@@ -81,7 +83,7 @@
 <body>
 
 <h1>もえる</h1>
-<p class="lead">終わらない音と、終わらないうず。<br>全部、規則です。乱数は入っていません。</p>
+<p class="lead">眠るまえの、音とうず。<br>小さな音で、ゆっくり。とめるまで、続きます。</p>
 
 <div class="wrap">
   <div class="stage">
@@ -102,17 +104,19 @@
   <div class="row">
     <button id="go">ならす</button>
     <button id="seed">たねを変える</button>
-    <div class="vol"><span>おと</span><input type="range" id="vol" min="0" max="100" value="70"></div>
+    <button id="quiet" aria-pressed="false">火を隠す</button>
+    <div class="vol"><span>おと</span><input type="range" id="vol" aria-label="音量" min="0" max="100" value="35"></div>
   </div>
 
   <p class="note">
     <b>音。</b>/daw/ の規則そのまま（蟻・ライフ・コラッツ・そろう）。どの音が鳴るかは規則が決めています。
-    変えたのは、いつ鳴るか。トラックごとに <b>53・61・71・79 拍</b>でループします。どれも素数なので、
+    音の選び方を保ちながら、間隔と響きをゆっくりにしました。トラックごとに <b>53・61・71・79 拍</b>でループします。どれも素数なので、
     ぜんぶが同じ並びに戻るのは 53×61×71×79 ＝ 18,133,897 拍あと。1拍 2.4秒で、<b>1.4年</b>かかります。<br>
-    音の高さは、いちばん近い A・C・D・E・G に丸めています。外れないので、ずっと鳴らしておけます。<br>
-    <b>絵。</b>三つの色が順ぐりに食べます。ピンクは茶色を、紙はピンクを、茶色は紙を。
+    音の高さは、いちばん近い A・C・D・E・G に丸めています。低い音域で、ゆっくり立ち上がり、長い残響へ溶けます。<br>
+    <b>絵。</b>三つの色が順ぐりに食べます。三色の順番はそのまま、夜のために暗い色へ置き換えました。
     となりに自分を食べる色があると、その色になる。ただし、なってから 5歩は食べられません。<br>
     色がひとつなら止まります。ふたつでも止まります。<b>三つが一点で出会うと、うずが巻いて、止まりません。</b>
+    一歩をゆっくりにして、色の移り変わりをなめらかにつないでいます。火を隠しても音は続きます。
   </p>
 
 <nav>
@@ -209,8 +213,8 @@
     let best = SCALE[0], bd = 99;
     for (const s of SCALE) { const d = Math.abs(s - pc); if (d < bd) { bd = d; best = s; } }
     let n = oct * 12 + best;
-    while (A0 * Math.pow(2, n / 12) < 90) n += 12;
-    while (A0 * Math.pow(2, n / 12) > 900) n -= 12;
+    while (A0 * Math.pow(2, n / 12) < 55) n += 12;
+    while (A0 * Math.pow(2, n / 12) > 440) n -= 12;
     return A0 * Math.pow(2, n / 12);
   }
 
@@ -218,10 +222,10 @@
   const BEAT = 2.4;
   const LOOPS = [53, 61, 71, 79];
   const SPEC = [
-    { loop:53, every:1, gain:0.30, len:6.0,  type:"sine",     pan:-0.35 },
-    { loop:61, every:2, gain:0.40, len:9.0,  type:"sine",     pan: 0.35 },
-    { loop:71, every:3, gain:0.26, len:7.0,  type:"triangle", pan:-0.15 },
-    { loop:79, every:4, gain:0.20, len:12.0, type:"sine",     pan: 0.15 },
+    { loop:53, every:1, gain:0.16, len:18.0,  type:"sine",     pan:-0.35 },
+    { loop:61, every:2, gain:0.18, len:26.0,  type:"sine",     pan: 0.35 },
+    { loop:71, every:3, gain:0.13, len:23.0,  type:"sine", pan:-0.15 },
+    { loop:79, every:4, gain:0.12, len:32.0, type:"sine",     pan: 0.15 },
   ];
   const $ = id => document.getElementById(id);
   const total = LOOPS.reduce((a, b) => a * b, 1);          /* 素数どうしなので、かけ算がそのまま最小公倍数 */
@@ -232,6 +236,9 @@
   /* ══ 音 ═══════════════════════════════════════════════════════ */
   let ac = null, bus = null, verb = null, tracks = [], beat = 0, notes = 0, timer = null, running = false;
   let seeds = [0, 93, 27, 15];
+  let suspendTimer = null;
+  const voices = new Set();
+  const level = () => +$("vol").value / 100 * 0.32;
 
   function buildTracks() {
     const mk = [Ant(seeds[0]), Life(seeds[1]), Collatz(seeds[2]), Burn(seeds[3])];
@@ -246,20 +253,20 @@
   }
 
   function makeVerb() {                                /* 部屋の響き。決まった形（乱数なし） */
-    const sec = 3.4, len = Math.floor(ac.sampleRate * sec), buf = ac.createBuffer(2, len, ac.sampleRate);
+    const sec = 9.0, len = Math.floor(ac.sampleRate * sec), buf = ac.createBuffer(2, len, ac.sampleRate);
     for (let ch = 0; ch < 2; ch++) {
       const d = buf.getChannelData(ch);
       let e = 0;
       for (let i = 0; i < len; i++) {
         const t = i / ac.sampleRate;
         const s = u01(i * 2 + ch + 777) * 2 - 1;      /* 決まった並び（ハッシュ。乱数ではない） */
-        d[i] = s * Math.pow(1 - t / sec, 3.4);
+        d[i] = s * Math.pow(1 - t / sec, 2.8) * Math.min(1, t / 0.08);
         e += d[i] * d[i];
       }
       const k = 1 / Math.sqrt(e);                     /* 響きの総エネルギーを1に。量は wet が決める */
       for (let i = 0; i < len; i++) d[i] *= k;
     }
-    const c = ac.createConvolver(); c.buffer = buf; return c;
+    const c = ac.createConvolver(); c.normalize = false; c.buffer = buf; return c;
   }
 
   function note(t0, hz, len, g, type, pan, detune) {
@@ -268,11 +275,13 @@
     o2.type = type; o2.frequency.value = hz * detune;
     const g2 = ac.createGain(); g2.gain.value = 0.5;
     pn.pan.value = pan;
-    const atk = Math.min(1.2, len * 0.25);
+    const atk = Math.min(7.0, len * 0.32);
     gn.gain.setValueAtTime(0.0001, t0);
     gn.gain.linearRampToValueAtTime(g, t0 + atk);
     gn.gain.exponentialRampToValueAtTime(0.0001, t0 + len);
     o1.connect(gn); o2.connect(g2); g2.connect(gn); gn.connect(pn); pn.connect(bus);
+    const voice = { o1, o2 }; voices.add(voice);
+    o2.onended = () => { voices.delete(voice); o1.disconnect(); o2.disconnect(); g2.disconnect(); gn.disconnect(); pn.disconnect(); };
     o1.start(t0); o2.start(t0); o1.stop(t0 + len + 0.05); o2.stop(t0 + len + 0.05);
   }
 
@@ -283,8 +292,8 @@
         const inLoop = beat % tr.loop, cyc = Math.floor(beat / tr.loop);
         for (const ev of tr.evs) {
           if (ev.beat !== inLoop) continue;
-          const detune = 1 + 0.004 * Math.sin(cyc * 0.7);
-          const g = tr.gain * ev.vol * 8 * (0.8 + 0.2 * Math.sin(cyc * 0.31 + tr.loop));
+          const detune = 1 + 0.0008 * Math.sin(cyc * 0.7);
+          const g = tr.gain * ev.vol * 3 * (0.8 + 0.2 * Math.sin(cyc * 0.31 + tr.loop));
           note(t0Next, ev.hz, tr.len, g, tr.type, tr.pan, detune);
           notes++;
         }
@@ -298,7 +307,10 @@
 
   /* ══ 絵。三つの色が順ぐりに食べる ═══════════════════════════════ */
   const G = 128, AGE = 5;
-  const COL = [[138,58,46], [255,107,138], [247,240,228]];              /* 0 茶 1 ピンク 2 紙 */
+  const COL = [[52,34,31], [87,51,56], [37,29,29]];              /* 0 茶 1 ピンク 2 紙 */
+  const displayed = new Float32Array(G * G * 3);
+  let displayReady = false;
+  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
   let grid = null, age = null, tick = 0, cv = $("cv"), cx = cv.getContext("2d"), im = cx.createImageData(G, G);
 
   function seedBoard() {
@@ -337,61 +349,97 @@
     grid = nxt; tick++;
   }
 
-  function paint() {
+  function paint(dt = 0) {
+    const blend = !displayReady ? 1 : 1 - Math.exp(-dt / 0.8);
     const p = im.data;
     for (let i = 0; i < G * G; i++) {
       const c = COL[grid[i]];
-      p[i*4] = c[0]; p[i*4+1] = c[1]; p[i*4+2] = c[2]; p[i*4+3] = 255;
+      for (let ch = 0; ch < 3; ch++) {
+        const j = i * 3 + ch;
+        displayed[j] += (c[ch] - displayed[j]) * blend;
+        p[i*4+ch] = Math.round(displayed[j]);
+      }
+      p[i*4+3] = 255;
     }
+    displayReady = true;
     cx.putImageData(im, 0, 0);
   }
 
-  let last = 0, acc = 0;
+  let last = 0, acc = 0, animationId = null;
   function frame(ts) {
     if (!running) return;
     if (!last) last = ts;
-    acc += (ts - last) / 1000; last = ts;
+    const dt = Math.min(0.1, (ts - last) / 1000); last = ts;
+    acc += dt;
     let n = 0;
-    while (acc > 0.09 && n < 4) { stepBoard(); acc -= 0.09; n++; }   /* 11歩/秒。ゆっくり */
-    if (n) paint();
-    requestAnimationFrame(frame);
+    if (!reducedMotion.matches) {
+      while (acc >= 0.4 && n < 2) { stepBoard(); acc -= 0.4; n++; }
+      paint(dt);
+    } else { acc = 0; }
+    animationId = requestAnimationFrame(frame);
   }
 
   /* ══ 動かす ═══════════════════════════════════════════════════ */
   function start() {
+    if (running) return;
+    if (suspendTimer) { clearTimeout(suspendTimer); suspendTimer = null; }
     if (!ac) {
       ac = new (window.AudioContext || window.webkitAudioContext)();
-      bus = ac.createGain(); bus.gain.value = +$("vol").value / 100 * 0.9;
+      bus = ac.createGain(); bus.gain.value = 0;
       verb = makeVerb();
-      const wet = ac.createGain(); wet.gain.value = 0.5;
-      const lp = ac.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = 2600;
-      bus.connect(lp); lp.connect(ac.destination);
-      bus.connect(verb); verb.connect(wet); wet.connect(ac.destination);
+      const wet = ac.createGain(); wet.gain.value = 0.7;
+      const dry = ac.createGain(); dry.gain.value = 0.5;
+      const lp = ac.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = 950; lp.Q.value = 0.5;
+      const roomLP = ac.createBiquadFilter(); roomLP.type = "lowpass"; roomLP.frequency.value = 750; roomLP.Q.value = 0.5;
+      const hp = ac.createBiquadFilter(); hp.type = "highpass"; hp.frequency.value = 35;
+      const ceiling = ac.createDynamicsCompressor(); ceiling.threshold.value = -12; ceiling.knee.value = 12;
+      ceiling.ratio.value = 4; ceiling.attack.value = 0.05; ceiling.release.value = 1;
+      bus.connect(lp); lp.connect(dry); dry.connect(hp);
+      lp.connect(verb); verb.connect(roomLP); roomLP.connect(wet); wet.connect(hp);
+      hp.connect(ceiling); ceiling.connect(ac.destination);
     }
     ac.resume();
+    bus.gain.cancelScheduledValues(ac.currentTime);
+    bus.gain.setValueAtTime(bus.gain.value, ac.currentTime);
+    bus.gain.linearRampToValueAtTime(level(), ac.currentTime + 4);
     if (!tracks.length) buildTracks();
     if (!grid) { seedBoard(); paint(); }
-    t0Next = ac.currentTime + 0.2;
+    t0Next = Math.max(t0Next, ac.currentTime + 0.2);
     running = true; last = 0;
     $("veil").classList.add("off");
     $("go").textContent = "とめる";
     timer = setInterval(schedule, 800);
     schedule();
-    requestAnimationFrame(frame);
+    animationId = requestAnimationFrame(frame);
   }
   function stop() {
     running = false;
+    if (animationId !== null) { cancelAnimationFrame(animationId); animationId = null; }
     if (timer) { clearInterval(timer); timer = null; }
-    if (ac) ac.suspend();
+    if (ac) {
+      bus.gain.cancelScheduledValues(ac.currentTime);
+      bus.gain.setValueAtTime(bus.gain.value, ac.currentTime);
+      bus.gain.linearRampToValueAtTime(0, ac.currentTime + 1.5);
+      suspendTimer = setTimeout(() => {
+        for (const v of voices) { v.o1.stop(); v.o2.stop(); }
+        ac.suspend(); suspendTimer = null;
+      }, 1600);
+    }
     $("go").textContent = "ならす";
   }
 
   $("veil").addEventListener("click", start);
   $("go").addEventListener("click", () => running ? stop() : start());
-  $("vol").addEventListener("input", e => { if (bus) bus.gain.value = +e.target.value / 100 * 0.9; });
+  $("vol").addEventListener("input", e => { if (bus && running) { bus.gain.cancelScheduledValues(ac.currentTime); bus.gain.setTargetAtTime(level(), ac.currentTime, 0.3); } });
+  $("quiet").addEventListener("click", () => {
+    const hidden = cv.parentElement.classList.toggle("quiet");
+    $("quiet").setAttribute("aria-pressed", String(hidden));
+    $("quiet").textContent = hidden ? "火を見せる" : "火を隠す";
+  });
   $("seed").addEventListener("click", () => {
     seeds = seeds.map((s, i) => (h32(s * 7919 + beat + i * 131) % 120) + 1);
-    tracks = []; buildTracks(); seedBoard(); paint();
+    tracks = []; buildTracks(); seedBoard();
+    if (!running || reducedMotion.matches) { displayReady = false; paint(); }
     beat = 0; notes = 0; $("nb").textContent = "0"; $("nn").textContent = "0";
     if (running && ac) t0Next = ac.currentTime + 0.2;
   });
