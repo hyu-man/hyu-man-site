@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>たたく — ひゅーまん</title>
 <meta name="description" content="ひゅーまんの曲を16に切って、たたく。規則はありません。">
 <link rel="canonical" href="https://hyu-man.com/tataku/">
@@ -113,23 +113,29 @@
     nav a, .fromrule a{ animation:none; background-position:50% 0; }
     .face { transition:none; }
   }
+
+/* A pocket instrument: soft keys, little faces, no rule required. */
+:root{--bg:#fff9f2;--ink:#553d3c;--sub:#8b6b67;--line:#ead9ce;--cheek:#eb819c;--pad:#f6e9db}
+body{padding:0 18px 35px;background-image:radial-gradient(#dbb9a844 .8px,transparent .8px);background-size:18px 18px}.pagehead{display:flex;justify-content:space-between;width:min(100%,850px);padding:24px 0 32px;font-size:11px}.pagehead a{color:var(--ink);text-decoration:none}.pagehead span{color:var(--sub)}h1{font-family:'DotGothic16',monospace;font-size:46px;letter-spacing:.12em;margin-bottom:10px}.title-dot{color:var(--cheek)}.lead{font-size:13px;line-height:1.9;color:var(--sub);margin-bottom:28px}.wrap{max-width:600px;padding:24px;background:#fffcf7;border:2px solid #e8d5c7;border-radius:30px;box-shadow:0 7px 0 #e3cbbb,0 18px 50px #906b4512}.machine-head{display:flex;align-items:center;justify-content:space-between;gap:8px;font-family:'DotGothic16',monospace;font-size:9px;letter-spacing:.08em;padding-bottom:18px;border-bottom:1px solid var(--line)}.power{color:#a45368}.choose{font-size:12px;margin:18px 0 12px}.songs{justify-content:flex-start;gap:7px}.songs button,.songs label{font-size:11px;padding:7px 12px;border-color:var(--line);background:#fffdf9;box-shadow:0 2px 0 var(--line)}.songs button.on,.songs label.on{background:#f8c9d4;color:var(--ink);border-color:#d69aaa;box-shadow:0 2px 0 #d69aaa}.msg{font-size:11px;line-height:1.8;margin:15px 0 9px;color:var(--sub)}.msg.hot{color:#9c4d64}.face{font-size:31px;color:#80524e;margin:16px 0 15px;text-shadow:-2px 1px #f9c8d1,2px 1px #f9c8d1}#wave{height:48px;border-radius:12px;border:1px solid #e2d4bc}.pad-caption{display:flex;justify-content:space-between;align-items:center;margin:22px 0 12px;font-size:12px}.pad-caption span:last-child{font-family:'DotGothic16';font-size:9px;color:var(--sub)}.pads{gap:12px;margin-top:0}.pad{border:1px solid #d9baa8!important;background:#f9dfcc;box-shadow:0 5px 0 #d9baa8;border-radius:19px;min-width:0;padding:9px;color:#795851;touch-action:none;overflow:visible}.pad:nth-child(4n+2){background:#f7ced9;border-color:#d4a1ae!important;box-shadow:0 5px 0 #d4a1ae}.pad:nth-child(4n+3){background:#e0e8cf;border-color:#b4c39c!important;box-shadow:0 5px 0 #b4c39c}.pad:nth-child(4n){background:#e0dcef;border-color:#b8afcb!important;box-shadow:0 5px 0 #b8afcb}.pad.empty{opacity:.65;cursor:pointer}.pad:hover{filter:brightness(1.035);transform:translateY(-2px)}.pad.hit{transform:translateY(4px) scale(.97);box-shadow:0 1px 0 #bb8c90;background:#ffabc1;color:#624644}.pad .k{font-family:'DotGothic16';font-size:10px;opacity:.6}.pad-face{position:absolute;left:50%;top:46%;width:52px;height:33px;transform:translate(-50%,-50%);pointer-events:none}.eye{position:absolute;top:6px;width:6px;height:8px;background:#634a47;border-radius:1px}.eye.left{left:11px}.eye.right{right:11px}.mouth{position:absolute;left:22px;top:18px;width:9px;height:5px;border-bottom:2px solid #634a47;border-radius:0 0 8px 8px}.blush{position:absolute;top:18px;width:9px;height:5px;background:#e8819a;border-radius:2px}.blush.left{left:1px}.blush.right{right:1px}.pad:nth-child(3n) .eye{height:3px;top:10px}.pad:nth-child(5n) .mouth{height:7px;border:2px solid #634a47;border-radius:50%;width:6px}.pad.hit .eye{height:3px;top:8px;transform:rotate(-15deg)}.pad.hit .eye.right{transform:rotate(15deg)}.pad.hit .mouth{height:10px;width:10px;top:16px;background:#634a47;border-radius:2px 2px 8px 8px}.loop{margin-top:28px}.loop .choose{margin:0 0 14px}button.b{border:1px solid #d6bbae;background:#fffaf5;box-shadow:0 2px 0 #e4cdbd;color:var(--ink);font-size:12px;padding:9px 14px}button.b:hover{background:#fae3e8;color:var(--ink)}button.b.on{background:#f5bacb;border-color:#c68195;color:#58313e}button.b.rec.on{background:#ba4e6e;color:white;border-color:#ba4e6e}.steps{gap:5px;margin:16px 0}.steps i{height:9px;border-radius:50%}.row label{color:var(--sub)}.help{margin-top:25px;border-top:1px dashed var(--line);padding-top:17px}.help summary{font-size:12px;color:var(--sub);cursor:pointer}.note{margin-top:13px;font-size:12px}.note .q{color:#a45368}nav{display:flex;justify-content:center;gap:15px;flex-wrap:wrap;margin-top:25px}nav a{margin:0;background:none;color:var(--sub);animation:none;font-family:'DotGothic16';font-size:11px}button:focus-visible,a:focus-visible,summary:focus-visible{outline:3px solid #995377;outline-offset:4px}
+@media(max-width:480px){body{padding:0 12px 25px}.pagehead{padding:19px 5px 24px}h1{font-size:38px}.lead{font-size:12px;margin-bottom:23px}.wrap{padding:17px 13px;border-radius:24px}.machine-head{font-size:8px;letter-spacing:0}.pads{gap:10px}.pad{border-radius:14px;padding:6px;font-size:7px}.pad .k{top:5px;right:7px;font-size:8px}.pad-face{transform:translate(-50%,-50%) scale(.85)}.pad-caption{font-size:11px}.pad-caption span:last-child{font-size:8px}.row{gap:8px}button.b{padding:9px 12px}.songs{gap:6px}.songs button,.songs label{padding:7px 10px}.row input[type=range]{width:96px}}
+@media(prefers-reduced-motion:reduce){.pad,.face{transition:none}.pad:hover,.pad.hit,.face.hit{transform:none}}
+
 </style>
 </head>
 <body>
 
-<h1>たたく</h1>
-<p class="lead">曲を 16 に切って、たたく。規則はありません。</p>
+<header class="pagehead"><a href="/">ひゅーまん ▪</a><span>おとの あそびば</span></header><h1>たたく<span class="title-dot">。</span></h1><p class="lead">すきな音、すきなじゅんばん。<br>きょうは、きみがつくる曲。</p>
 
 <div class="wrap">
-  <div class="songs" id="songs"></div>
-  <div class="msg" id="msg">曲をえらんでね</div>
+  <div class="machine-head"><span>HYU-MAN / POCKET SAMPLER</span><span class="power">● おとであそぼ</span></div><p class="choose">① 曲をえらぶ</p><div class="songs" id="songs"></div>
+  <div class="msg" id="msg" role="status">曲をえらんでね</div>
 
   <div class="face" id="face">(◍-ω-◍)</div>
-  <canvas id="wave" width="1120" height="128"></canvas>
+  <canvas id="wave" width="1120" height="128" aria-label="選んだ曲の波形"></canvas><div class="pad-caption"><span>② すきな子を、ぽん。</span><span>16 LITTLE SOUNDS</span></div>
 
   <div class="pads" id="pads"></div>
 
-  <div class="loop">
+  <div class="loop"><p class="choose">③ つなげて、あそぶ</p>
     <div class="row">
       <button class="b" id="play">ループ</button>
       <button class="b rec" id="rec">ろくおん</button>
@@ -150,7 +156,7 @@
     </div>
   </div>
 
-  <p class="note">
+  <details class="help"><summary>あそびかた・音のもちかえり</summary><div class="note">
     曲をえらぶと、音が立ち上がるところを探して <b>16 に切ります</b>。パッドを押すと、その切れはしが鳴ります。<br>
     キーボードは <b>1234 / QWER / ASDF / ZXCV</b>。スマホは指で。<br><br>
     <b>ループ</b>を押すと 2小節がまわります（コッ、コッ、と拍が鳴ります。小節の頭は高い音）。<b>ろくおん</b>を点けてパッドを押すと、押した所に入って、次からまわるたびに鳴ります。<br>
@@ -158,7 +164,7 @@
     <span class="q">じぶんの曲</span>で自分のファイルをえらべます。どこにも送りません。この画面の中だけで鳴ります。
     <hr>
     WAV にすると、いまのループを4回まわした音が落とせます。
-  </p>
+  </div></details>
 
 <nav>
   <a href="/">ひゅーまん</a><a href="/daw/">/daw/</a><a href="/chop/">/chop/</a><a href="/omega/">/omega/</a>
@@ -273,10 +279,11 @@
   function buildPads() {
     const el = $("pads"); el.innerHTML = "";
     for (let k = 0; k < NP; k++) {
-      const p = document.createElement("div"); p.className = "pad" + (k < slices.length ? "" : " empty");
-      p.innerHTML = String(k + 1).padStart(2, "0") + '<span class="k">' + KEYS[k].toUpperCase() + '</span>';
+      const p = document.createElement("button"); p.type = "button"; p.setAttribute("aria-label", "パッド " + (k+1)); p.setAttribute("aria-disabled", String(k >= slices.length)); p.className = "pad" + (k < slices.length ? "" : " empty");
+      p.innerHTML = String(k + 1).padStart(2, "0") + '<span class="k">' + KEYS[k].toUpperCase() + '</span><span class="pad-face" aria-hidden="true"><i class="eye left"></i><i class="eye right"></i><i class="mouth"></i><i class="blush left"></i><i class="blush right"></i></span>';
       const down = e => { e.preventDefault(); hit(k); };
       p.addEventListener("pointerdown", down);
+      p.addEventListener("click", e => { if(e.detail === 0) hit(k); });
       el.appendChild(p);
     }
   }
@@ -308,7 +315,7 @@
     o.connect(g).connect(master); o.start(t); o.stop(t + 0.05);
   }
   function hit(k) {
-    if (!buf || !slices[k]) return;
+    if (!buf || !slices[k]) { msg("うえの曲をえらぶと、この子が鳴るよ"); return; }
     audio();
     voice(ac, master, k, ac.currentTime, rate, rev);
     flash(k);
@@ -322,7 +329,7 @@
   function flash(k) {
     const p = $("pads").children[k]; if (!p) return;
     p.classList.add("hit"); setTimeout(() => p.classList.remove("hit"), 110);
-    const f = $("face"); f.textContent = "(◍•ω•◍)"; f.classList.add("hit");
+    const f = $("face"); f.textContent = ["(◍•ω•◍)","(◍>ᴗ<◍)","(◍ᵔωᵔ◍)","(◍•o•◍)"][k % 4]; f.classList.add("hit");
     clearTimeout(flash.t); flash.t = setTimeout(() => { f.classList.remove("hit"); f.textContent = "(◍-ω-◍)"; }, 260);
     playing = k; drawWave(); clearTimeout(flash.w); flash.w = setTimeout(() => { playing = -1; drawWave(); }, 400);
   }
@@ -330,7 +337,7 @@
     if (e.repeat || e.metaKey || e.ctrlKey || e.altKey) return;
     if (e.target && /INPUT|TEXTAREA/.test(e.target.tagName)) return;
     const k = KEYS.indexOf(e.key.toLowerCase()); if (k >= 0) { hit(k); e.preventDefault(); }
-    if (e.key === " ") { $("play").click(); e.preventDefault(); }
+    if (e.key === " " && e.target.tagName !== "BUTTON") { $("play").click(); e.preventDefault(); }
   });
 
   // ── ループ ──
