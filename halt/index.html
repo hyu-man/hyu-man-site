@@ -1,394 +1,58 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ja">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>とまる — ひゅーまん</title>
-<meta name="description" content="この子は とまる？ ── 決まっているのに、わからない。">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>とまる。眠るまで、見ていて。 — ひゅーまん</title>
+<meta name="description" content="一歩ずつ、規則どおり。6歩で眠る子と、47,176,870歩で眠る子。止まったあとも、歩いた跡は残ります。">
 <link rel="canonical" href="https://hyu-man.com/halt/">
-<meta property="og:type" content="website">
-<meta property="og:site_name" content="ひゅーまん">
-<meta property="og:title" content="とまる — ひゅーまん">
-<meta property="og:description" content="この子は とまる？ ── 決まっているのに、わからない。">
-<meta property="og:url" content="https://hyu-man.com/halt/">
-<meta property="og:locale" content="ja_JP">
-<meta name="twitter:card" content="summary_large_image">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'><rect width='8' height='8' fill='%23f5f3f0'/><rect x='1' y='2' width='6' height='4' rx='1' fill='%23111'/><rect x='2' y='4' width='2' height='1' fill='%23f5f3f0'/><rect x='5' y='4' width='1' height='1' fill='%23f5f3f0'/></svg>">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Hachi+Maru+Pop&family=DotGothic16&display=swap" rel="stylesheet">
-<style>
-  * { box-sizing:border-box; margin:0; padding:0; }
-  :root {
-    --bg:#f5f3f0; --ink:#1a1a1a; --sub:#b0a8a0; --line:#e2ded9; --cheek:#ff96aa;
-    --dot:'Press Start 2P','DotGothic16','Courier New',monospace;
-    --maru:'Hachi Maru Pop','DotGothic16',sans-serif;
-  }
-  @media (prefers-color-scheme: dark) {
-    :root { --bg:#0f0f0e; --ink:#efefec; --sub:#6e6a66; --line:#262624; }
-  }
-  body {
-    background:var(--bg); color:var(--ink); font-family:var(--maru);
-    display:flex; flex-direction:column; align-items:center;
-    padding:36px 16px 64px;
-  }
-  h1 { font-family:var(--dot); font-size:13px; font-weight:400;
-       letter-spacing:.3em; text-indent:.3em; margin-bottom:6px; }
-  .lead { font-size:14px; color:var(--sub); letter-spacing:.05em; margin-bottom:26px; }
-
-  .wrap { width:100%; max-width:760px; }
-  .lane { border-top:1px solid var(--line); padding:14px 0 12px; }
-  .lane:last-of-type { border-bottom:1px solid var(--line); }
-  .head { display:flex; align-items:baseline; gap:10px; margin-bottom:6px; }
-  .name { font-size:14px; letter-spacing:.05em; }
-  .spacer { flex:1 }
-  .st { font-size:12px; color:var(--sub); letter-spacing:.04em; }
-  .st b { font-family:var(--dot); font-size:11px; color:var(--ink);
-          font-variant-numeric:tabular-nums; }
-  .lane.done .st, .lane.done .st b { color:var(--cheek); }
-  canvas { width:100%; height:auto; display:block; aspect-ratio:480 / 46;
-           image-rendering:pixelated; }
-
-  .bar { display:flex; flex-wrap:wrap; gap:9px; align-items:center; margin:20px 0 4px; }
-  button {
-    font-family:var(--maru); font-size:13px; letter-spacing:.06em;
-    background:var(--bg); color:var(--ink); border:1px solid var(--ink);
-    padding:5px 15px; cursor:pointer; border-radius:2px;
-  }
-  button:hover { background:var(--ink); color:var(--bg); }
-  input[type=range] { width:150px; accent-color:var(--ink); }
-  .rate { font-family:var(--dot); font-size:9px; color:var(--sub);
-          font-variant-numeric:tabular-nums; }
-
-  .note { margin-top:22px; font-size:12.5px; line-height:2.05; color:var(--sub); }
-  .note b { color:var(--ink); font-weight:400; }
-  .note .q { color:var(--cheek); }
-  .res { margin-top:32px; border-top:1px solid var(--line); padding-top:18px; }
-  .res h2 { font-family:var(--dot); font-size:11px; font-weight:400;
-            letter-spacing:.16em; margin-bottom:10px; }
-  .res .cap { font-size:11.5px; line-height:1.75; color:var(--sub);
-              letter-spacing:.03em; margin:0 0 7px; }
-  .res .cap b { color:var(--ink); font-weight:400; }
-  .res canvas { width:100%; height:auto; display:block; margin-bottom:18px;
-                image-rendering:pixelated; }
-  .res .num { font-size:12px; line-height:2.0; color:var(--sub);
-              letter-spacing:.03em; margin-bottom:4px; }
-  .res .num b { font-family:var(--dot); font-size:10px; color:var(--ink);
-                font-variant-numeric:tabular-nums; }
-  .res .num .p { color:var(--cheek); }
-  nav { margin-top:36px; font-family:var(--dot); font-size:9px;
-        letter-spacing:.1em; color:var(--sub); }
-  nav a { color:var(--sub); text-decoration:none; margin-right:13px; }
-  nav a:hover { color:var(--ink); }
-  .fromrule { margin-top:30px; font-size:12.5px; line-height:1.9;
-              color:var(--sub, #b0a8a0); letter-spacing:.04em; }
-  .fromrule a { color:var(--ink, #1a1a1a); text-decoration:none;
-                border-bottom:1px solid var(--line, #e2ded9); }
-  .fromrule a:hover { border-bottom-color:var(--ink, #1a1a1a); }
-
-  /* 虹 */
-  nav a, .fromrule a{
-    text-decoration:none; border-bottom:0;
-    background:linear-gradient(90deg,#ff0040,#ff8a00,#ffe600,#3ddc4a,#00b7ff,#8a4bff,#ff0040);
-    background-size:300% 100%; -webkit-background-clip:text; background-clip:text;
-    color:transparent; animation:flow 4s linear infinite;
-  }
-  nav a:hover, .fromrule a:hover{ animation-duration:1.2s; }
-  @keyframes flow{ from{background-position:0% 0} to{background-position:300% 0} }
-  @media (prefers-reduced-motion: reduce){
-    nav a, .fromrule a{ animation:none; background-position:50% 0; }
-  }
-</style>
+<meta property="og:type" content="website"><meta property="og:site_name" content="ひゅーまん"><meta property="og:title" content="とまる。眠るまで、見ていて。"><meta property="og:description" content="止まったあとも、歩いた跡は残る。"><meta property="og:url" content="https://hyu-man.com/halt/"><meta property="og:image" content="https://hyu-man.com/og/hyu-man.png"><meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='%238a3a2e' d='M3 3h10v2h2v7H1V5h2z'/%3E%3Cpath fill='%23f7f0e4' d='M4 7h3v1H4zm5 0h3v1H9z'/%3E%3Cpath fill='%23ff678e' d='M2 9h3v2H2zm9 0h3v2h-3z'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=DotGothic16&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./room.css">
 </head>
 <body>
-
-<h1>とまる</h1>
-<p class="lead">この子は とまる？</p>
-
-<div class="wrap">
-  <div id="lanes"></div>
-
-  <div class="bar">
-    <button id="play">とめる</button>
-    <button id="reset">さいしょから</button>
-    <input type="range" id="speed" min="0" max="1000" value="130" aria-label="はやさ">
-    <span class="rate" id="rate">8 歩/コマ</span>
-  </div>
-
-  <div class="res">
-    <h2>20びょうで できたもの</h2>
-    <p class="cap">
-      いちばん速くすると、5じょうたいの子は <b>20びょう</b>で 47,176,870歩を歩ききります。
-      その 20びょうを、ここに記録しています。<br>
-      ほかの子は 6歩・14歩・107歩で とまるので、記録していません。
-    </p>
-
-    <p class="cap">かたち ── よこは テープ。たては 時間。ヘッドが その帯で通った範囲。<br>
-      帯 1本が <b>157,257歩</b>。山が だんだん 大きくなります。最後の山だけで 全体の <b>64%</b>。</p>
-    <canvas id="rShape" width="720" height="300"></canvas>
-
-    <p class="cap">1 のかず ── たては 0〜12,288。よこは 時間のまま。<br>
-      いちばん右の <span style="color:var(--cheek)">ピンク</span> は 最後の落ちです。ほんとうは <b>12,288歩</b>＝よこ幅の <b>0.02%</b> しかないので、見えるように太らせています。</p>
-    <canvas id="rOnes" width="720" height="170"></canvas>
-
-    <p class="cap">テープ ── 上は 12,361マス ぜんぶ。下は まんなか 45マスを 原寸で。</p>
-    <canvas id="rTape" width="720" height="54"></canvas>
-
-    <p class="num" id="rNum">まだ あるいていません。</p>
-  </div>
-
-  <p class="note">
-    テープの上を、きまった規則どおりに歩くだけの子たちです。<br>
-    <b>2・3・4じょうたい</b>の子は、すぐ とまります。<br>
-    <b>5じょうたい</b>の子は <b>47,176,870ほ</b> あるいて とまります。
-    それが証明されたのは <b>2024年</b>。<br>
-    いちばん下の子は とまりません。おなじところを 行ったり来たりしています。<br>
-    <span class="q">6じょうたいの子が とまるかどうかは、まだ だれも しりません。</span><br>
-    しらべる方法が ない、というところまでは わかっています。
-  </p>
-
-  
-
-
-  <p class="fromrule">
-    この規則から出たもの ── <a href="/film/">うごく 1</a> ・ <a href="/still/">とまってる 1</a>
-  </p>
-
-<nav>
-  <a href="/">ひゅーまん</a><a href="/count/">/count/</a><a href="/liar/">/liar/</a><a href="/film/">/film/</a><a href="/still/">/still/</a>
-</nav>
+<a class="skip" href="#watch">この子のところへ</a>
+<div class="page">
+<header class="sitehead"><a class="brand" href="/">ひゅーまん <span>▪</span></a><nav aria-label="サイト"><a href="/uta/">うたう。</a><a href="/#rooms">ほかの部屋 ↗</a></nav></header>
+<main>
+<section class="intro"><div><p class="eyebrow">A LITTLE MACHINE / HALT</p><h1>とまる<span>。</span></h1><p class="invitation">眠るまで、見ていて。</p></div><p class="intro-note">白を読む。黒を書く。<br>右へ、左へ、一歩。<br>行き先は、規則が決める。</p></section>
+<section class="watch" id="watch" aria-label="機械を見守る">
+<div class="choose-head"><h2>どの子を、見守る？</h2><span>５つの規則。５つの行き先。</span></div>
+<div class="children" role="group" aria-label="見守る子を選ぶ">
+<button class="child selected" data-machine="0" aria-pressed="true"><span class="little-face" aria-hidden="true"><i></i></span><span>2じょうたい</span><small id="child-0">まだ、まっしろ</small></button>
+<button class="child" data-machine="1" aria-pressed="false"><span class="little-face" aria-hidden="true"><i></i></span><span>3じょうたい</span><small id="child-1">まだ、まっしろ</small></button>
+<button class="child" data-machine="2" aria-pressed="false"><span class="little-face" aria-hidden="true"><i></i></span><span>4じょうたい</span><small id="child-2">まだ、まっしろ</small></button>
+<button class="child" data-machine="3" aria-pressed="false"><span class="little-face" aria-hidden="true"><i></i></span><span>5じょうたい</span><small id="child-3">まだ、まっしろ</small></button>
+<button class="child" data-machine="4" aria-pressed="false"><span class="little-face" aria-hidden="true"><i></i></span><span>とまらない子</span><small id="child-4">まだ、まっしろ</small></button>
 </div>
-
-<script>
-(() => {
-  "use strict";
-  const CELL = 8, VIEW = 60, CW = VIEW*CELL, CH = 46;
-  const SIZE = 1 << 16, ORG = SIZE >> 1;          // テープ ±32768
-
-  // 検算済み: 6 / 14 / 107 / 47,176,870 歩。最後の子は周期2で無限ループ
-  const MACHINES = [
-    { name:"2じょうたい", halt:6,
-      t:{ A:[[1,1,"B"],[1,-1,"B"]], B:[[1,-1,"A"],[1,1,"H"]] } },
-    { name:"3じょうたい", halt:14,
-      t:{ A:[[1,1,"B"],[1,1,"H"]], B:[[0,1,"C"],[1,1,"B"]], C:[[1,-1,"C"],[1,-1,"A"]] } },
-    { name:"4じょうたい", halt:107,
-      t:{ A:[[1,1,"B"],[1,-1,"B"]], B:[[1,-1,"A"],[0,-1,"C"]],
-          C:[[1,1,"H"],[1,-1,"D"]], D:[[1,1,"D"],[0,1,"A"]] } },
-    { name:"5じょうたい", halt:47176870,
-      t:{ A:[[1,1,"B"],[1,-1,"C"]], B:[[1,1,"C"],[1,1,"B"]], C:[[1,1,"D"],[0,-1,"E"]],
-          D:[[1,-1,"A"],[1,-1,"D"]], E:[[1,1,"H"],[0,-1,"A"]] } },
-    { name:"とまらない子", halt:null,
-      t:{ A:[[1,1,"B"],[1,-1,"B"]], B:[[1,-1,"A"],[1,1,"A"]] } },
-  ];
-
-  const cs = getComputedStyle(document.documentElement);
-  const C = k => cs.getPropertyValue(k).trim();
-  let INK, BG, SUB, CHEEK, LINE;
-  const readTheme = () => { INK=C('--ink'); BG=C('--bg'); SUB=C('--sub');
-                            CHEEK=C('--cheek'); LINE=C('--line'); };
-  readTheme();
-
-  // ── 20びょうの記録 ────────────────────────────────
-  const RHALT = 47176870;                 // この子がとまる歩数
-  const RW = 720, SH = 300, OH = 170, TH = 54;
-  const ROWS = SH, PER = Math.ceil(RHALT / ROWS);
-  const TLO = -12300, THI = 60, TSPAN = THI - TLO + 1;
-  const PEAK = 12288;                     // 1 の最大（実測）
-  const gS = document.getElementById("rShape").getContext("2d");
-  const gO = document.getElementById("rOnes").getContext("2d");
-  const gT = document.getElementById("rTape").getContext("2d");
-  const rNum = document.getElementById("rNum");
-  const bx = p => Math.min(RW - 1, Math.max(0, ((p - TLO) / TSPAN * RW) | 0));
-
-  function clearRec(L) {
-    L.row = 0; L.binEnd = PER; L.ones = 0; L.hLo = 0; L.hHi = 0;
-    L.gLo = 0; L.gHi = 0; L.px = 0; L.peak = 0; L.peakN = 0; L.falling = false; L.peaks = [];
-    for (const [g, h] of [[gS, SH], [gO, OH], [gT, TH]]) {
-      g.fillStyle = BG; g.fillRect(0, 0, RW, h);
-    }
-    rNum.innerHTML = "まだ あるいていません。";
-  }
-
-  function flush(L, final) {
-    const r = L.row;
-    if (r < ROWS) {
-      gS.fillStyle = INK;                              // かたち
-      const x0 = bx(L.hLo), x1 = bx(L.hHi);
-      gS.fillRect(x0, r, x1 - x0 + 1, 1);
-    }
-    const x = Math.min(RW - 1, (L.n / RHALT * RW) | 0); // 1 のかず
-    const h = Math.round(L.ones / PEAK * (OH - 10));
-    gO.fillStyle = INK;
-    gO.fillRect(L.px, OH - 5 - h, Math.max(1, x - L.px + 1), h);
-    L.px = x + 1;
-    if (final) {                                       // 最後の落ちは幅がない
-      const hp = OH - 10;                              // ので、ピンクで太らせる
-      gO.fillStyle = CHEEK;
-      gO.fillRect(RW - 5, OH - 5 - hp, 5, hp - h);
-    }
-    drawTape(L);
-    L.row++;
-    L.binEnd = (L.row + 1) * PER;
-  }
-
-  function drawTape(L) {
-    const tp = L.tape;
-    gT.fillStyle = BG; gT.fillRect(0, 0, RW, TH);
-    gT.fillStyle = INK;                                // 上：ぜんぶ
-    for (let x = 0; x < RW; x++) {
-      const a = TLO + ((x / RW * TSPAN) | 0), b = TLO + (((x + 1) / RW * TSPAN) | 0);
-      let c = 0, m = 0;
-      for (let i = a; i < b; i++) { m++; if (tp[ORG + i]) c++; }
-      if (!m || !c) continue;
-      gT.globalAlpha = c / m;
-      gT.fillRect(x, 0, 1, 14);
-    }
-    gT.globalAlpha = 1;
-    for (let i = 0; i < 45; i++) {                     // 下：45マス原寸
-      gT.fillStyle = tp[ORG - 6000 + i] ? INK : LINE;
-      gT.fillRect(i * 16, 34, 15, 20);
-    }
-  }
-
-  function tellRec(L) {
-    const j = n => n.toLocaleString("ja-JP");
-    if (!L.peaks.length) { rNum.innerHTML = "あるいています。"; return; }
-    const p = L.peaks;
-    let s = "山が <b>" + p.length + "</b> つ。高さは " +
-            p.map(v => "<b>" + j(v) + "</b>").join(" → ") + "。";
-    if (p.length > 1)
-      s += "<br>ひとつ前との比は <b>" + (p[p.length-1] / p[p.length-2]).toFixed(3) +
-           "</b>。毎回 おなじです。";
-    if (L.halted)
-      s += "<br>ヘッドが行った範囲は <b>" + j(L.gHi - L.gLo + 1) +
-           "</b> マス。最後の山で、そこを ほぼ 1 で埋めきります。" +
-           '<br><span class="p">埋めた ' + j(RHALT - L.peakN) +
-           " 歩あとに、3マスに1本だけ残して消して、とまりました。のこった 1 は <b>" +
-           j(L.ones) + "</b> 個。</span>";
-    rNum.innerHTML = s;
-  }
-
-  const lanes = MACHINES.map(m => {
-    const el = document.createElement("div");
-    el.className = "lane";
-    el.innerHTML = '<div class="head"><span class="name">' + m.name + '</span>' +
-                   '<span class="spacer"></span><span class="st"></span></div>' +
-                   '<canvas width="' + CW + '" height="' + CH + '"></canvas>';
-    document.getElementById("lanes").appendChild(el);
-    return { m, el, st: el.querySelector(".st"),
-             ctx: el.querySelector("canvas").getContext("2d"),
-             tape:new Uint8Array(SIZE), pos:0, state:"A", n:0, halted:false };
-  });
-
-  const REC = lanes.find(L => L.m.halt === RHALT);   // 5じょうたいの子だけ
-  REC.rec = true;
-
-  function reset() {
-    lanes.forEach(L => {
-      L.tape.fill(0); L.pos = 0; L.state = "A"; L.n = 0; L.halted = false;
-      L.el.classList.remove("done");
-      if (L.rec) clearRec(L);
-    });
-  }
-
-  function stepLane(L, k) {
-    if (L.halted) return;
-    const t = L.m.t;
-    let { pos, state, n } = L, tape = L.tape;
-    if (!L.rec) {
-      for (let i = 0; i < k; i++) {
-        const a = t[state][tape[ORG + pos]];
-        tape[ORG + pos] = a[0];
-        pos += a[1]; n++;
-        if (a[2] === "H") { L.halted = true; break; }
-        state = a[2];
-      }
-      L.pos = pos; L.state = state; L.n = n;
-      return;
-    }
-    // 記録する子。1 の増減・ヘッドの範囲・山の高さを その場で数える
-    let ones = L.ones, lo = L.hLo, hi = L.hHi;
-    for (let i = 0; i < k; i++) {
-      const s = tape[ORG + pos], a = t[state][s];
-      if (a[0] !== s) { tape[ORG + pos] = a[0]; ones += a[0] - s; }
-      pos += a[1]; n++;
-      if (pos < lo) lo = pos; else if (pos > hi) hi = pos;
-      if (pos < L.gLo) L.gLo = pos; else if (pos > L.gHi) L.gHi = pos;
-      if (ones > L.peak) {
-        L.peak = ones; L.peakN = n; L.falling = false;
-      } else if (!L.falling && ones < L.peak - 100) {
-        L.falling = true; L.peaks.push(L.peak);
-      }
-      const halt = a[2] === "H";
-      if (n >= L.binEnd || halt) {
-        L.pos = pos; L.n = n; L.ones = ones; L.hLo = lo; L.hHi = hi;
-        flush(L, halt);
-        lo = pos; hi = pos;
-      }
-      if (halt) { L.halted = true; if (!L.falling) L.peaks.push(L.peak); break; }
-      state = a[2];
-    }
-    L.ones = ones; L.hLo = lo; L.hHi = hi;
-    L.pos = pos; L.state = state; L.n = n;
-    tellRec(L);
-  }
-
-  function drawLane(L) {
-    const g = L.ctx, tape = L.tape, mid = VIEW >> 1;
-    g.fillStyle = BG; g.fillRect(0, 0, CW, CH);
-    g.fillStyle = LINE; g.fillRect(0, 38, CW, 1);          // 地面
-    g.fillStyle = INK;
-    for (let i = 0; i < VIEW; i++) {                        // テープ
-      if (tape[ORG + L.pos + i - mid]) g.fillRect(i*CELL, 30, CELL, 8);
-    }
-    // 子
-    const cx = mid*CELL + (CELL>>1);
-    g.fillStyle = INK;
-    g.fillRect(cx-9, 12, 18, 18);
-    g.fillRect(cx-11, 16, 22, 11);
-    g.fillStyle = CHEEK;                                    // ほお
-    g.fillRect(cx-10, 22, 4, 3); g.fillRect(cx+6, 22, 4, 3);
-    g.fillStyle = BG;                                       // め
-    if (L.halted) { g.fillRect(cx-7, 20, 5, 1); g.fillRect(cx+2, 20, 5, 1); }
-    else          { g.fillRect(cx-7, 18, 4, 4); g.fillRect(cx+3, 18, 4, 4); }
-    if (L.halted) {                                         // zzz
-      g.fillStyle = CHEEK;
-      g.fillRect(cx+12, 8, 4, 1); g.fillRect(cx+14, 9, 2, 1);
-      g.fillRect(cx+12, 10, 4, 1);
-    }
-    const nf = L.n.toLocaleString("ja-JP");
-    L.st.innerHTML = L.halted
-      ? 'とまった。<b>' + nf + '</b> ほ。'
-      : 'あるいてる <b>' + nf + '</b>';
-    if (L.halted) L.el.classList.add("done");
-  }
-
-  let run = true, rate = 8;
-  const $ = id => document.getElementById(id);
-  const speedOf = v => Math.max(1, Math.round(Math.pow(10, v/1000 * 4.6)));  // 1〜40000
-
-  function frame() {
-    if (run) for (const L of lanes) stepLane(L, L.m.halt === null ? Math.min(rate, 24) : rate);
-    for (const L of lanes) drawLane(L);
-    requestAnimationFrame(frame);
-  }
-
-  $("play").onclick = e => { run = !run; e.target.textContent = run ? "とめる" : "あるかせる"; };
-  $("reset").onclick = () => reset();
-  $("speed").oninput = e => { rate = speedOf(+e.target.value); $("rate").textContent = rate + " 歩/コマ"; };
-  if (window.matchMedia) {
-    const mq = window.matchMedia("(prefers-color-scheme: dark)");
-    const oc = () => readTheme();
-    mq.addEventListener ? mq.addEventListener("change", oc) : mq.addListener(oc);
-  }
-
-  rate = speedOf(+$("speed").value); $("rate").textContent = rate + " 歩/コマ";
-  reset();
-  if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-    run = false; $("play").textContent = "あるかせる";
-  }
-  requestAnimationFrame(frame);
-})();
-</script>
-</body>
-</html>
+<div class="stage-layout">
+<div class="theatre">
+<div class="stage-top"><span id="who">2じょうたい</span><span id="status" role="status" aria-live="polite">まだ、まっしろ。</span></div>
+<canvas id="world" width="840" height="330" aria-label="選んだ子と、テープ。まだ歩いていません。">機械が0と1のテープを読み、規則に従って一歩ずつ動きます。</canvas>
+<div class="stage-bottom"><span><b id="steps">0</b> ほ</span><span>書いた１ <b id="ones">0</b> こ</span></div>
+<div class="transport"><button id="play" class="primary" disabled>あるかせる →</button><button id="step" disabled>一歩だけ</button><button id="reset" class="quiet" disabled>この子を、はじめから</button></div>
+<div class="speed-line"><label for="speed">はやさ</label><select id="speed"><option value="4">のんびり</option><option value="1200">すたすた</option><option value="2400000">はや送り</option></select><span id="speed-note">一歩ずつ、見える速さ。</span></div>
+<p id="encore" class="encore" hidden><span id="ending"></span><button id="next" class="text-button">次の子へ →</button></p>
+<p id="long-note" class="long-note" hidden>長く歩く子です。早送りでも、47,176,870歩を実際に計算します。<button id="journey" class="text-button">最後まで、見届ける →</button></p>
+<p id="error" role="alert" hidden></p>
+</div>
+<aside class="instruction"><p class="eyebrow">ONE SMALL STEP</p><h2>いまの、一歩。</h2><p id="instruction-lead">まだ何も、書いていない。</p><dl><div><dt>きもち <span>状態</span></dt><dd id="state">A</dd></div><div><dt>読んだマス</dt><dd id="read">—</dd></div><div><dt>書いたもの</dt><dd id="write">—</dd></div><div><dt>すすむ向き</dt><dd id="direction">—</dd></div><div><dt>つぎの状態</dt><dd id="next-state">—</dd></div></dl><p class="aside-note">おなじマスでも、<br>いまの状態で、答えがちがう。</p><details id="rules"><summary>この子の規則を読む</summary><div class="table-scroll"><table><caption id="rule-caption">遷移表</caption><thead><tr><th>状態</th><th>読む</th><th>書く</th><th>向き</th><th>次</th></tr></thead><tbody id="rule-body"></tbody></table></div><p>H に着いたら、おしまい。<br>歩数で止めているわけではありません。</p></details></aside>
+</div>
+</section>
+<section class="record" aria-labelledby="record-title">
+<div class="section-heading"><div><p class="eyebrow">WHAT REMAINS</p><h2 id="record-title">歩いた跡は、残る。</h2></div><button id="save" disabled>この跡を、持ち帰る ↗</button></div>
+<p id="record-copy">一歩進むたびに、ここへ残ります。</p>
+<div class="record-grid"><figure><figcaption><b>通ったところ</b><span>横はテープ。縦は歩いた順。</span></figcaption><canvas id="trace" width="720" height="300" aria-label="ヘッドが通った範囲の記録"></canvas></figure><figure><figcaption><b>残った１</b><span>書いて、消して。それでも残るもの。</span></figcaption><canvas id="amount" width="720" height="300" aria-label="テープ上の1の数の推移"></canvas></figure></div>
+<div class="tape-title"><span>いまのテープ、見渡す。</span><span id="span">まだ１マス。</span></div><canvas id="tape" width="840" height="44" aria-label="訪れた範囲のテープ全体"></canvas>
+<p id="record-summary" class="record-summary">まっしろも、ひとつの状態。</p>
+<p id="record-scale" class="record-scale"></p>
+</section>
+<section class="afterword"><div><p class="eyebrow">DECIDED. STILL UNKNOWN.</p><h2>決まっているのに、<br>わからない。</h2></div><div class="prose"><p>この部屋の４つの子は、いつ止まるかが分かっています。6歩、14歩、107歩、そして47,176,870歩。とまらない子は、同じ配置を繰り返します。</p><p>でも、どんな規則を渡されても「いつか止まるか」を必ず判定できる、万能な方法はありません。これが、停止性問題。</p><p>止まることも。止まらないことも。<br>ひとつずつ、見にいく。</p><details><summary>５じょうたいの子について</summary><p>この子は、5状態・2記号のビジービーバー。47,176,870歩で止まります。BB(5)=47,176,870という最大値の証明は2024年に完成しました。3じょうたいの子は、この部屋で選んだ14歩の機械です。3状態の最大歩数を示すものではありません。</p><a href="https://bbchallenge.org/" target="_blank" rel="noopener">証明のプロジェクトへ ↗</a></details></div></section>
+<section class="next-rooms" aria-label="次の部屋"><a href="/count/"><small>この子に、声を。</small><span>かぞえる。 ↗</span></a><a href="/liar/"><small>答えたら、反対を。</small><span>うそつき。 ↗</span></a><a href="/film/"><small>規則が、映像になる。</small><span>うごく。 ↗</span></a></section>
+<div class="more-links"><a href="/still/">とまってる絵も、残っています ↗</a><a href="/uta/">うたを聴く ↗</a></div>
+</main>
+<footer><a href="/">ひゅーまん</a><span>規則を先に。出てきたものを、あとから読む。</span></footer>
+</div><noscript><p>この子を動かすにはJavaScriptが必要です。説明と、ほかの部屋へのリンクはそのまま読めます。</p></noscript>
+<dialog id="postcard"><button id="close-card" class="quiet">閉じる ×</button><h2>今日の、歩いた跡。</h2><img id="card-image" alt="選んだ子と、歩いた跡の記録"><a id="card-download" class="download-link">PNGで保存する ↓</a><p>保存できないときは、画像を長押しして保存できます。</p></dialog>
+<script type="module" src="./room.js"></script>
+</body></html>
