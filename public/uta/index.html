@@ -67,7 +67,7 @@
   /* うた（YouTube） */
   .grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(300px, 1fr)); gap:26px; }
   figure { margin:0; }
-  .frame { position:relative; border:1px solid var(--line); background:var(--bg); overflow:hidden; line-height:0; cursor:pointer; }
+  .frame { display:block; position:relative; border:1px solid var(--line); background:var(--bg); overflow:hidden; line-height:0; cursor:pointer; }
   .frame:hover { border-color:var(--cheek); }
   .frame img { width:100%; height:auto; display:block; }
   .frame::after {
@@ -103,6 +103,7 @@
   nav a:hover{ animation-duration:1.2s; }
   @keyframes flow{ from{background-position:0% 0} to{background-position:300% 0} }
   @media (prefers-reduced-motion: reduce){ nav a{ animation:none; background-position:50% 0; } }
+.short-link{display:inline-block;margin-top:10px;padding:8px 0;color:var(--ink);text-decoration:none;border-bottom:1px solid var(--cheek);font-size:12px}.short-link:hover{color:var(--cheek)}
 </style>
 </head>
 <body>
@@ -151,7 +152,7 @@
   </div>
 
   <p class="foot" id="sora">
-    音源は <a href="https://vicugna.booth.pm/" target="_blank" rel="noopener">BOOTH</a> に。配信は各サービスで「ひゅーまん」。<br>
+    音源・配信サービスは <a href="https://hyperfollow.com/hyumansong" target="_blank" rel="noopener">こちら</a> に。<br>
     歌詞は それぞれの EP のページと、動画の説明文に。<br>
     ひゅーまんから得た収益は、作品の保存と、アーカイブを残す活動に使います。現在、収益の一部を <a href="https://archive.org/donate" target="_blank" rel="noopener">Internet Archive</a> へ寄付しています。
   </p>
@@ -165,42 +166,52 @@
 (() => {
   "use strict";
   const SONGS = [
-    { id:"C7uEmxWTLpQ", title:"Sora",
+    { id:"_p79st_a-hg", short:"iYSr0PQNTS8", title:"h",
+      note:"つまみを下げても、君は残る。1,024個の灯りのヒステリシス。同じH=0でも、最初は0灯、帰ってきたら1,024灯。来た道を戻っても、同じ部屋には戻らない。部屋が、君を覚えていた。" },
+    { id:"C7uEmxWTLpQ", short:"YNj2E4VVZrg", title:"Sora",
       note:"ふたりと糸とハート、1,129個の点。同じ式でほどけて、96歩で最初の場所へ帰ってくる。巻き戻さず、前へ進んだまま。点はひとつも失われない。空（くう）から、おかえり。" },
     { id:"V-VsJKHg7xc", title:"むかしも いまも",
       note:"正の字で、かぞえる。拍のたびに一画。最後の拍で紙が埋まり、引くと、その紙は大きな正の一升だった。0:58。" },
-    { id:"cmal01GZYIU", title:"(◍-ω-◍)",
-      note:"顔の絵は、どこにも保存していない。あるのは、マスとマスの色の差だけ。殴っても、消しても、裏返しても、寝たまま戻ってくる。最後だけ、直り切る前に寝る。1:15。" },
-    { id:"EhAcjUPVtDs", title:"Oracle",
-      note:"(◍-ω-◍) の対。「止まるか」を当てる箱 H と、反対をする機械。箱は本当に決めている（2状態の機械は 6歩で全部決まる）。ピンクだけ決められず、砕けて、落ちる。瓦礫に同じ規則をかけると、寝てる子が出てくる。1:20。" },
+    { id:"bZgSz5MeF_I", short:"c9WXv5lQtP8", title:"(◍-ω-◍)",
+      note:"マスは、絵を知らない。48×48のマスが、色の差だけを使って同じ顔へ戻る。消しても、ずらしても、裏返しても。最後は2,245 / 2,304。59マス足りないまま、寝てしまう。" },
+    { id:"oLKNsW-EMyw", short:"QS36YuFij0I", title:"Oracle",
+      note:"なんでもわかる、はずだった。「じゃあ、反対のことをするね。」実際に走らせた機械を判定する箱と、その答えを否定するピンクの機械。壊れた箱の瓦礫に、色の差を覚えている規則をかけると、寝ている子が戻ってくる。" },
     { id:"6l3lCiYPN4c", title:"Halt.",
       note:"失恋の詩に見えて、停止性問題。わたしは 5じょうたいの子（47,176,870 歩で とまる。この歌の中では とまれない）。あなたは とまらない子。HALT? と聞かれても、ふたりとも固まるだけ。最後は同じ線の上に並んで、still running。2:19。" },
     { id:"Z4ojdevNCfM", title:"1",
       note:"夏の終わりの帰り道。角の数で次の角が決まる。偶数なら半分、奇数なら3倍して1。1 が家。でも 1 も数で、玄関を入ると裏から 4 に出て、2、また同じ家。曲が終わっても 4、2、1 と刻まれ続ける。0:47。" },
-    { id:"o9YGf3T7tcE", title:"Attractor",
-      note:"ふたりの子が、同じ形の上を、ちがう所から跳ぶ。ピンクの道は赤茶の道の名前を回したもの。鏡じゃない。stay close で手をつなぎ、差が広がって離れ、back で戻る。最後に盤を 120° 回すと、足あとがマスひとつ違わず重なる。おかえり。1:29。" },
-    { id:"VScvvTu9CVg", title:"Already",
+    { id:"Pn3k1o2smWg", short:"K2zwnUcVde4", title:"Attractor",
+      note:"同じ規則でも、離れてしまう。でも、ふたりが通った道は同じ形だった。Thomasの式。x → y → z → x と名前を回しても、式は変わらない。鏡ではなく、名前の回転。120°回した先で、おかえり。新しいマスタリング音源で制作。" },
+    { id:"VScvvTu9CVg", short:"FXjaJPbXN98", title:"Already",
       note:"上の一行が、ぜんぶ決めている。Rule 90。左と右が違うときだけ、下に 1。種は二つ、赤茶とピンク。二人が重なった所は消える（1 と 1 で 0）。最後に赤茶をピンクの上へずらすと、おなじ形なので全部消えて 0。はじめから、ひとつ。Attractor と対。2:11。" },
-    { id:"sJ-EZ5OKgrY", title:"three",
+    { id:"sJ-EZ5OKgrY", short:"w5-HJZ7OhtU", title:"three",
       note:"規則は重力だけ。三人の子が引っぱりあう。ひとりなら動かない。ふたりならずっと同じ輪。三人で、はじめて読めなくなる。1:01 でひとりがとんでいって、1:19 の here. で戻ってくる。引っぱりあっているから、軌道が閉じている。聞いてくれて、ありがとう。1:39。" },
     { id:"3fyqvpvFyrE", title:"Still",
       note:"(◍-ω-◍) の続き。直り切らずに寝た盤（2,245）から。nothing で全部消しても、数は 2,071 で止まる。白紙は顔の紙の部分と辻褄が合っているから。still / one で神さま、two で Oracle が砕けて砂に。三つ目の盤は白紙。数えている側がそこにいる。三つ目を言うのは、次の曲。1:46。" },
-    { id:"xfSFLSo7vJE", title:"α",
+    { id:"xfSFLSo7vJE", short:"MQvhtR3aatg", title:"α",
       note:"エノンの写像。一歩ごとに面積が 0.3 倍に縮む、忘れていく規則の上で、me と you が同じ渦に落ちる。ほどけた糸と、ハート。真の座標から巻き戻すと 4096 点が全部帰る。マス目に丸めてから巻き戻すと、帰れたのは 0。恋の歌に聞こえるけど、散逸の歌。点は Halt. の子。2:49。" },
-    { id:"GgA1Q-DAGfI", title:"φ",
-      note:"蔵本モデル。ホタルが 512 匹、べつべつの速さで生まれて、まわりの平均にすこしだけ引かれる。φ はそろい具合を毎コマ実測した数、0.02 から 0.97 へ。曲名が、そのまま中身。ピンクの子はずれが大きくて、2:04 まで数学的に入れない。入った瞬間が everything changed. 最後は位相の輪が φ の字になって、野原へ戻る。no one moved first. 3:06。" },
+    { id:"1u9PCBV3_6s", short:"mY5828PLVOg", title:"φ",
+      note:"蔵本モデル。同じ夜に、ちがう速さで生まれた512の灯り。その中に、ふたり。みんながそろい始めても、君だけ、まだ。ピンクの子の固有の速さは変えず、結びつきが届くと、ずれを保ったまま同じ周期で光る。いちばん遠い君まで。" },
   ];
   const grid = document.getElementById("grid");
   SONGS.forEach((s, i) => {
     const fig = document.createElement("figure");
-    const fr = document.createElement("div"); fr.className = "frame";
+    const fr = document.createElement("a"); fr.className = "frame";
+    fr.href = "https://www.youtube.com/watch?v=" + s.id; fr.target = "_blank"; fr.rel = "noopener"; fr.setAttribute("aria-label", s.title + " のMVを観る");
     const im = document.createElement("img");
     im.src = "https://i.ytimg.com/vi/" + s.id + "/maxresdefault.jpg"; im.alt = s.title; im.loading = "lazy"; im.decoding = "async";
     fr.appendChild(im);
-    fr.addEventListener("click", () => window.open("https://www.youtube.com/watch?v=" + s.id, "_blank", "noopener"));
     fig.appendChild(fr);
     const cap = document.createElement("figcaption");
     cap.innerHTML = '<span class="no">' + String(i + 1).padStart(2, "0") + '</span>' + s.title + '<span class="note">' + s.note + '</span>';
+    if (s.short) {
+      const short = document.createElement("a");
+      short.href = "https://www.youtube.com/shorts/" + s.short;
+      short.target = "_blank"; short.rel = "noopener"; short.className = "short-link";
+      short.textContent = "ショートで観る ↗";
+      short.setAttribute("aria-label", s.title + " のショートを観る");
+      cap.appendChild(short);
+    }
     fig.appendChild(cap);
     grid.appendChild(fig);
   });
