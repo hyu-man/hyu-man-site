@@ -120,6 +120,7 @@ body{padding:0 18px 35px;background-image:radial-gradient(#dbb9a844 .8px,transpa
 @media(max-width:480px){body{padding:0 12px 25px}.pagehead{padding:19px 5px 24px}h1{font-size:38px}.lead{font-size:12px;margin-bottom:23px}.wrap{padding:17px 13px;border-radius:24px}.machine-head{font-size:8px;letter-spacing:0}.pads{gap:10px}.pad{border-radius:14px;padding:6px;font-size:7px}.pad .k{top:5px;right:7px;font-size:8px}.pad-face{transform:translate(-50%,-50%) scale(.85)}.pad-caption{font-size:11px}.pad-caption span:last-child{font-size:8px}.row{gap:8px}button.b{padding:9px 12px}.songs{gap:6px}.songs button,.songs label{padding:7px 10px}.row input[type=range]{width:96px}}
 @media(prefers-reduced-motion:reduce){.pad,.face{transition:none}.pad:hover,.pad.hit,.face.hit{transform:none}}
 
+.sound-tools{display:flex;flex-wrap:wrap;gap:9px;align-items:center;margin:16px 0}.sound-tools label{font-size:11px}.sound-tools select{font:inherit;border:1px solid var(--line);border-radius:12px;padding:7px;background:var(--bg);color:var(--ink)}.sound-tools button:disabled{opacity:.45}.pad.demo-awake .eye{height:8px;top:6px}.pad.demo-sleep .eye{height:3px;top:10px}
 </style>
 </head>
 <body>
@@ -128,7 +129,7 @@ body{padding:0 18px 35px;background-image:radial-gradient(#dbb9a844 .8px,transpa
 
 <div class="wrap">
   <div class="machine-head"><span>HYU-MAN / POCKET SAMPLER</span><span class="power">● おとであそぼ</span></div><p class="choose">① 曲をえらぶ</p><div class="songs" id="songs"></div>
-  <div class="msg" id="msg" role="status">曲をえらんでね</div>
+  <div class="sound-tools"><label>切るところ <select id="part"><option value="chorus">Soraのサビ</option><option value="whole">曲ぜんぶ</option></select></label><button class="b small" id="preview">ちょっと聴く</button><button class="b small" id="demo">一匹だけ、起こして。</button><button class="b small" id="stopSound">音をとめる</button></div><div class="msg" id="msg" role="status">曲をえらんでね</div>
 
   <div class="face" id="face">(◍-ω-◍)</div>
   <canvas id="wave" width="1120" height="128" aria-label="選んだ曲の波形"></canvas><div class="pad-caption"><span>② すきな子を、ぽん。</span><span>16 LITTLE SOUNDS</span></div>
@@ -157,7 +158,7 @@ body{padding:0 18px 35px;background-image:radial-gradient(#dbb9a844 .8px,transpa
   </div>
 
   <details class="help"><summary>あそびかた・音のもちかえり</summary><div class="note">
-    曲をえらぶと、音が立ち上がるところを探して <b>16 に切ります</b>。パッドを押すと、その切れはしが鳴ります。<br>
+    Soraはサビを順番に<b>16 に切ります</b>。「曲ぜんぶ」や他の曲では、音の立ち上がりで切ります。曲や切り方を変えると録音したループは空になります。パッドを押すと、その切れはしが鳴ります。<br>
     キーボードは <b>1234 / QWER / ASDF / ZXCV</b>。スマホは指で。<br><br>
     <b>ループ</b>を押すと 2小節がまわります（コッ、コッ、と拍が鳴ります。小節の頭は高い音）。<b>ろくおん</b>を点けてパッドを押すと、押した所に入って、次からまわるたびに鳴ります。<br>
     気に入らなければ<b>けす</b>。ぜんぶ消えます。<br>
@@ -176,6 +177,7 @@ body{padding:0 18px 35px;background-image:radial-gradient(#dbb9a844 .8px,transpa
   "use strict";
   const $ = id => document.getElementById(id);
   const SONGS = [
+    { name:"Sora", src:"/v/sora_release.mp3", sora:true },
     { name:"(◍-ω-◍)", src:"/v/ep_01_omega.mp3" },
     { name:"Oracle",   src:"/v/ep_02_oracle.mp3" },
     { name:"4.5",      src:"/v/ep_03_45.mp3" },
@@ -198,26 +200,53 @@ body{padding:0 18px 35px;background-image:radial-gradient(#dbb9a844 .8px,transpa
   }
 
   // ── 曲をえらぶ ──
-  const songsEl = $("songs");
-  SONGS.forEach((s, i) => {
-    const b = document.createElement("button"); b.textContent = s.name;
-    b.onclick = () => { audio(); pick(b); load(fetch(s.src).then(r => { if (!r.ok) throw new Error(r.status); return r.arrayBuffer(); }), s.name); };
-    songsEl.appendChild(b);
-  });
-  const lab = document.createElement("label"); lab.innerHTML = 'じぶんの曲 <input type="file" accept="audio/*">';
-  lab.querySelector("input").onchange = e => {
-    const f = e.target.files[0]; if (!f) return; audio(); pick(lab);
-    load(f.arrayBuffer(), f.name.replace(/\.[^.]+$/, ""));
-  };
-  songsEl.appendChild(lab);
-  function pick(el) { songsEl.querySelectorAll("button,label").forEach(x => x.classList.remove("on")); el.classList.add("on"); }
-
-  function load(p, name) {
-    msg("よみこみちゅう…");
-    p.then(ab => new Promise((res, rej) => ac.decodeAudioData(ab, res, rej)))
-     .then(b => { buf = b; rbuf = reverse(b); slices = chop(b); drawWave(); buildPads(); msg(name + "　16 に切りました。たたいてね", true); })
-     .catch(e => msg("よみこめませんでした（" + e + "）"));
+  let fullBuf=null, isSora=false, loadId=0, demoTimers=[], demoOn=false;
+  const active=new Set();
+  function stopSounds(){
+    demoTimers.forEach(clearTimeout);demoTimers=[];demoOn=false;
+    for(const n of active){try{n.stop();}catch{}}active.clear();
+    if(loopOn) $('play').click();
+    recOn=false;$('rec').classList.remove('on');
+    $('pads').querySelectorAll('.pad').forEach(p=>p.classList.remove('demo-awake','demo-sleep'));
   }
+  function track(n){active.add(n);n.onended=()=>{active.delete(n);n.disconnect();};return n;}
+  const songsEl = $('songs');
+  SONGS.forEach(s=>{
+    const b=document.createElement('button');b.textContent=s.name;
+    b.onclick=()=>{audio();pick(b);load(fetch(s.src).then(r=>{if(!r.ok)throw Error(r.status);return r.arrayBuffer();}),s.name,!!s.sora);};songsEl.appendChild(b);
+  });
+  const lab=document.createElement('label');lab.innerHTML='じぶんの曲 <input type="file" accept="audio/*">';
+  lab.querySelector('input').onchange=e=>{const f=e.target.files[0];if(!f)return;audio();pick(lab);load(f.arrayBuffer(),f.name.replace(/\.[^.]+$/,''),false);};songsEl.appendChild(lab);
+  function pick(el){songsEl.querySelectorAll('button,label').forEach(x=>x.classList.toggle('on',x===el));}
+  function cut(){
+    stopSounds();seq.forEach(x=>x.length=0);drawSteps();$("dl").textContent="";
+    const chorus=isSora&&$('part').value==='chorus';
+    if(chorus){const start=Math.round(26.866667*fullBuf.sampleRate),length=Math.round(7.35*fullBuf.sampleRate);buf=ac.createBuffer(fullBuf.numberOfChannels,length,fullBuf.sampleRate);for(let c=0;c<buf.numberOfChannels;c++)buf.copyToChannel(fullBuf.getChannelData(c).subarray(start,start+length),c);slices=Array.from({length:16},(_,i)=>({t:i*buf.duration/16,d:buf.duration/16}));}
+    else{buf=fullBuf;slices=chop(buf);}
+    rbuf=reverse(buf);buildPads();drawWave();$('preview').disabled=false;$('demo').disabled=!isSora;
+    msg(chorus?'Soraのサビ。01→16でつながるよ。自由にたたいてね':'16に切りました。たたいてね',true);
+  }
+  async function load(p,name,sora){
+    const id=++loadId;stopSounds();buf=null;fullBuf=null;slices=[];buildPads();drawWave();$('preview').disabled=$('demo').disabled=true;msg(name+' よみこみちゅう…');
+    try{const b=await ac.decodeAudioData(await p);if(id!==loadId)return;fullBuf=b;isSora=sora;$('part').disabled=!sora;$('part').value=sora?'chorus':'whole';cut();}catch(e){if(id===loadId)msg('よみこめませんでした。もう一度曲をえらんでね');}
+  }
+  $('part').onchange=()=>{if(fullBuf)cut();};
+  $('stopSound').onclick=stopSounds;
+  function excerpt(){const n=track(ac.createBufferSource()),g=ac.createGain();n.buffer=fullBuf;g.gain.value=.72;n.connect(g).connect(master);n.start(0,isSora?26.866667:0,Math.min(7.35,fullBuf.duration));}
+  $('preview').onclick=()=>{if(!fullBuf)return;stopSounds();audio();excerpt();};
+  function po(freq){const n=track(ac.createOscillator()),g=ac.createGain(),t=ac.currentTime;n.type='sine';n.frequency.value=freq;g.gain.setValueAtTime(.0001,t);g.gain.linearRampToValueAtTime(.22,t+.008);g.gain.exponentialRampToValueAtTime(.0001,t+.23);n.connect(g).connect(master);n.start();n.stop(t+.24);}
+  $('demo').onclick=()=>{
+    if(!isSora||!fullBuf)return;stopSounds();audio();demoOn=true;msg('一匹だけ、起こして。',true);
+    const later=(sec,fn)=>demoTimers.push(setTimeout(fn,sec*1000));
+    const wake=k=>{$('pads').children[k].classList.add('demo-awake');flash(k);};
+    [[1.05,5,261.63],[2.1,5,261.63],[2.55,6,293.66],[3.25,9,261.63],[3.6,2,293.66]].forEach(([t,k,f])=>later(t,()=>{wake(k);po(f);}));
+    later(4,()=>{excerpt();msg('みんな起きちゃった。',true);});
+    for(let j=0;j<32;j++)later(4+j*.225,()=>{for(let k=0;k<15;k++){if((j+k)%3===0)wake(k);}});
+    later(11.4,()=>msg('……ひとり、寝てる。'));
+    later(13.2,()=>{po(164.81);flash(15);msg('ぽ。',true);});
+    later(13.6,()=>{$('pads').querySelectorAll('.pad').forEach(p=>{p.classList.remove('demo-awake');p.classList.add('demo-sleep');});msg('……もう一回？ 今度はきみが、たたいてね。',true);demoOn=false;});
+  };
+  $('preview').disabled=$('demo').disabled=true;
   function msg(s, hot) { $("msg").textContent = s; $("msg").classList.toggle("hot", !!hot); }
 
   function reverse(b) {
@@ -300,13 +329,13 @@ body{padding:0 18px 35px;background-image:radial-gradient(#dbb9a844 .8px,transpa
 
   // ── 鳴らす ──
   function voice(ctx, dest, k, t, r, rv) {
-    const s = slices[k]; if (!s) return;
+    const s = slices[k]; if (!s || s.d<=0) return;
     const b = rv ? rbuf : buf, src = ctx.createBufferSource(), g = ctx.createGain();
     src.buffer = b; src.playbackRate.value = r;
     const off = rv ? Math.max(0, b.duration - s.t - s.d) : s.t, len = s.d / r;
     g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(1, t + 0.005);
-    g.gain.setValueAtTime(1, t + len - 0.03); g.gain.exponentialRampToValueAtTime(0.0001, t + len);
-    src.connect(g).connect(dest); src.start(t, off, s.d); src.stop(t + len + 0.01);
+    g.gain.setValueAtTime(1, t + Math.max(0.005,len - 0.03)); g.gain.exponentialRampToValueAtTime(0.0001, t + len);
+    if(ctx===ac)track(src); src.connect(g).connect(dest); src.start(t, off, s.d); src.stop(t + len + 0.01);
   }
   function click(t, head) {                                        // メトロノーム。WAV には入れない
     const o = ac.createOscillator(), g = ac.createGain();
@@ -316,6 +345,8 @@ body{padding:0 18px 35px;background-image:radial-gradient(#dbb9a844 .8px,transpa
   }
   function hit(k) {
     if (!buf || !slices[k]) { msg("うえの曲をえらぶと、この子が鳴るよ"); return; }
+    if(demoOn)stopSounds();
+    $("pads").children[k].classList.remove("demo-sleep");
     audio();
     voice(ac, master, k, ac.currentTime, rate, rev);
     flash(k);
@@ -400,6 +431,7 @@ body{padding:0 18px 35px;background-image:radial-gradient(#dbb9a844 .8px,transpa
     mq.addEventListener ? mq.addEventListener("change", oc) : mq.addListener(oc);
   }
   drawWave();
+  window.addEventListener("pagehide",stopSounds);
 })();
 </script>
 </body>
