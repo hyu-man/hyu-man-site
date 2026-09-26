@@ -2,7 +2,7 @@
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
-    if (url.pathname !== '/over/its-over-v2.mp4') return env.ASSETS.fetch(request);
+    if (!['/over/its-over-v2.mp4','/over/song.m4a'].includes(url.pathname)) return env.ASSETS.fetch(request);
     const headers = new Headers(request.headers);
     headers.delete('Range'); headers.delete('If-Range');
     const response = await env.ASSETS.fetch(new Request(request.url, {method:'GET',headers}));
@@ -10,7 +10,7 @@ export default {
     const bytes = await response.arrayBuffer();
     const size = bytes.byteLength;
     const out = new Headers(response.headers);
-    out.set('Accept-Ranges','bytes'); out.set('Content-Type','video/mp4');
+    out.set('Accept-Ranges','bytes'); out.set('Content-Type',url.pathname.endsWith('.m4a')?'audio/mp4':'video/mp4');
     out.set('Cache-Control','public, max-age=86400');
     out.delete('Content-Encoding');
     const range = request.headers.get('Range');
