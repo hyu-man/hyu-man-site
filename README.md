@@ -45,7 +45,7 @@
 15部屋。ほかに `/omega-ep/` があります。4枚目の特設で、ホームからはまだ辿れません。
 `/both/` は5枚目の盤で、蟻が2匹います。踏んだのが両方だったマスだけ、色がつきます。こちらはホームに出しました。
 
-音源は [hyu-man.bandcamp.com](https://hyu-man.bandcamp.com)。
+音源は [音源・配信サービス](https://hyperfollow.com/hyumansong)。
 
 ---
 
