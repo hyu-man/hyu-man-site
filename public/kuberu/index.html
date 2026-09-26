@@ -79,31 +79,34 @@
     nav a, .fromrule a{ animation:none; background-position:50% 0; }
   }
   .fromrule { margin-top:26px; font-size:12px; color:var(--sub); letter-spacing:.04em; }
+
+:root{--bg:#f8f0e5;--ink:#853e3e;--sub:#a07973;--line:#e8d4c7;--cheek:#ff96aa}
+body{padding:24px 18px 48px;font-family:'DotGothic16',monospace}.wrap{max-width:800px}h1{font-family:'DotGothic16';font-size:48px;letter-spacing:.05em;margin:22px 0 10px}.lead{color:var(--ink);font-family:'DotGothic16';margin-bottom:20px}.bar{border:0;justify-content:space-between;margin:12px 0}.bar button,button{font-family:'DotGothic16';border:1px solid var(--line);background:#fff9f1;color:var(--ink);border-radius:12px;min-height:44px;padding:10px 17px;cursor:pointer}.bar button.on{background:var(--ink);border-color:var(--ink);color:var(--bg)}button:hover{background:#ffe0e6}button:focus-visible,canvas:focus-visible,a:focus-visible{outline:3px solid var(--cheek);outline-offset:4px}canvas{border:8px solid #fff9f1;border-radius:22px;box-shadow:0 8px 0 #eadbd0}.nums{font-family:'DotGothic16';font-size:12px;letter-spacing:0}.st{color:var(--ink);text-align:center;margin:22px 0 14px;min-height:2em}.actions{display:flex;justify-content:center;gap:10px;flex-wrap:wrap}.hint{text-align:center;font-size:12px;color:var(--sub);margin:15px 0 25px}.w,.last{font-family:'DotGothic16';font-size:13px}.last{line-height:2.1}.last summary{cursor:pointer;color:var(--ink);margin-bottom:12px}nav{display:flex;gap:18px;flex-wrap:wrap;font:12px 'DotGothic16';margin-top:30px}nav a{background:none;color:var(--ink);animation:none;margin:0}.fromrule{display:none}.toast-note{font-size:13px;text-align:center;color:var(--ink);min-height:2em;margin-top:12px}@media(max-width:560px){h1{font-size:38px}.bar{justify-content:center;gap:8px}.nums{font-size:10px}.lead{font-size:12px}canvas{border-width:6px}.w{font-size:12px}}
 </style>
 </head>
 <body>
 
-<h1>くべる</h1>
-<p class="lead">くべないと、やみます。</p>
+<h1>くべる。</h1>
+<p class="lead">火のそばに、もうすこし。</p>
 
 <div class="wrap">
 
   <div class="bar">
-    <button id="snd" class="on">おと</button>
+    <button id="snd" aria-pressed="false">おと：おやすみ</button>
     <span class="nums" id="nums">薪 <b>0</b>本　いま <b>0:00</b>　さいちょう <b>0:00</b>　灰 <b>0</b>本ぶん</span>
   </div>
 
-  <canvas id="fire" width="384" height="256" aria-label="火。押すと薪をくべる"></canvas>
+  <canvas id="fire" width="384" height="256" tabindex="0" aria-label="火。押した場所に薪をくべます。Enterでもくべられます"></canvas>
   <p class="st" id="st">火は、まだありません。押して、最初の一本をくべてください。</p>
-  <p class="w">つまみはありません。手だけです。押した場所に薪が入ります。<br>
+  <div class="actions"><button id="feed">薪を、ひとつ。</button><button id="toast">マシュマロを焼く</button></div><p class="toast-note" id="toastNote" aria-live="polite">火がついたら、おやつにしよう。</p><p class="hint">火の好きなところを押しても、薪が入ります。</p><p class="w">一本くべると、小さな火。重ねると、にぎやかな火。<br>
      炎も音も、その場で規則が作っています。<b>サンプルなし。乱数のかわりに、決まったでたらめ。</b></p>
 
-  <div class="last">
+  <details class="last"><summary>火と、おやつのはなし。</summary>
     火は、燃料と時間の交換です。<br>
     くべたぶんだけ、もえます。くべなければ、やみます。<br>
-    <b>消えても、灰と記録は残ります。ここでも、消さないので。</b><br>
+    <b>消えても、灰と記録は残ります。この焚き火の、あと。</b><br>
     <span class="who">となりの部屋の火（もえる）は、止まりません。こっちの火は、あなたの手で続きます。</span>
-  </div>
+  <p>マシュマロは、火が強いほど早く焼けます。焼き色を見て「いただきます」。灰と記録は、このページを開いている間に残ります。</p></details>
 
   <p class="fromrule">規則は、ありません。あそんでください。</p>
 
@@ -129,7 +132,7 @@
     i = Math.imul(i, 0x297A2D39) >>> 0;
     return ((i ^ (i >>> 15)) >>> 0) / 4294967296;
   }
-  let seedk = 1;
+  let seedk = 1, soundSeed = 1;
   const rnd = () => h32(seedk++);
 
   // ── 火の格子（下から上へ熱が立ちのぼる規則）──
@@ -153,16 +156,19 @@
   ];
   const colOf = h => { for (const [t, f] of FIRE_COLS) if (h < t) return f(); return '#ffdce6'; };
 
-  cv.addEventListener('pointerdown', e => {
-    const r = cv.getBoundingClientRect();
-    const gx = Math.floor((e.clientX - r.left) / r.width * GW);
-    if (logs.length >= 7) { say('くべすぎです。燃えるのを、待ってください。'); return; }
-    const w = 10 + Math.floor(rnd() * 5);
-    const x0 = Math.max(1, Math.min(GW - w - 1, gx - (w >> 1)));
-    const cap = 900 + Math.floor(rnd() * 400);   // 15〜21秒ぶんの燃料
-    logs.push({ x0, w, fuel: cap, cap });
-    fed++; ensureAudio();
-  });
+  function feed(gx=GW/2) {
+    if(logs.length>=7){say('いまは、ぎゅうぎゅう。少し待とう。');return;}
+    const w=10+Math.floor(rnd()*5),x0=Math.max(1,Math.min(GW-w-1,gx-(w>>1)));
+    const cap=900+Math.floor(rnd()*400);logs.push({x0,w,fuel:cap,cap});fed++;ensureAudio();
+  }
+  cv.addEventListener('pointerdown',e=>{const r=cv.getBoundingClientRect();feed(Math.floor((e.clientX-r.left)/r.width*GW));});
+  cv.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();feed();}});
+  $('feed').onclick=()=>feed([48,36,60,24,72,42,54][fed%7]);
+  let roasting=false, doneness=0, eaten=0;
+  $('toast').onclick=()=>{
+    if(!roasting){roasting=true;doneness=0;$('toast').textContent='いただきます';$('toastNote').textContent='火のそばで、ゆっくり。';}
+    else{roasting=false;eaten++;$('toast').textContent='もうひとつ焼く';$('toastNote').textContent=(doneness<3?'ふわふわ、まだ白い。':doneness<8?'こんがり。おいしいね。':'ちょっと、こげちゃった。')+'　おやつ '+eaten+'こ';}
+  };
 
   // ── 一歩（60歩/秒）──
   let frame = 0;
@@ -201,6 +207,14 @@
   // ── 描く ──
   function draw() {
     g.fillStyle = BG; g.fillRect(0, 0, cv.width, cv.height);
+    // 火を囲むふたり。まぶたは燃料の有無で変わる。
+    g.fillStyle='#eadbd0';g.fillRect(18,247,348,1);
+    for(const [x,pink] of [[60,false],[310,true]]){
+      g.fillStyle=pink?'#ff96aa':'#853e3e';g.fillRect(x-17,210,34,27);g.fillRect(x-22,216,44,16);
+      g.fillStyle=pink?'#853e3e':'#fff5e9';g.fillRect(x-10,219,5,logs.length?5:2);g.fillRect(x+5,219,5,logs.length?5:2);
+      g.fillStyle=pink?'#ffdae3':'#ff96aa';g.fillRect(x-17,228,7,4);g.fillRect(x+10,228,7,4);
+      g.fillStyle=pink?'#ff96aa':'#853e3e';g.fillRect(x-14,239,10,5);g.fillRect(x+4,239,10,5);
+    }
     // 灰の山（燃やしたぶんだけ育つ。消えない）
     if (ash > 0) {
       g.fillStyle = SUB;
@@ -225,13 +239,24 @@
       g.fillStyle = '#8a3a2e';
       g.fillRect(L.x0 * CELL, (GH - 3) * CELL, Math.max(CELL, Math.round(L.w * CELL * p)), CELL);
     }
+    // 顔と串は演出。熱と燃料の計算には介入しない。
+    for(const L of logs){
+      const x=(L.x0+L.w/2)*CELL,y=GH*CELL-34-Math.round(12*L.fuel/L.cap);
+      g.fillStyle='#853e3e';g.fillRect(x-6,y,3,3);g.fillRect(x+4,y,3,3);
+      g.fillStyle='#ff799d';g.fillRect(x-10,y+5,5,3);g.fillRect(x+8,y+5,5,3);
+    }
+    if(!logs.length){const x=192,y=222;g.fillStyle='#d6b9b0';g.fillRect(x-18,y-7,36,14);g.fillRect(x-12,y-12,24,22);g.fillStyle='#853e3e';g.fillRect(x-9,y,5,2);g.fillRect(x+5,y,5,2);g.fillStyle='#ff96aa';g.fillRect(x-14,y+4,5,3);g.fillRect(x+11,y+4,5,3);}
+    if(roasting){
+      const x=192,y=165;g.strokeStyle='#a07973';g.lineWidth=3;g.beginPath();g.moveTo(290,96);g.lineTo(x,y+8);g.stroke();
+      g.fillStyle=doneness<3?'#fffaf2':doneness<8?'#e6b788':'#997266';g.fillRect(x-13,y-13,26,24);g.fillRect(x-10,y-16,20,30);
+      g.fillStyle='#853e3e';g.fillRect(x-7,y-4,3,3);g.fillRect(x+5,y-4,3,3);g.fillStyle='#ff96aa';g.fillRect(x-11,y+2,5,3);g.fillRect(x+8,y+2,5,3);
+    }
+
   }
 
   // ── おと（全部その場で合成。ごおー＝低い雑音、ぱち＝短い雑音の粒）──
-  let audioOn = true, actx = null, bedGain = null, hissGain = null, noiseBuf = null, nextPop = 0;
-  $('snd').onclick = () => { audioOn = !audioOn; $('snd').classList.toggle('on', audioOn);
-    if (bedGain) bedGain.gain.setTargetAtTime(0, actx.currentTime, 0.1);
-    if (hissGain) hissGain.gain.setTargetAtTime(0, actx.currentTime, 0.1); };
+  let audioOn = false, actx = null, bedGain = null, hissGain = null, noiseBuf = null, nextPop = 0;
+  $('snd').onclick=()=>{audioOn=!audioOn;$('snd').classList.toggle('on',audioOn);$('snd').setAttribute('aria-pressed',String(audioOn));$('snd').textContent=audioOn?'おと：ぱちぱち':'おと：おやすみ';if(audioOn){ensureAudio();if(actx){actx.resume();nextPop=actx.currentTime+.1;}}else if(actx){bedGain.gain.setTargetAtTime(0,actx.currentTime,.1);hissGain.gain.setTargetAtTime(0,actx.currentTime,.1);}};
   function ensureAudio() {
     if (actx || !audioOn) return;
     try {
@@ -270,9 +295,10 @@
     bedGain.gain.setTargetAtTime(0.14 * intensity, actx.currentTime, 0.25);
     hissGain.gain.setTargetAtTime(0.028 * intensity, actx.currentTime, 0.3);
     if (intensity > 0.02) {
+      nextPop=Math.max(nextPop,actx.currentTime);
       while (nextPop < actx.currentTime + 0.25) {
-        crackle(nextPop, seedk++);
-        nextPop += (0.03 + h32(seedk * 13) * 0.35) / (0.25 + intensity * 1.9);
+        crackle(nextPop, soundSeed++);
+        nextPop += (0.03 + h32(soundSeed * 13) * 0.35) / (0.25 + intensity * 1.9);
       }
     } else { nextPop = actx.currentTime + 0.2; }
   }
@@ -292,13 +318,14 @@
     const intensity = Math.min(1, lastPower / 26);
     if (intensity > 0.02) { burnNow += dt; burnBest = Math.max(burnBest, burnNow); wasBurning = true; }
     else if (wasBurning) { wasBurning = false; burnNow = 0;
-      say(`<b>消えました。</b>灰と記録は残っています——灰 ${ash}本ぶん、さいちょう ${mmss(burnBest)}。もう一本どうぞ。`); }
+      say(`<b>おやすみ。</b>灰 ${ash}本ぶん。あったかかったね。`); }
+    if(roasting){doneness+=dt*intensity;if(frame%30===0)$('toastNote').textContent=doneness<3?'まだ、ふわふわ。':doneness<8?'いい焼き色。いま、おいしい。':'あっ、こげてきた。';}
     draw(); sound(intensity);
     $('nums').innerHTML =
       `薪 <b>${fed}</b>本　いま <b>${mmss(burnNow)}</b>　さいちょう <b>${mmss(burnBest)}</b>　灰 <b>${ash}</b>本ぶん　火 <b>${Math.round(intensity*100)}</b>%`;
     if (intensity > 0.02) {
-      if (intensity < 0.18 && logs.length <= 1) say('弱ってきました。<span class="q">くべるなら、いまです。</span>');
-      else say(`もえています。<span class="q">${logs.length}本</span>が火の中。放っておくと、やみます。`);
+      if (intensity < 0.18 && logs.length <= 1) say('うとうと。<span class="q">もう一本、くべる？</span>');
+      else say(`<span class="q">${logs.length}本</span>で、ぱちぱち。そばにいてね。`);
     }
     requestAnimationFrame(loop);
   }
