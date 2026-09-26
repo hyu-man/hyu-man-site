@@ -104,6 +104,15 @@
   @keyframes flow{ from{background-position:0% 0} to{background-position:300% 0} }
   @media (prefers-reduced-motion: reduce){ nav a{ animation:none; background-position:50% 0; } }
 .short-link{display:inline-block;margin-top:10px;padding:8px 0;color:var(--ink);text-decoration:none;border-bottom:1px solid var(--cheek);font-size:12px}.short-link:hover{color:var(--cheek)}
+
+  .commission { margin-top:38px; padding:28px 0; border-top:1px solid var(--line); border-bottom:1px solid var(--line); scroll-margin-top:24px; }
+  .commission h2 { font-size:18px; font-weight:400; line-height:1.8; margin-bottom:12px; }
+  .commission p { font-size:13px; line-height:2; }
+  .commission .consult { display:inline-block; margin-top:18px; padding:10px 16px; color:var(--ink); border:1px solid var(--cheek); text-decoration:none; font-size:13px; }
+  .commission .consult:hover { background:var(--cheek); color:#1a1a1a; }
+  .commission .consult:focus-visible { outline:2px solid var(--ink); outline-offset:4px; }
+  .commission .address { margin-top:10px; font-family:'DotGothic16',sans-serif; font-size:12px; overflow-wrap:anywhere; }
+  .commission .address a { color:var(--ink); text-underline-offset:3px; }
 </style>
 </head>
 <body>
@@ -156,6 +165,16 @@
     歌詞は それぞれの EP のページと、動画の説明文に。<br>
     ひゅーまんから得た収益は、作品の保存と、アーカイブを残す活動に使います。現在、収益の一部を <a href="https://archive.org/donate" target="_blank" rel="noopener">Internet Archive</a> へ寄付しています。
   </p>
+
+  <section class="commission" id="mv-production" aria-labelledby="commission-title">
+    <h2 id="commission-title">あなたの曲にも、小さな世界を。</h2>
+    <p>ミュージックビデオの制作相談を受け付けています。<br>
+      歌詞と音から物語を考え、ドット絵や図形をプログラムで描きます。<br>
+      通常MV・縦ショート・字幕・サムネイルまで。<br>
+      まずは音源と、作りたいものを聞かせてください。</p>
+    <a class="consult" href="mailto:hyuman.notyet@gmail.com">制作の相談 →</a>
+    <p class="address"><a href="mailto:hyuman.notyet@gmail.com">hyuman.notyet@gmail.com</a></p>
+  </section>
 
 <nav>
   <a href="/">ひゅーまん</a><a href="/film/">/film/</a><a href="/still/">/still/</a><a href="/omega/">/omega/</a>
