@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Life — ひゅーまん</title>
+<title>いきる — ひゅーまん</title>
 <meta name="description" content="いきる / ふえる / きえる">
 <link rel="canonical" href="https://hyu-man.com/life/">
 <meta property="og:type" content="website">
@@ -24,118 +24,24 @@
 <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=DotGothic16&family=Hachi+Maru+Pop&display=swap" rel="stylesheet">
 
 <style>
-  * { box-sizing:border-box; margin:0; padding:0; }
-  :root {
-    --bg:#f5f3f0; --ink:#1a1a1a; --sub:#b0a8a0; --life:#2a1a1a;
-    --born:#ff6b8a; --gone:#f2d6dc;
-    --dot:'Press Start 2P','DotGothic16','Courier New',monospace;
-    --maru:'Hachi Maru Pop','DotGothic16',sans-serif;
-  }
-  html,body { width:100%; height:100%; overflow:hidden; background:var(--bg); }
-  body { display:flex; align-items:center; justify-content:center; }
-
-  .stage { position:relative; width:min(72vw,72vh,700px); aspect-ratio:1/1; }
-  canvas {
-    width:100%; height:100%; display:block; background:var(--bg);
-    image-rendering:pixelated; image-rendering:crisp-edges;
-    cursor:crosshair; touch-action:none;
-  }
-  .title {
-    position:absolute; inset:0; z-index:20;
-    display:flex; align-items:center; justify-content:center;
-    font-family:var(--dot); font-size:clamp(36px,9vw,88px);
-    letter-spacing:.08em; text-indent:.08em; line-height:1;
-    color:var(--life); opacity:.16; user-select:none; pointer-events:none;
-    animation:breathe 3s ease-in-out infinite;
-  }
-  @keyframes breathe { 0%,100%{opacity:.16} 50%{opacity:.34} }
-
-  .gen, .pop {
-    position:fixed; top:28px; z-index:10;
-    color:var(--sub); user-select:none; pointer-events:none; line-height:1.7;
-  }
-  .gen { right:28px; text-align:right; }
-  .pop { left:28px; }
-  .num { display:block; font-family:var(--dot); font-size:22px;
-         color:var(--ink); font-variant-numeric:tabular-nums; }
-  .pop .num { color:var(--born); }
-  .ask { display:block; font-family:var(--maru); font-size:12px;
-         letter-spacing:.08em; margin-top:6px; }
-
-  .sub {
-    position:fixed; bottom:28px; left:28px; z-index:10;
-    font-family:var(--maru); font-size:12px; letter-spacing:.08em;
-    color:var(--sub); line-height:2.1; user-select:none; pointer-events:none;
-  }
-  .sub .k { margin-right:14px; }
-  .sub .sw { display:inline-block; width:9px; height:9px; margin-right:5px;
-             vertical-align:-1px; border-radius:1px; }
-  .sw.b { background:var(--born); }
-  .sw.l { background:var(--ink); }
-  .sw.g { background:var(--gone); }
-  .sub a {
-    pointer-events:auto; display:inline-block; text-decoration:none;
-    padding-bottom:2px; font-family:var(--dot); font-size:9px; letter-spacing:.12em;
-    background:linear-gradient(90deg,#ff0040,#ff8a00,#ffe600,#3ddc4a,#00b7ff,#8a4bff,#ff0040);
-    background-size:300% 100%; -webkit-background-clip:text; background-clip:text;
-    color:transparent; animation:flow 4s linear infinite;
-  }
-  @keyframes flow { from{background-position:0% 0} to{background-position:300% 0} }
-  .sub a:hover { animation-duration:1s; }
-
-  .hint {
-    position:fixed; bottom:28px; right:28px; z-index:10; text-align:right;
-    font-family:var(--maru); font-size:11px; letter-spacing:.06em;
-    color:var(--sub); line-height:1.9; opacity:.75;
-    user-select:none; pointer-events:none;
-  }
-
-  @media (max-width:600px) {
-    .stage { width:min(94vw,66vh); }
-    .gen,.pop { top:14px; }
-    .gen { right:16px; } .pop { left:16px; }
-    .num { font-size:15px; }
-    .ask { font-size:10px; }
-    .title { font-size:clamp(28px,10vw,52px); opacity:.14; }
-  .hint { display:none; }
-    .sub { font-size:10px; bottom:16px; left:16px; }
-  }
-  @media (prefers-reduced-motion:reduce) {
-    .title { animation:none; opacity:.24; }
-    .sub a { animation:none; }
-  }
+*{box-sizing:border-box} :root{--paper:#f7f0e4;--ink:#853d3e;--pink:#ff799d;--muted:#9a7370;--line:#e7cfc4;--dot:'DotGothic16',monospace} body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--dot);line-height:1.8}button,a,input{touch-action:manipulation}a{color:inherit;text-decoration:none}a:hover{text-decoration:underline}button,input{font:inherit}button{cursor:pointer}button:focus-visible,a:focus-visible,canvas:focus-visible,input:focus-visible{outline:3px solid var(--pink);outline-offset:4px}.shell{max-width:1120px;margin:auto;padding:22px 30px 36px}.top{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--line);padding-bottom:14px;font-size:12px}.brand{letter-spacing:.12em}.top nav{display:flex;gap:24px}.layout{display:grid;grid-template-columns:290px minmax(0,1fr);gap:52px;align-items:center;padding:32px 0}.eyebrow{letter-spacing:.18em;font-size:10px;color:var(--muted)}h1{font-size:64px;line-height:1.3;font-weight:400;letter-spacing:.08em;margin:14px 0 20px}.intro{font-size:15px;line-height:2.2}.little{width:72px;height:66px;position:relative;background:var(--ink);clip-path:polygon(15% 0,85% 0,85% 12%,100% 12%,100% 85%,85% 85%,85% 100%,15% 100%,15% 85%,0 85%,0 12%,15% 12%);margin:30px 0 18px}.little:before{content:'';position:absolute;background:var(--paper);width:10px;height:10px;top:23px;left:17px;box-shadow:28px 0 var(--paper)}.little:after{content:'';position:absolute;background:var(--pink);width:14px;height:8px;top:38px;left:6px;box-shadow:46px 0 var(--pink)}.voice{font-size:13px;min-height:48px;color:var(--muted)}.stats{display:flex;gap:26px;border-top:1px solid var(--line);padding-top:19px;margin-top:23px}.stats span{font-size:10px;color:var(--muted);display:block}.stats strong{font-size:25px;font-weight:400;font-variant-numeric:tabular-nums}.stats div:first-child strong{color:#c14e72}.garden{min-width:0}.frame{padding:12px;background:#fffbf4;border:1px solid var(--line);border-radius:22px;box-shadow:0 9px 0 #eadbd2;position:relative}.board-head{display:flex;justify-content:space-between;font-size:10px;letter-spacing:.08em;padding:3px 5px 11px;color:var(--muted)}canvas{display:block;width:100%;height:auto;aspect-ratio:1;image-rendering:pixelated;touch-action:none;border-radius:9px;cursor:crosshair;background:var(--paper)}.board-foot{display:flex;gap:14px;justify-content:center;font-size:10px;color:var(--muted);padding-top:9px}.sw{display:inline-block;width:7px;height:7px;margin-right:5px;background:var(--ink)}.sw.b{background:var(--pink)}.sw.g{background:#edcdd0}.controls{display:flex;flex-wrap:wrap;gap:8px;margin-top:24px}button{border:1px solid var(--line);background:#fffaf3;color:var(--ink);padding:10px 14px;border-radius:12px;min-height:44px;transition:background .15s,transform .15s}button:hover{background:#ffe2e8;transform:translateY(-2px)}button:active{transform:translateY(1px)}button[aria-pressed=true],#pause{background:var(--ink);color:var(--paper);border-color:var(--ink)}.settings{display:flex;flex-wrap:wrap;align-items:center;gap:14px;margin:18px 0 0;font-size:12px}.settings label{display:flex;gap:8px;align-items:center}input{accent-color:#b95070}input[type=range]{width:100px}.tip{font-size:11px;color:var(--muted);margin:15px 3px 0}.rules{border-top:1px solid var(--line);padding-top:21px;font-size:12px;color:var(--muted)}summary{cursor:pointer;color:var(--ink)}.rules p{max-width:720px;margin:12px 0}.footer{border-top:1px solid var(--line);padding-top:18px;margin-top:25px;display:flex;justify-content:space-between;gap:20px;font-size:12px}.footer div{display:flex;gap:20px}@media(max-width:800px){.shell{padding:17px 18px 25px}.layout{grid-template-columns:1fr;gap:18px;padding-top:21px}.about{display:grid;grid-template-columns:1fr auto;column-gap:15px}.eyebrow{margin:0}h1{font-size:40px;margin:4px 0 6px}.intro{font-size:12px;margin:0}.little{grid-column:2;grid-row:1/4;align-self:center;margin:0;width:60px;height:56px}.little:before{left:12px;top:18px;box-shadow:25px 0 var(--paper)}.little:after{left:3px;top:32px;box-shadow:40px 0 var(--pink)}.voice{grid-column:1/-1;min-height:0;margin:12px 0 0;font-size:12px}.stats{grid-column:1/-1;margin-top:12px;padding-top:10px;justify-content:space-between}.stats strong{font-size:21px}.stats div{display:flex;align-items:baseline;gap:12px}.frame{padding:9px;border-radius:16px}.controls{margin-top:20px;gap:6px}button{padding:8px 12px;font-size:12px}.footer{flex-wrap:wrap}.top nav{gap:15px}.board-foot{font-size:9px}.settings{gap:10px}}@media(prefers-reduced-motion:reduce){button{transition:none}}
 </style>
 </head>
-<body>
 
-<div class="stage">
-  <canvas id="cv" width="121" height="121" aria-label="ライフゲームの盤面"></canvas>
-  <div class="title">Life</div>
-</div>
-
-<div class="pop"><span class="num" id="popNum">0000</span><span class="ask">いま、なんびき？</span></div>
-<div class="gen"><span class="num" id="genNum">000000</span><span class="ask">なんせだいめ？</span></div>
-
-<div class="sub">
-  <span class="k"><span class="sw b"></span>ふえる</span>
-  <span class="k"><span class="sw l"></span>いきる</span>
-  <span class="k"><span class="sw g"></span>きえる</span><br>
-  <a href="https://hyu-man.bandcamp.com/album/life" target="_blank" rel="noopener">→ MUSIC</a><br>
-    <a href="/">→ ひゅーまん</a>
-    <a href="/film/">→ うごく 3</a>
-    <a href="/still/">→ とまってる 3</a>
-  </div>
-
-
-<div class="hint">
-  さわると ♡ が ふえる<br>
-  スペースで とまる / R で さいしょから
-</div>
-
+<body><div class="shell">
+<header class="top"><a class="brand" href="/">ひゅーまん</a><nav><a href="/uta/">うたう。</a><a href="/toad/">かえる。</a></nav></header>
+<main><div class="layout"><section class="about" aria-labelledby="title"><p class="eyebrow">LIFE / LITTLE NEIGHBORS</p><h1 id="title">いきる。</h1><p class="intro">となりにいるから、<br>うまれる子がいる。</p><div class="little" aria-hidden="true"></div><p class="voice" id="voice" aria-live="polite">ハートひとつ、置いてみて。</p><div class="stats"><div><strong id="popNum">0</strong><span>いま、なんびき？</span></div><div><strong id="genNum">0</strong><span>せだいめ</span></div></div></section>
+<section class="garden" aria-label="いのちの庭"><div class="frame"><div class="board-head"><span id="viewLabel">ちいさな、せかい。</span><span>♡ を置けます</span></div><canvas id="cv" width="1210" height="1210" tabindex="0" aria-label="ライフゲームの庭。押すとハートを置きます。キーボードのEnterで中央に置けます。"></canvas><div class="board-foot"><span><i class="sw b"></i>うまれた</span><span><i class="sw"></i>いきてる</span><span><i class="sw g"></i>いたところ</span></div></div>
+<div class="controls" aria-label="庭の操作"><button id="pause" type="button">ひとやすみ</button><button id="step" type="button">いっぽだけ</button><button id="zoom" type="button" aria-pressed="false">もっと近くで</button><button id="reset" type="button">はじめから</button></div>
+<div class="settings"><label>歩くはやさ <input id="speed" type="range" min="1" max="6" value="3" aria-label="世代を進める速さ"></label><label><input id="care" type="checkbox" checked>ときどき、ハートを届ける</label></div>
+<p class="tip">指でなぞっても置けます。スペースで休憩、Rで最初から。</p></section></div>
+<details class="rules"><summary>この子たちの、きまり。</summary><p>まわりの8マスに、仲間が2匹か3匹いたら生きる。誰もいないマスに3匹いたら、生まれる。それ以外は、いなくなる。端と端がつながった121×121の世界。コンウェイのライフゲームです。</p><p>ほっぺと目は、こちらで描いた顔。生まれる場所は、規則が決めています。「もっと近くで」は、最後に触った場所へ近づきます。</p><p>最初のハートは同じ種から毎回同じように始まります。「ハートを届ける」がオンのときは150世代目と、匹数がしばらく変わらないときにハートを追加します。指で置くハートも、庭へのお世話です。追加なしで眺めたいときはオフに。</p></details>
+</main><footer class="footer"><a href="/">← ひゅーまん</a><div><a href="https://hyperfollow.com/hyumansong" target="_blank" rel="noopener">音楽を聴く ↗</a><a href="/both/">ふたり。</a></div></footer></div>
 <script>
 (() => {
   "use strict";
-  const N = 121, SIZE = N*N, SPEED = 85;
+  const N = 121, SIZE = N*N;
+  let speed = 170, zoomed = false, focusX = 60, focusY = 60;
   const SEED = 20260818;          // 種は日付。同じ種なら何度でも同じ絵
 
   const cv  = document.getElementById('cv');
@@ -149,8 +55,7 @@
   const BORN = [255,107,138];     // ふえる
   const GONE = [242,214,220];     // きえる（3世代かけて紙にもどる）
 
-  const img = ctx.createImageData(N, N), px = img.data;
-  for (let p = 3; p < px.length; p += 4) px[p] = 255;
+
 
   let grid = new Uint8Array(SIZE);
   let next = new Uint8Array(SIZE);
@@ -198,7 +103,7 @@
     for (let r = 0; r < W; r++) for (let c = 0; c < W; c++)
       if (inHeart(c, r, W) && rnd() < 0.38) grid[idx(o+c, o+r)] = 1;
     seedGlider(6, 6); seedGlider(110, 6); seedGlider(6, 110); seedGlider(110, 110);
-    gen = 0; still = 0; lastPop = -1; dropped = false;
+    gen = 0; still = 0; lastPop = -1; dropped = false; focusX = 60; focusY = 60;
     draw();
   }
 
@@ -215,6 +120,7 @@
       }
     }
     const t = grid; grid = next; next = t;
+    for(let i=0;i<SIZE;i++) ghost[i] = grid[i] ? 0 : prev[i] ? 3 : Math.max(0,ghost[i]-1);
     gen++;
 
     // さみしくなったら ♡ が落ちてくる（灰にならないように）
@@ -222,43 +128,53 @@
     still = (pop === lastPop) ? still + 1 : 0;
     lastPop = pop;
     // 150世代で いちど。そのあとは しずかになったら
-    if ((gen === 150 && !dropped) || still > 40) {
+    if (document.getElementById('care').checked && ((gen === 150 && !dropped) || still > 40)) {
       const rnd = mulberry32(SEED + gen);
       const hx = 12 + ((rnd()*97)|0), hy = 12 + ((rnd()*97)|0);
       stampHeart(hx, hy);
-      dropped = true; still = 0;
+      dropped = true; still = 0; say('ハートが、ひとつ届いたよ。');
     }
   }
 
+  function say(text) { document.getElementById('voice').textContent = text; }
+  function view() {
+    const span = zoomed ? 41 : N;
+    return {span,x: zoomed ? focusX-20 : 0,y:zoomed ? focusY-20 : 0};
+  }
   function draw() {
-    for (let i = 0, p = 0; i < SIZE; i++, p += 4) {
-      const a = grid[i], b = prev[i];
-      let c;
-      if (a && !b)      { c = BORN;  ghost[i] = 0; }
-      else if (a)       { c = INK;   ghost[i] = 0; }
-      else if (b)       { ghost[i] = 3; c = GONE; }
-      else if (ghost[i]) {
-        const k = ghost[i]-- / 4;                    // 紙へフェード
-        c = [BG[0]+(GONE[0]-BG[0])*k, BG[1]+(GONE[1]-BG[1])*k, BG[2]+(GONE[2]-BG[2])*k];
-      } else c = BG;
-      px[p] = c[0]; px[p+1] = c[1]; px[p+2] = c[2];
+    const v=view(), unit=cv.width/v.span;
+    ctx.fillStyle='#f7f0e4'; ctx.fillRect(0,0,cv.width,cv.height);
+    pop=0; for(let i=0;i<SIZE;i++) pop+=grid[i];
+    for(let y=0;y<v.span;y++) for(let x=0;x<v.span;x++) {
+      const gx=(v.x+x+N)%N, gy=(v.y+y+N)%N, i=idx(gx,gy);
+      const X=Math.round(x*unit),Y=Math.round(y*unit),s=Math.ceil(unit);
+      if(!grid[i]) {
+        if(ghost[i]) {ctx.fillStyle=['','#f3e4dd','#eed8d5','#eacbd0'][ghost[i]];ctx.fillRect(X+1,Y+1,s-2,s-2);}
+        continue;
+      }
+      const born=!prev[i];ctx.fillStyle=born?'#ff799d':'#853d3e';
+      ctx.fillRect(X+unit*.16,Y+unit*.08,unit*.68,unit*.84);
+      ctx.fillRect(X+unit*.06,Y+unit*.23,unit*.88,unit*.53);
+      ctx.fillStyle=born?'#853d3e':'#f7f0e4';
+      for(const eye of [.28,.61]) ctx.fillRect(X+unit*eye,Y+unit*.34,unit*.12,unit*.13);
+      ctx.fillStyle=born?'#ffdce4':'#ff799d';
+      for(const cheek of [.13,.70])ctx.fillRect(X+unit*cheek,Y+unit*.57,unit*.17,unit*.12);
     }
-    ctx.putImageData(img, 0, 0);                     // 転送は1回だけ
-    genNum.textContent = String(gen).padStart(6,'0');
-    popNum.textContent = String(pop).padStart(4,'0');
+    genNum.textContent=String(gen);popNum.textContent=String(pop);
   }
 
   // ---- さわると ♡ ----
   function cellAt(e) {
     const b = cv.getBoundingClientRect();
-    const x = Math.floor((e.clientX - b.left)/b.width  * N);
-    const y = Math.floor((e.clientY - b.top )/b.height * N);
-    return (x<0||x>=N||y<0||y>=N) ? null : {x,y};
+    const v=view();
+    const x=Math.floor((e.clientX-b.left)/b.width*v.span);
+    const y=Math.floor((e.clientY-b.top)/b.height*v.span);
+    return x<0||x>=v.span||y<0||y>=v.span ? null : {x:(v.x+x+N)%N,y:(v.y+y+N)%N};
   }
   let drawing = false, pending = false;
   function paint(e) {
     const p = cellAt(e); if (!p) return;
-    stampHeart(p.x, p.y);
+    stampHeart(p.x, p.y); if(!zoomed){focusX=p.x;focusY=p.y;} say('ここから、どうなるかな。');
     if (!pending) { pending = true; requestAnimationFrame(() => { draw(); pending = false; }); }
   }
   cv.style.cursor = 'crosshair';
@@ -267,19 +183,27 @@
   cv.addEventListener('pointerup',     () => { drawing = false; });
   cv.addEventListener('pointercancel', () => { drawing = false; });
 
-  document.addEventListener('keydown', e => {
-    if (e.code === 'Space') { e.preventDefault(); running = !running; }
-    else if (e.key && e.key.toLowerCase() === 'r') reset();
+  function pause(value) {running=value;document.getElementById('pause').textContent=running?'ひとやすみ':'また、うごく';}
+  document.getElementById('pause').onclick=()=>{pause(!running);say(running?'おはよう。つづきから。':'そのままで、ひとやすみ。');};
+  document.getElementById('step').onclick=()=>{pause(false);step();draw();};
+  document.getElementById('reset').onclick=()=>{reset();last=performance.now();say('おなじ、はじまり。');};
+  document.getElementById('zoom').onclick=()=>{zoomed=!zoomed;const z=document.getElementById('zoom');z.setAttribute('aria-pressed',String(zoomed));z.textContent=zoomed?'せかいを眺める':'もっと近くで';document.getElementById('viewLabel').textContent=zoomed?'近くに、いた。':'ちいさな、せかい。';draw();};
+  document.getElementById('speed').oninput=e=>{speed=[0,550,300,170,110,75,45][Number(e.target.value)];};
+  cv.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();stampHeart(focusX,focusY);draw();say('ハートひとつ。ここに。');}});
+  document.addEventListener('keydown',e=>{
+    if(/^(INPUT|BUTTON|SUMMARY|A)$/.test(e.target.tagName))return;
+    if(e.code==='Space'){e.preventDefault();pause(!running);}
+    else if(e.key.toLowerCase()==='r'){reset();last=performance.now();}
   });
 
   function frame(t) {
-    if (running && t - last > SPEED) { step(); draw(); last = t; }
+    if (running && t - last > speed) { step(); draw(); last = t; }
     requestAnimationFrame(frame);
   }
 
   reset();
   if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    running = false;
+    pause(false);
   }
   requestAnimationFrame(frame);
 })();
