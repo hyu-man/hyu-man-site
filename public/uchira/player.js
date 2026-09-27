@@ -9,11 +9,18 @@
   let seaData, seaMeta, pulse = [], loading, touch = null, lastDraw = -1;
   let filmReady = false, filmLoading = null, lastFilm = -1;
   const filmCanvas = $('film'), filmCtx = filmCanvas ? filmCanvas.getContext('2d') : null;
-  const filmLand = !matchMedia('(max-width:600px)').matches;
-  if (filmCanvas) {
-    if (filmLand) { filmCanvas.width = 960; filmCanvas.height = 540; filmCanvas.classList.add('landscape'); }
-    else filmCanvas.classList.add('portrait');
+  const filmNarrow = matchMedia('(max-width:600px)');
+  let filmLand = !filmNarrow.matches;
+  function setFilmShape() {
+    filmLand = !filmNarrow.matches;
+    if (!filmCanvas) return;
+    filmCanvas.width = filmLand ? 960 : 540; filmCanvas.height = filmLand ? 540 : 960;
+    filmCanvas.classList.toggle('landscape', filmLand);
+    filmCanvas.classList.toggle('portrait', !filmLand);
+    drawFilm(true);
   }
+  setFilmShape();
+  filmNarrow.addEventListener('change', setFilmShape);
   const canvas = $('sea'), ctx = canvas.getContext('2d');
   const field = document.createElement('canvas');
   const fctx = field.getContext('2d');
