@@ -193,6 +193,7 @@
   "use strict";
   const SONGS = [
     { id:"o8LuXyJqnH0", short:"FHfSO2cb6Go", title:"Highway🐜⬛ ⬜",
+      release:"https://distrokid.com/hyperfollow/91c5307/highway-mv-edit",
       note:"ウチが、歩いてた。白なら右、黒なら左。踏んだ色を裏返して、一歩。白紙から道が生まれる、ラングトンの蟻。足元の4方向を16文字で読む。最後は、ここから圏外。" },
     { id:"nOrWdE2M2w8", short:"HG05VBJMghE", title:"ひゅーまん、ようこそ",
       note:"仕様書から上がってきた。名前から降りてきた。同じ扉に、違う階段。大きなHUMANを置いて、小さな「ひと」を拾う。ふたりが言ったのは、hi。「Article 1」の対になる曲。最後は、ようこそ。どちらが言ったかは、もう。both。" },
@@ -243,6 +244,15 @@
       short.textContent = "ショートで観る ↗";
       short.setAttribute("aria-label", s.title + " のショートを観る");
       cap.appendChild(short);
+    }
+    if (s.release) {
+      const release = document.createElement("a");
+      release.href = s.release;
+      release.target = "_blank"; release.rel = "noopener"; release.className = "short-link";
+      release.style.marginLeft = "12px";
+      release.textContent = "MV Edit の配信ページ ↗";
+      release.setAttribute("aria-label", "Highway (MV Edit) の配信ページを開く");
+      cap.appendChild(release);
     }
     fig.appendChild(cap);
     grid.appendChild(fig);
