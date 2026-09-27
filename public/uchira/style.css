@@ -5,4 +5,6 @@
 
 /* 生上映（film.js） */
 #uchira-panel{position:relative}
-#film{position:absolute;top:0;bottom:0;left:0;right:0;margin:auto;height:100%;aspect-ratio:9/16;max-width:100%;image-rendering:pixelated;pointer-events:none;filter:drop-shadow(0 8px 26px rgba(160,82,72,.18))}
+#film{position:absolute;top:0;bottom:0;left:0;right:0;margin:auto;image-rendering:pixelated;pointer-events:none;filter:drop-shadow(0 8px 26px rgba(160,82,72,.18))}
+#film.landscape{width:100%;height:auto;aspect-ratio:16/9;max-height:100%}
+#film.portrait{height:100%;aspect-ratio:9/16;max-width:100%}
