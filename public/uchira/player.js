@@ -7,6 +7,8 @@
   const reduced = matchMedia('(prefers-reduced-motion: reduce)');
   let selected = 'highway', frozen = reduced.matches, frozenAt = 0, colorful = false;
   let seaData, seaMeta, pulse = [], loading, touch = null, lastDraw = -1;
+  let filmReady = false, filmLoading = null, lastFilm = -1;
+  const filmCanvas = $('film'), filmCtx = filmCanvas ? filmCanvas.getContext('2d') : null;
   const canvas = $('sea'), ctx = canvas.getContext('2d');
   const field = document.createElement('canvas');
   const fctx = field.getContext('2d');
@@ -43,7 +45,7 @@
     $('chapter-copy').innerHTML = name === 'highway' ? '白なら右。黒なら左。<br>踏んだ色を裏返して、一歩。' : '形は、まだ途中。<br>海に触れると、少し色がひらきます。';
     $('chapter-sign').textContent = name === 'highway' ? '01 — Highway' : '02 — ウチら';
     status('再生すると、音が出ます。'); controls();
-    if (name === 'uchira') { if (audio.preload === 'none') { audio.preload = 'metadata'; audio.load(); } resize(); ensureSea(); }
+    if (name === 'uchira') { if (audio.preload === 'none') { audio.preload = 'metadata'; audio.load(); } resize(); ensureSea(); ensureFilm(); }
   }
   async function play() {
     const m = current();
@@ -61,7 +63,7 @@
       controls();
       if (event === 'play') { Object.values(media).filter(other => other !== m).forEach(other => other.pause()); status(name === 'highway' ? '一歩。一歩。' : 'ウチら。'); }
       if (event === 'pause' && !m.ended) status('ここで、ひとやすみ。');
-      if (event === 'seeked') { $('after').hidden = true; if (frozen) frozenAt = m.currentTime; drawSea(); }
+      if (event === 'seeked') { $('after').hidden = true; if (frozen) frozenAt = m.currentTime; drawSea(); drawFilm(true); }
     });
     m.addEventListener('waiting', () => { if (name === selected) status('続きを読み込んでいます。'); });
     m.addEventListener('playing', () => { if (name === selected) status(name === 'highway' ? '一歩。一歩。' : 'ウチら。'); });
@@ -81,7 +83,7 @@
     m.currentTime = Number($('seek').value);
     $('after').hidden = true;
     if (frozen) frozenAt = m.currentTime;
-    controls(); drawSea();
+    controls(); drawSea(); drawFilm(true);
   });
   $('mute').addEventListener('click', () => { const muted = !current().muted; Object.values(media).forEach(m => { m.muted = muted; }); controls(); });
   $('continue').addEventListener('click', () => {
@@ -167,8 +169,33 @@
     }
     ctx.globalAlpha = 1;
   }
+  async function ensureFilm() {
+    if (!filmCanvas || !window.UchiraFilm) return;
+    if (filmReady) { drawFilm(true); return; }
+    if (filmLoading) return filmLoading;
+    filmLoading = (async () => {
+      try {
+        await UchiraFilm.load();
+        filmReady = true; filmCanvas.hidden = false;
+        drawFilm(true);
+      } catch { if (selected === 'uchira') status('映像を読み込めませんでした。音楽はそのまま聴けます。'); }
+      finally { filmLoading = null; }
+    })();
+    return filmLoading;
+  }
+  function drawFilm(force) {
+    if (!filmReady || selected !== 'uchira' || !filmCtx) return;
+    const t = audio.currentTime - UchiraFilm.offset;
+    if (!force && Math.abs(t - lastFilm) < 1 / 60) return;
+    lastFilm = t;
+    UchiraFilm.draw(filmCtx, t);
+  }
   function loop(now) {
-    if (selected === 'uchira' && !document.hidden && !frozen && !audio.paused && now - lastDraw > 50) { drawSea(); lastDraw = now; }
+    if (selected === 'uchira' && !document.hidden && !audio.paused) {
+      if (!frozen && now - lastDraw > 50) { drawSea(); lastDraw = now; }
+      const gap = reduced.matches ? 500 : 33;
+      if (!loop.f || now - loop.f > gap) { drawFilm(false); loop.f = now; }
+    }
     requestAnimationFrame(loop);
   }
   video.controls = false; audio.controls = false;

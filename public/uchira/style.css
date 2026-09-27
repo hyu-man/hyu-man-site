@@ -3,9 +3,6 @@
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
 
 
-/* MV（pyで描いた動画の直配信） */
-.mv{margin:2.2rem auto 0;text-align:center}
-.mv-note{font-size:.85rem;letter-spacing:.14em;color:#a05248;margin:0 0 .7rem}
-.mv-frame{aspect-ratio:9/16;max-width:320px;margin:0 auto;border-radius:16px;overflow:hidden;background:#efe4d2;box-shadow:0 6px 24px rgba(160,82,72,.14)}
-.mv-frame video{width:100%;height:100%;display:block;object-fit:cover}
-.mv-fallback{margin:.7rem 0 0;font-size:.85rem}
+/* 生上映（film.js） */
+#uchira-panel{position:relative}
+#film{position:absolute;top:0;bottom:0;left:0;right:0;margin:auto;height:100%;aspect-ratio:9/16;max-width:100%;image-rendering:pixelated;pointer-events:none;filter:drop-shadow(0 8px 26px rgba(160,82,72,.18))}

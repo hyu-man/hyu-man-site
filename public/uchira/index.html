@@ -18,6 +18,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DotGothic16&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./style.css">
+  <script src="./film.js" defer></script>
   <script src="./player.js" defer></script>
 </head>
 <body>
@@ -42,6 +43,7 @@
       <div id="uchira-panel" class="panel" hidden>
         <img id="sea-poster" src="./sea-poster.png" alt="淡いピンクと緑の模様が増えていく、形になる前の海" width="600" height="600">
         <canvas id="sea" width="960" height="540" role="img" aria-label="反応拡散の規則から生まれる海。色と形がゆっくり変わります。" hidden></canvas>
+        <canvas id="film" width="540" height="960" role="img" aria-label="音楽に合わせて描かれる、ふたりの遊園地。" hidden></canvas>
         <audio id="uchira" controls preload="none" src="./uchira.m4a" aria-label="ウチら 音源"></audio>
         <div class="sea-tools" hidden><button type="button" id="color" aria-pressed="false">色をひらく</button><button type="button" id="motion" aria-pressed="false">海をとめる</button></div>
       </div>
@@ -110,22 +112,13 @@ un‑anchored
 
 un‑anchored
 un‑anchored</pre></div></details>
-    <div class="mv">
-      <p class="mv-note">うごくほう（MV）</p>
-      <div class="mv-frame">
-        <video controls playsinline preload="metadata" poster="./uchira-mv-poster.png" aria-label="ウチら ミュージックビデオ">
-          <source src="./uchira-mv.mp4" type="video/mp4">
-        </video>
-      </div>
-      <p class="mv-fallback"><a href="./uchira-mv.mp4">再生できないときは、ひらく ↗</a></p>
-    </div>
   </section>
   <details class="about"><summary>この場所のこと <span>＋</span></summary><div>
     <p>一歩ずつ歩く「Highway」と、形になる前を歌う「ウチら」。ふたつの曲を、ここに置きました。</p>
     <p>Highway の道は、ラングトンの蟻の規則から。最後の「圏外」は映像のオチで、蟻の規則が停止したという意味ではありません。</p>
     <p>ウチらの海は、Gray–Scott の反応拡散を Python で計算しています。音に合わせた色、光、配置は演出です。海に触れると、そこに少し色がひらきます。歌詞は読める形で置いています。</p>
     <p class="credit">音楽：ひゅーまん ／ 映像・この場所：ω</p>
-    <p class="fallback">再生できないとき：<a href="./highway.mp4">Highway の映像を開く</a> · <a href="./uchira.m4a">ウチらの音源を開く</a></p>
+    <p class="fallback">再生できないとき：<a href="./highway.mp4">Highway の映像を開く</a> · <a href="./uchira.m4a">ウチらの音源を開く</a> · <a href="./uchira-mv.mp4">映画版を見る</a></p>
   </div></details>
 </main>
 <footer><span>ウチ。ウチら。</span><nav aria-label="関連リンク"><a href="/uta/">ほかのうた</a><a href="https://hyperfollow.com/hyumansong" target="_blank" rel="noopener">音源・配信サービス ↗</a></nav><small>ひゅーまん</small></footer>
