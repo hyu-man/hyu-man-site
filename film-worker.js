@@ -2,7 +2,9 @@
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
-    if (!['/over/its-over-v2.mp4','/over/song.m4a','/uchira/highway.mp4','/uchira/highway-portrait.mp4','/uchira/uchira.m4a'].includes(url.pathname)) return env.ASSETS.fetch(request);
+    // This special is on hold. Keep direct asset URLs private as well as the page.
+    if (url.pathname === '/uchira' || url.pathname.startsWith('/uchira/')) return new Response('Not found', {status:404, headers:{'Cache-Control':'no-store','X-Robots-Tag':'noindex, nofollow'}});
+    if (!['/over/its-over-v2.mp4','/over/song.m4a'].includes(url.pathname)) return env.ASSETS.fetch(request);
     const headers = new Headers(request.headers);
     headers.delete('Range'); headers.delete('If-Range');
     const response = await env.ASSETS.fetch(new Request(request.url, {method:'GET',headers}));

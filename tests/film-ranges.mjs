@@ -10,7 +10,7 @@ const env = {ASSETS: {fetch: async request => {
   return new Response(bytes, {headers: {'Content-Type': 'application/octet-stream'}});
 }}};
 const config = await readFile(new URL('../wrangler.toml', import.meta.url), 'utf8');
-for (const path of ['/over/its-over-v2.mp4', '/over/song.m4a', '/uchira/highway.mp4', '/uchira/highway-portrait.mp4', '/uchira/uchira.m4a']) {
+for (const path of ['/over/its-over-v2.mp4', '/over/song.m4a']) {
   assert.ok(config.includes(`"${path}"`), `${path} must invoke the range worker`);
   const get = (headers = {}, method = 'GET') => worker.fetch(new Request(`https://hyu-man.com${path}`, {headers, method}), env);
   let r = await get({'Range': 'bytes=12-31'});
@@ -24,4 +24,9 @@ for (const path of ['/over/its-over-v2.mp4', '/over/song.m4a', '/uchira/highway.
   assert.deepEqual(new Uint8Array(await r.arrayBuffer()), bytes);
 }
 assert.equal(await (await worker.fetch(new Request('https://hyu-man.com/uta/'), env)).text(), 'static page');
-console.log('Film/audio seek ranges, suffix ranges, HEAD, invalid ranges and static fallback: passed.');
+for (const path of ['/uchira', '/uchira/', '/uchira/index.html', '/uchira/uchira.m4a', '/uchira/highway.mp4', '/uchira/sea.bin']) {
+  const r = await worker.fetch(new Request(`https://hyu-man.com${path}`), {ASSETS: {fetch: () => {throw new Error('Held page must not reach asset storage');}}});
+  assert.equal(r.status, 404); assert.equal(r.headers.get('Cache-Control'), 'no-store');
+}
+assert.ok(config.includes('"/uchira/*"') && config.includes('"/uchira"'));
+console.log('Over media ranges, static fallback and held Uchira page/assets: passed.');
