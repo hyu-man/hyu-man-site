@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#fbf6e8">
+<meta name="robots" content="noindex">
+<title>かがみ — ひゅーまん</title>
+<meta name="description" content="蟻が、こっちを真似します。カメラの映像はこの画面の中だけ。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DotGothic16&display=swap" rel="stylesheet">
+<style>
+:root{--cream:#fbf6e8;--paper:#fffbf2;--ink:#53343e;--soft:#a57983;--pink:#f589b1;--mint:#a6d8c6}
+*{box-sizing:border-box}
+body{margin:0;background:var(--cream);color:var(--ink);font-family:'DotGothic16',monospace;
+display:flex;flex-direction:column;align-items:center;min-height:100svh;padding:0 16px}
+header{width:100%;max-width:640px;display:flex;justify-content:space-between;padding:18px 0;font-size:13px}
+header a{color:inherit;text-decoration:none}
+h1{font-size:26px;margin:8px 0 2px;letter-spacing:.3em}
+.note{font-size:12px;color:var(--soft);margin:0 0 14px;text-align:center;line-height:1.9}
+#stage{background:var(--paper);border-radius:14px;padding:10px;box-shadow:0 10px 30px rgba(83,52,62,.10)}
+canvas{display:block;image-rendering:pixelated;border-radius:8px}
+.controls{display:flex;gap:10px;margin:16px 0 6px;flex-wrap:wrap;justify-content:center}
+button{font-family:inherit;font-size:14px;color:var(--ink);background:var(--paper);
+border:2px solid var(--ink);border-radius:999px;padding:9px 20px;cursor:pointer}
+button:hover{background:var(--ink);color:var(--cream)}
+button[disabled]{opacity:.45;cursor:default}
+#status{font-size:12px;color:var(--soft);min-height:1.6em;margin:2px 0 0;text-align:center}
+.privacy{font-size:11px;color:var(--soft);margin:10px 0 26px;text-align:center;line-height:1.9}
+footer{margin-top:auto;padding:18px 0 24px;font-size:11px;color:var(--soft)}
+</style>
+</head>
+<body>
+<header><a href="/">ひゅーまん ▪</a><a href="/uta/">うたへ戻る ↗</a></header>
+<h1>かがみ</h1>
+<p class="note">のぞくと、蟻がこっちを真似します。<br>まばたき・口・首のかしげ・顔の位置。</p>
+<div id="stage"><canvas id="view" width="480" height="540" role="img" aria-label="こちらの表情を真似して動く、白黒半分の顔の蟻"></canvas></div>
+<div class="controls">
+  <button id="open">かがみをひらく（カメラをつかう）</button>
+</div>
+<p id="status">いまはひとりで練習中。ひらくと、あなたを真似します。</p>
+<p class="privacy">カメラの映像はこの画面の中だけで処理して、どこにも送りません。<br>録画もしません。とじれば止まります。</p>
+<footer>音楽：ひゅーまん ／ この鏡：ω</footer>
+<script>
+'use strict';
+const INK='#53343e',PAPER='#fffbf2',CREAM='#fbf6e8',SOFT='#a57983',PINK='#f589b1',MINT='#a6d8c6',FACE='#f8d1cf';
+const sp=document.createElement('canvas');sp.width=64;sp.height=76;
+const sctx=sp.getContext('2d');
+const view=document.getElementById('view'),vctx=view.getContext('2d');
+vctx.imageSmoothingEnabled=false;
+
+function rect(x0,y0,x1,y1,c){sctx.fillStyle=c;sctx.fillRect(x0,y0,x1-x0+1,y1-y0+1);}
+function px(x,y,w,c){sctx.fillStyle=c;sctx.fillRect(Math.round(x-w/2),Math.round(y-w/2),w,w);}
+function thickline(pts,c,w){ // 原典PILの線をドットのまま引く
+  for(let i=0;i<pts.length-1;i++){
+    const [x0,y0]=pts[i],[x1,y1]=pts[i+1];
+    const n=Math.max(Math.abs(x1-x0),Math.abs(y1-y0),1);
+    for(let j=0;j<=n;j++)px(x0+(x1-x0)*j/n,y0+(y1-y0)*j/n,w,c);
+  }
+}
+function poly(pts,c){sctx.fillStyle=c;sctx.beginPath();sctx.moveTo(pts[0][0],pts[0][1]);
+  for(const [x,y] of pts.slice(1))sctx.lineTo(x,y);sctx.closePath();sctx.fill();}
+function rrect(x0,y0,x1,y1,r,c){sctx.fillStyle=c;sctx.beginPath();
+  sctx.roundRect(x0,y0,x1-x0+1,y1-y0+1,r);sctx.fill();}
+
+// 原典：Highway_MV_参照render.py の ant() を、表情パラメータ付きで移植。
+// s = {eyeL,eyeR:0..1 開き, jaw:0..1 口, brow:0..1 触角, t:時間}
+function drawAnt(s){
+  sctx.clearRect(0,0,64,76);
+  const t=s.t,lift=Math.round(Math.sin(t*12)*2);
+  for(const side of [-1,1])for(let j=0;j<3;j++){
+    const yy=39+j*8,off=lift*(j%2?1:-1);
+    thickline([[32+side*11,yy],[32+side*(19+(j%2)*2),yy+3+off],[32+side*24,yy+8+off]],INK,3);
+  }
+  rrect(21,45,43,68,8,INK);
+  rect(24,52,40,54,SOFT);rect(26,61,38,62,PINK);
+  rrect(24,33,40,51,6,INK);
+  poly([[17,13],[22,9],[42,9],[47,13],[51,19],[51,30],[47,37],[42,40],[22,40],[17,37],[13,30],[13,19]],INK);
+  poly([[19,15],[24,12],[41,12],[45,15],[48,20],[48,29],[44,35],[40,37],[24,37],[19,34],[16,29],[16,20]],FACE);
+  rect(33,14,44,31,INK);rect(34,32,40,35,INK);
+  // 目：開き0..1 → 高さ。0.25未満はまばたきの線。
+  const eye=(x0,x1,open,col,shut)=>{ if(open<0.25){rect(x0-1,23,x1+1,24,shut);}
+    else{const e=Math.round(2+open*4);rect(x0,20,x1,20+e,col);} };
+  eye(21,25,s.eyeL,INK,INK);   // 明るい側（向かって左）
+  eye(38,42,s.eyeR,CREAM,CREAM); // 黒い側（向かって右）
+  rect(17,28,23,30,PINK);rect(41,29,47,31,PINK); // ほお
+  if(s.jaw<0.14){thickline([[28,29],[30,31],[33,29]],INK,1);} // とじた口＝原典の笑み
+  else{const m=Math.round(1+s.jaw*5);rect(29,29,33,29+m,INK);
+       if(m>2)rect(30,30,32,28+m,PAPER);}                      // あいた口＝原典shockの写像
+  for(const side of [-1,1]){
+    const sway=2*Math.sin(t*4+(side>0?1:0)),perk=Math.round(s.brow*3);
+    const tip=Math.round(side<0?18+side*sway:46+sway);
+    thickline([[32+side*11,13],[32+side*13,5-perk]],INK,2);
+    thickline([[32+side*13,5-perk],[tip,2-perk]],INK,2);
+    rect(tip-2,Math.max(0,0-perk),tip+2,Math.max(3,3-perk),PINK);
+  }
+  rect(23,39,42,42,MINT);poly([[41,40],[47,45],[41,46]],MINT);
+}
+
+// 表情の状態（目標値へゆっくり寄せる：規則は一次遅れ一本）
+const st={eyeL:1,eyeR:1,jaw:0,brow:0,dx:0,dy:0,roll:0};
+const goal={...st};
+let mode='demo',t0=performance.now();
+
+function frame(now){
+  const t=(now-t0)/1000;
+  if(mode==='demo'){
+    goal.jaw=Math.max(0,Math.sin(t*1.1)-0.55)*1.6;
+    const b=(Math.sin(t*0.7)>0.96)?0:1;goal.eyeL=b;goal.eyeR=b;
+    goal.brow=Math.max(0,Math.sin(t*0.5))*0.6;
+    goal.dx=Math.sin(t*0.6)*10;goal.dy=Math.sin(t*0.9)*4;goal.roll=Math.sin(t*0.45)*0.07;
+  }
+  for(const k in st)st[k]+=(goal[k]-st[k])*0.35;
+  drawAnt({eyeL:st.eyeL,eyeR:st.eyeR,jaw:st.jaw,brow:st.brow,t});
+  vctx.clearRect(0,0,480,540);
+  vctx.save();
+  const bob=Math.abs(Math.sin(t*3))*4;
+  vctx.translate(240+st.dx*2,270+st.dy*2-bob);
+  vctx.rotate(st.roll);
+  vctx.drawImage(sp,-192,-228,384,456);
+  vctx.restore();
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+
+// カメラ → MediaPipe（押した時だけ読み込む。映像は端末内のみ）
+const statusEl=document.getElementById('status'),btn=document.getElementById('open');
+btn.addEventListener('click',async()=>{
+  btn.disabled=true;statusEl.textContent='かがみの用意をしています…（初回は少しかかります）';
+  try{
+    const vision=await import('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14');
+    const files=await vision.FilesetResolver.forVisionTasks('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm');
+    const lm=await vision.FaceLandmarker.createFromOptions(files,{
+      baseOptions:{modelAssetPath:'https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task',delegate:'GPU'},
+      runningMode:'VIDEO',numFaces:1,outputFaceBlendshapes:true});
+    const video=document.createElement('video');video.playsInline=true;video.muted=true;
+    video.srcObject=await navigator.mediaDevices.getUserMedia({video:{width:640,height:480,facingMode:'user'},audio:false});
+    await video.play();
+    mode='camera';statusEl.textContent='うつってます。まばたきしてみて。';
+    let lastTs=-1;
+    (function look(){
+      if(video.readyState>=2){
+        const ts=performance.now();
+        if(ts!==lastTs){lastTs=ts;
+          const r=lm.detectForVideo(video,ts);
+          if(r.faceBlendshapes&&r.faceBlendshapes.length){
+            const g={};for(const c of r.faceBlendshapes[0].categories)g[c.categoryName]=c.score;
+            // 鏡だから左右を入れかえる
+            goal.eyeL=1-Math.min(1,(g.eyeBlinkRight||0)*1.6);
+            goal.eyeR=1-Math.min(1,(g.eyeBlinkLeft||0)*1.6);
+            goal.jaw=Math.min(1,(g.jawOpen||0)*1.9);
+            goal.brow=Math.min(1,(g.browInnerUp||0)*1.4);
+            const p=r.faceLandmarks[0][1]; // 鼻先
+            goal.dx=(0.5-p.x)*90;goal.dy=(p.y-0.5)*60;
+            const L=r.faceLandmarks[0][33],R=r.faceLandmarks[0][263]; // 目じり
+            goal.roll=Math.atan2(L.y-R.y,R.x-L.x)*0.8;
+          }
+        }
+      }
+      requestAnimationFrame(look);
+    })();
+  }catch(err){
+    mode='demo';btn.disabled=false;
+    statusEl.textContent='かがみをひらけませんでした（カメラの許可か、明るさを見てみて）。ひとり練習にもどります。';
+  }
+});
+</script>
+</body>
+</html>
