@@ -190,12 +190,5 @@
     <priority>0.8</priority>
   </url>
 
-  <url>
-    <loc>https://hyu-man.com/canvas/</loc>
-    <lastmod>2026-09-02</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
   <url><loc>https://hyu-man.com/uchira/</loc><lastmod>2026-09-27</lastmod></url>
 </urlset>
