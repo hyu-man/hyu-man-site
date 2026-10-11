@@ -1,0 +1,5 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><title>Audio QA</title><button id="run">Render three styles</button><pre id="result">Ready</pre><script type="module">
+import{defaults,generate}from'../public/daw/composition.js';import{render}from'../public/daw/audio.js';
+document.querySelector('#run').onclick=async()=>{const out=document.querySelector('#result');try{for(const style of ['garage','broken','night']){out.textContent+='\nRendering '+style;const now=performance.now();const{metrics}=await render(generate({...defaults(),style,bars:36}),{sampleRate:22050});out.textContent+='\n'+JSON.stringify({style,wallSeconds:(performance.now()-now)/1000,...metrics});}out.textContent+='\nPASS';}catch(e){out.textContent+='\nFAIL '+e.stack;}};
+</script></html>
+
