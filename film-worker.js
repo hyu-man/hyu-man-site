@@ -2,6 +2,13 @@
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
+    // Temporarily withdrawn; source and projects are retained for later work.
+    if (url.pathname === '/daw' || url.pathname.startsWith('/daw/')) {
+      return new Response(request.method === 'HEAD' ? null : 'Not found', {
+        status: 404,
+        headers: {'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-store', 'X-Robots-Tag': 'noindex'}
+      });
+    }
     if (!['/over/its-over-v2.mp4','/over/song.m4a','/uchira/highway.mp4','/uchira/highway-portrait.mp4','/uchira/uchira.m4a','/uchira/uchira-mv.mp4'].includes(url.pathname)) return env.ASSETS.fetch(request);
     const headers = new Headers(request.headers);
     headers.delete('Range'); headers.delete('If-Range');
