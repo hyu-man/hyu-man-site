@@ -14,7 +14,7 @@ export const PRESETS={
  arp:[['pearl','小さな真珠'],['metal','金属の粒'],['drop','水の粒']],
  keys:[['tine','電気の鍵盤'],['felt','フェルト鍵盤']],
  pad:[['air','薄い空気'],['warm','温かい層']],
- drums:[['garage','乾いたガラージ'],['wood','木と紙'],['soft','遠いドラム']],
+ drums:[['garage','乾いたガラージ'],['wood','木と紙'],['soft','遠いドラム'],['electro','電子の粒']],
 };
 export const ROLE_KEYS=Object.keys(PRESETS);
 export const PROGRESSIONS={classic:{name:'帰ってくる',verse:[0,5,6,4],pre:[3,4,5,6],chorus:[5,6,4,0]},
@@ -107,6 +107,11 @@ export function compose(input){
   hats.forEach((s,j)=>add(7,bar,s,.65,42,j%2?.38:.52,{drum:'hat'}));
   if(isChorus&&four%2===1)add(7,bar,14,2,46,.35,{drum:'open'});
   if(four===3&&sec.index!==0&&sec.index!==4&&sec.index!==8)add(7,bar,pick([7,15],p.seed+':'+block),.9,39,.28,{drum:'rim'});
+  // 10/12: the rest of the owner's kit joins - a crash on each chorus head, a small perc in the chorus,
+  // and a three-tom fill on the last bar of every full section
+  if(isChorus&&local===0)add(7,bar,0,4,49,.5,{drum:'crash'});
+  if(isChorus&&four===2)add(7,bar,7,.8,54,.3,{drum:'perc'});
+  if(local===sec.length*4-1&&sec.index!==0&&sec.index!==4&&sec.index!==8){add(7,bar,10,1.4,43,.55,{drum:'tomlo'});add(7,bar,12,1.4,45,.58,{drum:'tommid'});add(7,bar,14,1.4,47,.6,{drum:'tomhi'});}
  }
  evs.sort((a,b)=>a.t-b.t||a.i-b.i||a.midi-b.midi);
  const metrics={notes:evs.length,tonalNotes:evs.filter(e=>e.i!==7).length,drumHits:evs.filter(e=>e.i===7).length,average:evs.length/body,maxPerSecond:0};

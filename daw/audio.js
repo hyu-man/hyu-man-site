@@ -1,11 +1,19 @@
 import {compose,hash} from './composition.js';
 const hz=n=>440*2**((n-69)/12),cache=new WeakMap();
 // drums are the owner's own SC-synthesized one-shots (scdrums_loud); decoded once, shared across contexts
-const SAMPLES={k9:'sc909_kick_a',k9l:'sc909_kick_long',s9:'sc909_snare_a',s9b:'sc909_snare_b',h9:'sc909_chh',o9:'sc909_ohh',k8:'sc808_kick_a',s8:'sc808_snare_a',h8:'sc808_chh',o8:'sc808_ohh',rim:'sc808_rim',clv:'sc808_clave'};
+const SAMPLES={k9:'sc909_kick_a',k9l:'sc909_kick_long',s9:'sc909_snare_a',s9b:'sc909_snare_b',h9:'sc909_chh',o9:'sc909_ohh',c9:'sc909_clap',cr9:'sc909_crash',ride:'sc909_ride',t9l:'sc909_tom_lo',t9m:'sc909_tom_md',t9h:'sc909_tom_hi',
+ k8:'sc808_kick_a',k8l:'sc808_kick_long',k8b:'sc808_kick_boom',s8:'sc808_snare_a',s8b:'sc808_snare_b',h8:'sc808_chh',o8:'sc808_ohh',rim:'sc808_rim',clv:'sc808_clave',c8:'sc808_clap',cow:'sc808_cowbell',mar:'sc808_maraca',t8l:'sc808_tom_lo',t8m:'sc808_tom_md',t8h:'sc808_tom_hi',
+ blip:'scelec_blip',laser:'scelec_laser',nhit:'scelec_nhit',tick:'scelec_tick',etA:'scelec_tom_a',etH:'scelec_tom_hi',zapA:'scelec_zap_a',zapL:'scelec_zap_lo'};
+// every drum voice is a list of layered one-shots [key, playbackRate, level]
 const KITS={
- garage:{kick:['k9',1,.62],snare:['s9',1,.5],rim:['rim',1,.4],hat:['h9',1,.3],open:['o9',1,.34]},
- soft:{kick:['k8',1,.6],snare:['s8',1,.46],rim:['rim',.92,.34],hat:['h8',1,.26],open:['o8',1,.3]},
- wood:{kick:['k9l',1,.6],snare:['s9b',1,.5],rim:['clv',1,.42],hat:['h9',1.12,.28],open:['o9',1.12,.3]},
+ garage:{kick:[['k9',1,.62]],snare:[['s9',1,.5],['c9',1,.16]],rim:[['rim',1,.4]],hat:[['h9',1,.3]],open:[['o9',1,.34]],
+  crash:[['cr9',1,.5]],perc:[['mar',1,.32]],tomlo:[['t9l',1,.55]],tommid:[['t9m',1,.55]],tomhi:[['t9h',1,.5]]},
+ soft:{kick:[['k8',1,.6]],snare:[['s8',1,.46],['c8',1,.13]],rim:[['rim',.92,.34]],hat:[['h8',1,.26]],open:[['o8',1,.3]],
+  crash:[['k8l',1,.5]],perc:[['cow',.9,.26]],tomlo:[['t8l',1,.52]],tommid:[['t8m',1,.52]],tomhi:[['t8h',1,.48]]},
+ wood:{kick:[['k9l',1,.6]],snare:[['s9b',1,.5],['s8b',1,.14]],rim:[['clv',1,.42]],hat:[['h9',1.12,.28]],open:[['o9',1.12,.3]],
+  crash:[['ride',1,.46]],perc:[['cow',1.08,.3]],tomlo:[['t8l',1.06,.52]],tommid:[['t8m',1.06,.52]],tomhi:[['t8h',1.06,.48]]},
+ electro:{kick:[['k8b',1,.58],['zapL',1,.16]],snare:[['nhit',1,.5]],rim:[['blip',1,.4]],hat:[['tick',1,.32]],open:[['zapA',1,.3]],
+  crash:[['zapL',.7,.5]],perc:[['laser',1,.28]],tomlo:[['etA',.85,.52]],tommid:[['etA',1.12,.5]],tomhi:[['etH',1,.48]]},
 };
 const kit={buffers:null,promise:null};
 export function loadKit(){
@@ -104,14 +112,19 @@ export function sound(ctx,g,e,t){
  const wide=(type,f,level,cents,width)=>{osc(type,f,level);osc(type,f,level*.62,env,cents,width);osc(type,f,level*.62,env,-cents,-width);};
  let attack=.006,release=dur,sampleVoice=false;
  if(e.kind==='drums'){
-  const bank=KITS[e.preset]||KITS.garage,pick=bank[e.drum]||bank.hat,buf=kit.buffers&&kit.buffers[pick[0]];
-  if(buf){
-   const s=ctx.createBufferSource();s.buffer=buf;s.playbackRate.value=pick[1];
-   const lvl=gain(pick[2]*e.amp*1.7);s.connect(lvl);sources.push(s);sampleVoice=true;
-   const stop=t+Math.min(buf.duration/pick[1],e.drum==='open'?.9:.6)+.02;
-   const voice={sources,nodes,end:stop};g.voices.add(voice);
-   s.onended=('startRendering' in ctx)?null:()=>{sources.forEach(n=>n.disconnect());nodes.forEach(n=>n.disconnect());g.voices.delete(voice);};
-   s.start(t);s.stop(stop);return;
+  const bank=KITS[e.preset]||KITS.garage,layers=bank[e.drum]||bank.hat;
+  if(kit.buffers&&layers.every(l=>kit.buffers[l[0]])){
+   const tail=e.drum==='crash'?1.6:e.drum==='open'?.9:e.drum==='perc'?.5:e.drum.startsWith('tom')?.7:.6;
+   let stop=t;
+   for(const [key,rate,level] of layers){
+    const s=ctx.createBufferSource();s.buffer=kit.buffers[key];s.playbackRate.value=rate;
+    s.connect(gain(level*e.amp*1.7));sources.push(s);
+    stop=Math.max(stop,t+Math.min(s.buffer.duration/rate,tail)+.02);
+   }
+   sampleVoice=true;
+   const voice={sources,nodes,end:stop};g.voices.add(voice);let done=0;
+   sources.forEach(s=>{if(!('startRendering' in ctx))s.onended=()=>{s.disconnect();if(++done===sources.length){nodes.forEach(n=>n.disconnect());g.voices.delete(voice);}};s.start(t);s.stop(stop);});
+   return;
   }
   const soft=e.preset==='soft',wood=e.preset==='wood';
   if(e.drum==='kick'){const o=osc('sine',soft?105:145,1);o.frequency.setValueAtTime(soft?105:145,t);o.frequency.exponentialRampToValueAtTime(soft?42:48,t+.065);noise('highpass',2600,.7,.025);release=.26;}
