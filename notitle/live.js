@@ -126,8 +126,8 @@ class Board{
  poly(p,fill,outline=null,width=2){ctx.beginPath();ctx.moveTo(...p[0]);for(let i=1;i<p.length;i++)ctx.lineTo(...p[i]);ctx.closePath();this.paint(fill,outline,width)}
  text(xy,text,size=24,color=INK,bold=false,anchor='mm',stroke=0,stroke_color=CREAM){ctx.font=`${size}px DotGothic16`;ctx.textAlign=anchor==='lm'?'left':'center';ctx.textBaseline='middle';if(stroke){ctx.strokeStyle=stroke_color;ctx.lineWidth=stroke*2;ctx.strokeText(text,...xy)}ctx.fillStyle=color;ctx.fillText(text,...xy)}
 }
-let sprites={};function hero(b,x,y,size,t,headphones=true,drop=false){let state=drop?'jump':headphones?'normal':'quiet';ctx.save();ctx.translate(x,y);ctx.rotate((headphones?Math.round(Math.sin(t*4)*3)*3:0)*-Math.PI/180);ctx.imageSmoothingEnabled=false;let n=36*Math.max(1,Math.round(size/36));ctx.drawImage(sprites[state],-n/2,-n/2,n,n);ctx.restore()}
-function ok_face(b,x,y){ctx.imageSmoothingEnabled=false;ctx.drawImage(sprites.ok,x-118,y-40,236,80);b.text([x+146,y],'ok!',47,INK)}
+let sprites={};function hero(b,x,y,size,t,headphones=true,drop=false){let state=drop?'jump':headphones?'normal':'quiet';if(!sprites[state])return;ctx.save();ctx.translate(x,y);ctx.rotate((headphones?Math.round(Math.sin(t*4)*3)*3:0)*-Math.PI/180);ctx.imageSmoothingEnabled=false;let n=36*Math.max(1,Math.round(size/36));ctx.drawImage(sprites[state],-n/2,-n/2,n,n);ctx.restore()}
+function ok_face(b,x,y){if(!sprites.ok)return;ctx.imageSmoothingEnabled=false;ctx.drawImage(sprites.ok,x-118,y-40,236,80);b.text([x+146,y],'ok!',47,INK)}
 let playing=false,lastFrame=-1,raf=0;
 function resize(){const r=canvas.getBoundingClientRect(),d=window.devicePixelRatio||1;canvas.width=Math.round(r.width*d);canvas.height=Math.round(canvas.width*9/16);ctx.setTransform(canvas.width/1280,0,0,canvas.height/720,0,0);lastFrame=-1;draw()}
 function draw(){let i=Math.min(levels.length-1,Math.max(0,Math.floor(audio.currentTime*30)));if(i!==lastFrame){frame(i);lastFrame=i}}
