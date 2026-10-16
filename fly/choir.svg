@@ -1,0 +1,108 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="430" viewBox="0 0 1100 430" fill="none" shape-rendering="crispEdges">
+  <!-- Original eight-pixel sprites. The page behind this artwork supplies its paper. -->
+  <g fill="#dec9ba">
+    <path d="M176 128H184V104H200V112H184V136H168V128Z"/>
+    <path d="M432 112H440V88H456V96H440V120H424V112Z"/>
+    <path d="M696 120H704V96H728V128H720V104H704V128H688V120ZM712 128H728V136H712Z"/>
+    <path d="M920 192H928V168H944V176H928V200H912V192Z"/>
+  </g>
+  <g fill="#ff678e">
+    <rect x="224" y="144" width="8" height="8"/>
+    <rect x="664" y="152" width="8" height="8"/>
+    <rect x="896" y="112" width="8" height="8"/>
+  </g>
+
+  <!-- Pulse: one wing up, already ready to sing. -->
+  <g transform="translate(300 224)"><g id="fly-pulse">
+    <g fill="#dec9ba">
+      <path d="M-88-72H-64V-64H-48V-48H-40V-16H-56V-24H-72V-40H-88Z"/>
+      <path d="M48-48H64V-56H88V-48H96V-24H88V-16H72V-8H48Z"/>
+    </g>
+    <g fill="#fffaf2">
+      <path d="M-80-64H-64V-56H-56V-40H-48V-24H-56V-32H-64V-48H-80Z"/>
+      <path d="M56-40H72V-48H88V-32H80V-24H64V-16H56Z"/>
+    </g>
+    <g fill="#8a3a2e">
+      <path d="M-24-48V-64H-40V-72H-16V-48ZM16-48V-64H32V-56H24V-48Z"/>
+      <path d="M-40-48H32V-40H48V40H40V48H-40V40H-48V-40H-40Z"/>
+      <path d="M-32 48H-24V56H-40V64H-16V48ZM24 48H32V56H48V64H24Z"/>
+      <rect x="-56" y="8" width="8" height="16"/>
+      <rect x="48" y="-8" width="8" height="16"/>
+    </g>
+    <g fill="#f7f0e4">
+      <rect x="-24" y="-16" width="16" height="16"/>
+      <rect x="8" y="-16" width="16" height="16"/>
+      <rect x="-8" y="16" width="8" height="16"/>
+    </g>
+    <g fill="#ff678e">
+      <rect x="-40" y="8" width="16" height="8"/>
+      <rect x="24" y="8" width="16" height="8"/>
+    </g>
+  </g></g>
+
+  <!-- Sine: the steady, slightly larger voice in the middle. -->
+  <g transform="translate(550 216)"><g id="fly-sine">
+    <g fill="#dec9ba">
+      <path d="M-112-56H-88V-48H-72V-32H-56V-8H-72V-16H-88V-24H-104V-40H-112Z"/>
+      <path d="M88-56H112V-40H104V-24H88V-16H72V-8H56V-32H72V-48H88Z"/>
+    </g>
+    <g fill="#fffaf2">
+      <path d="M-104-48H-88V-40H-80V-24H-64V-16H-72V-24H-88V-32H-96V-40H-104Z"/>
+      <path d="M88-48H104V-40H96V-32H88V-24H72V-16H64V-24H80V-40H88Z"/>
+    </g>
+    <g fill="#8a3a2e">
+      <path d="M-32-56V-64H-48V-72H-24V-56ZM24-56V-72H48V-64H32V-56Z"/>
+      <path d="M-48-56H48V-48H56V-40H64V40H56V48H48V56H-48V48H-56V40H-64V-40H-56V-48H-48Z"/>
+      <path d="M-40 56H-32V72H-48V80H-24V56ZM32 56H40V72H48V80H24V56Z"/>
+      <rect x="-72" y="8" width="8" height="16"/>
+      <rect x="64" y="8" width="8" height="16"/>
+    </g>
+    <g fill="#f7f0e4">
+      <rect x="-32" y="-16" width="16" height="16"/>
+      <rect x="16" y="-16" width="16" height="16"/>
+      <path d="M-8 16H8V32H-8Z"/>
+    </g>
+    <g fill="#ff678e">
+      <rect x="-48" y="8" width="16" height="8"/>
+      <rect x="32" y="8" width="16" height="8"/>
+      <rect x="-8" y="32" width="16" height="8"/>
+    </g>
+  </g></g>
+
+  <!-- Beat: compact and cheerful, with a tiny lifted foot. -->
+  <g transform="translate(800 224)"><g id="fly-beat">
+    <g fill="#dec9ba">
+      <path d="M-96-48H-72V-40H-48V-8H-64V-16H-80V-24H-96Z"/>
+      <path d="M64-64H88V-40H80V-24H64V-16H40V-40H48V-56H64Z"/>
+    </g>
+    <g fill="#fffaf2">
+      <path d="M-88-40H-72V-32H-56V-16H-64V-24H-80V-32H-88Z"/>
+      <path d="M64-56H80V-40H72V-32H64V-24H48V-32H56V-48H64Z"/>
+    </g>
+    <g fill="#8a3a2e">
+      <path d="M-24-48V-64H-40V-72H-16V-48ZM16-48V-64H40V-56H24V-48Z"/>
+      <path d="M-32-48H32V-40H48V32H40V48H-40V40H-48V-40H-32Z"/>
+      <path d="M-32 48H-24V64H-8V72H-32ZM24 48H32V56H48V48H56V64H24Z"/>
+      <rect x="-56" y="-8" width="8" height="16"/>
+      <rect x="48" y="8" width="8" height="16"/>
+    </g>
+    <g fill="#f7f0e4">
+      <rect x="-24" y="-16" width="16" height="16"/>
+      <rect x="8" y="-16" width="16" height="16"/>
+      <path d="M-8 16H0V24H8V16H16V32H-8Z"/>
+    </g>
+    <g fill="#ff678e">
+      <rect x="-40" y="8" width="16" height="8"/>
+      <rect x="24" y="8" width="16" height="8"/>
+    </g>
+  </g></g>
+
+  <!-- A quiet little tape stage. -->
+  <path d="M128 344H976V346H128Z" fill="#dec9ba"/>
+  <g stroke="#dec9ba" stroke-width="2">
+    <g transform="translate(300 328)"><rect x="-40" width="16" height="16"/><rect x="-8" width="16" height="16" fill="#f5e7df"/><rect x="24" width="16" height="16"/></g>
+    <g transform="translate(550 328)"><rect x="-40" width="16" height="16"/><rect x="-8" width="16" height="16" fill="#f5e7df"/><rect x="24" width="16" height="16"/></g>
+    <g transform="translate(800 328)"><rect x="-40" width="16" height="16"/><rect x="-8" width="16" height="16" fill="#f5e7df"/><rect x="24" width="16" height="16"/></g>
+  </g>
+  <g fill="#dec9ba"><rect x="128" y="344" width="2" height="8"/><rect x="974" y="344" width="2" height="8"/></g>
+</svg>

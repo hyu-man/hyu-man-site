@@ -5,4 +5,7 @@ compatibility_date = "2026-08-16"
 [assets]
 directory = "./public"
 binding = "ASSETS"
-run_worker_first = ["/over/its-over-v2.mp4", "/over/song.m4a", "/uchira/highway.mp4", "/uchira/highway-portrait.mp4", "/uchira/uchira.m4a", "/uchira/uchira-mv.mp4", "/mogura/mogura.mp4"]
+run_worker_first = ["/august/august-v2.mp4", "/pcboy/song.m4a", "/over/its-over-v2.mp4", "/over/song.m4a", "/uchira/highway.mp4", "/uchira/highway-portrait.mp4", "/uchira/uchira.m4a", "/uchira/uchira-mv.mp4"]
+
+[build]
+command = "node scripts/check-pcboy-assets.mjs"

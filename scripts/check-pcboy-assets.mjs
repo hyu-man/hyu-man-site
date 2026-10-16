@@ -1,0 +1,10 @@
+import {readFileSync,readdirSync,statSync} from 'node:fs';
+const paths=['pcboy/index.html','pcboy/live.js','pcboy/timeline.json','pcboy/song.m4a','pcboy/DotGothic16-Regular.ttf','pcboy/poster.png','louder/live.js','louder/timeline.json','louder/song.m4a','notitle/live.js','notitle/timeline.json','notitle/song.m4a','mogura/mogura.mp4','uchira/uchira.m4a','uchira/highway.mp4','uchira/highway-portrait.mp4','uchira/uchira-mv.mp4'];
+for(let i=0;i<9;i++)paths.push(`notitle/chunks/${String(i).padStart(2,'0')}.bin`);
+for(const pose of ['sit','stand','jump'])for(const warm of [0,1])for(const blink of [0,1])paths.push(`pcboy/${pose}-${warm}-${blink}.png`);
+for(const name of ['normal','quiet','jump','ok'])paths.push(`louder/${name}.png`);
+const samples=readdirSync('public/daw/samples').filter(x=>x.endsWith('.m4a'));if(samples.length!==35)throw Error('Expected all 35 DAW samples');
+paths.push(...samples.map(x=>'daw/samples/'+x));
+for(const p of paths)if(statSync('public/'+p).size===0)throw Error('Empty asset: '+p);
+const timeline=JSON.parse(readFileSync('public/pcboy/timeline.json'));if(timeline.cues.length!==57||timeline.levels.length!==5236)throw Error('PCboy timeline incomplete');
+console.log(`Verified ${paths.length} required assets, including all PCboy sprites and existing films/DAW dependencies.`);

@@ -113,14 +113,36 @@
   .commission .address { margin-top:10px; font-family:'DotGothic16',sans-serif; font-size:12px; overflow-wrap:anywhere; }
   .commission .address a { color:var(--ink); text-underline-offset:3px; }
   .here-film{display:flex;align-items:center;gap:26px;margin:12px 0 34px;padding:20px;border:1px solid var(--line);text-decoration:none;color:var(--ink)}.here-film img{width:34%;height:auto;image-rendering:pixelated}.here-film small{font-size:10px;letter-spacing:.08em;color:var(--cheek)}.here-film strong{display:block;font-size:25px;font-weight:400;margin:7px 0}.here-film p{font-size:12px;line-height:1.9;margin:0}.here-film:hover{border-color:var(--cheek)}@media(max-width:540px){.here-film{gap:15px;padding:15px}.here-film img{width:30%}.here-film strong{font-size:19px}.here-film p{font-size:11px}}
+
+  [hidden]{display:none!important}
+  html{scroll-padding-top:24px}
+  .page-head{width:100%;max-width:1000px;display:flex;justify-content:space-between;gap:16px;margin:0 0 24px;font-family:'DotGothic16',sans-serif;font-size:13px}
+  .page-head a{color:var(--ink);text-decoration:none;display:flex;align-items:center;min-height:44px}
+  .quick-nav{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin:0 0 22px}
+  .quick-nav a{color:var(--ink);border:1px solid var(--line);padding:10px 14px;text-decoration:none;min-height:44px;font-family:'DotGothic16',sans-serif;font-size:13px}
+  .quick-nav a:hover{border-color:var(--ink)}
+  .song-search{max-width:600px;margin:0 auto 28px;font-family:'DotGothic16',sans-serif}
+  .song-search label{display:block;font-size:13px;margin-bottom:8px}
+  .search-row{display:flex;gap:8px}.search-row input{min-width:0;flex:1;width:100%;font:inherit;font-size:16px;border:1px solid var(--sub);background:var(--bg);color:var(--ink);padding:11px 12px;border-radius:0}
+  .search-row button{font:inherit;font-size:12px;padding:8px 12px;border:1px solid var(--sub);background:var(--bg);color:var(--ink);cursor:pointer}
+  #search-status,#film-results{font-size:12px;color:var(--sub);line-height:1.8;margin-top:8px}#film-results{display:inline-block;min-height:36px;color:var(--ink)}
+  .ghead{font-weight:400;color:var(--ink)}.ghead span{color:var(--sub);display:block;font-size:12px;margin-top:5px}
+  input:focus-visible,button:focus-visible{outline:2px solid var(--ink);outline-offset:4px}
+  #films,#songs,#releases,#mv-production{scroll-margin-top:24px}
+  .here-film img{object-fit:cover;aspect-ratio:16/9;image-rendering:auto}
+  @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.listen svg{transition:none}}
 </style>
+<meta property="og:image" content="https://hyu-man.com/og/hyu-man.png">
 </head>
 <body>
+<header class="page-head"><a href="/">← ひゅーまん</a><a href="/daw/">音であそぶ ↗</a></header>
 
 <h1>うたう</h1>
 <p class="lead">規則から生まれていないもの。曲と歌詞と、うた。<br>規則が描く絵と、自由に描く物語。</p>
 
-<div class="wrap">
+<main class="wrap" id="content">
+<nav class="quick-nav" aria-label="うたのページ内"><a href="#songs">曲と映像</a><a href="#films">特設MV</a><a href="#releases">音源・CD</a><a href="#mv-production">制作相談</a></nav>
+<div class="song-search" id="song-search" hidden><label for="song-query">曲を探す</label><div class="search-row"><input id="song-query" type="search" placeholder="曲名やことばで検索" autocomplete="off" aria-controls="grid films"><button id="clear-search" type="button" hidden>すべて表示</button></div><p id="search-status" role="status" aria-live="polite"></p><a id="film-results" href="#films" hidden>特設MVの検索結果へ ↓</a></div>
 
   <div class="listen">
     <a href="https://www.youtube.com/@hyumancom" target="_blank" rel="noopener" aria-label="YouTube。まだ、うごいてます">
@@ -148,7 +170,7 @@
 
 
 
-  <div class="music-links">
+  <div class="music-links" id="releases">
     <section class="link-group" aria-labelledby="bandcamp-label">
       <h2 id="bandcamp-label">Bandcamp</h2>
       <div class="albums">
@@ -167,7 +189,7 @@
     </section>
   </div>
 
-  <p class="ghead"><b>うた。</b>曲と映像。押すと YouTube が開きます。</p>
+  <h2 class="ghead" id="songs">うた。<span>曲と映像。押すと YouTube が開きます。</span></h2>
   <div class="grid" id="grid"></div>
 
   <p class="ghead" style="margin-top:34px"><b>ここだけ、規則はありません。</b>曲を16に切って、たたく。こどもでも。</p>
@@ -182,11 +204,20 @@
     ひゅーまんから得た収益は、作品の保存と、アーカイブを残す活動に使います。現在、収益の一部を <a href="https://archive.org/donate" target="_blank" rel="noopener">Internet Archive</a> へ寄付しています。
   </p>
 
-  <a class="here-film" href="/over/"><img src="/over/poster.jpg" width="1280" height="720" alt="赤茶とピンクのふたり、ハートの中で"><div><small>SPECIAL FILM ♡</small><strong>It's Over! — おわった。</strong><p>もう平気。（ちがう）<br>この場所で、みる ↗</p></div></a>
+  <section id="films" aria-labelledby="films-title"><h2 class="ghead" id="films-title">この場所で、みる。<span>サイトの中で楽しめる特設MV。</span></h2>
+  <a class="here-film" href="/over/"><img src="/over/poster.jpg" width="1280" height="720" alt="赤茶とピンクのふたり、ハートの中で" loading="lazy" decoding="async"><div><small>SPECIAL FILM ♡</small><strong>It's Over! — おわった。</strong><p>もう平気。（ちがう）<br>この場所で、みる ↗</p></div></a>
 
-  <a class="here-film" href="/uchira/"><img src="/uchira/og.png" width="1200" height="630" alt="Highway の蟻と、ウチらのふたり"><div><small>ふたつの曲、この場所で。</small><strong>ウチ。ウチら。</strong><p>Highway と ウチら。<br>ひとりの足跡から、ふたりの遊園地へ。<br>特設ページで聴く →</p></div></a>
+  <a class="here-film" href="/uchira/"><img src="/uchira/og.png" width="1200" height="630" alt="Highway の蟻と、ウチらのふたり" loading="lazy" decoding="async"><div><small>ふたつの曲、この場所で。</small><strong>ウチ。ウチら。</strong><p>Highway と ウチら。<br>ひとりの足跡から、ふたりの遊園地へ。<br>特設ページで聴く →</p></div></a>
 
-  <a class="here-film" href="/mogura/"><img src="/mogura/poster.jpg" width="1280" height="720" alt="mogura の地下世界"><div><small>この場所で、みる。</small><strong>mogura</strong><p>上では、何も起きていない。<br>下では、ずっと動いている。<br>ミュージックビデオを見る →</p></div></a>
+  <a class="here-film" href="/mogura/"><img src="/mogura/poster.jpg" width="1280" height="720" alt="mogura の地下世界" loading="lazy" decoding="async"><div><small>地下で、みる。</small><strong>mogura</strong><p>上では、何も起きていない。<br>下では、ずっと動いている。<br>ミュージックビデオを見る →</p></div></a>
+
+  <a class="here-film" href="/louder/"><img src="/louder/poster.jpg" width="1920" height="1080" alt="ミントのヘッドホンをつけた赤茶の子と、音の遊園地" loading="lazy" decoding="async"><div><small>ヘッドホンで、みる。</small><strong>l o u d e r</strong><p>小さな部屋から、音の遊園地へ。<br>外しても、声は残った。<br>ミュージックビデオを見る →</p></div></a>
+
+  <a class="here-film" href="/notitle/"><img src="/notitle/poster.jpg" width="1920" height="1080" alt="暗闇に浮かぶ朱赤と青白い軌道、世界の中心の光" loading="lazy" decoding="async"><div><small>この場所で、みる。 / 4K</small><strong>Notitle.</strong><p>戻ってきて。<br>世界が壊れても、もう一度。<br>ミュージックビデオを見る →</p></div></a>
+  <a class="here-film" href="/august/"><img src="/august/poster.jpg" width="1920" height="1080" alt="八月の木の上で歌う、小さな赤茶のセミ" loading="lazy" decoding="async"><div><small>木の上で、みる。</small><strong>出てきたら、八月</strong><p>七年かけて覚えた歌を、八月の空へ。<br>抜け殻はここ。本人は、まだ木の上。<br>ミュージックビデオを見る →</p></div></a>
+  <a class="here-film" href="/pcboy/"><img src="/pcboy/poster.png" width="1920" height="1080" alt="青いPC部屋で返事を待つ、小さな赤茶の子" loading="lazy" decoding="async"><div><small>青い部屋で、みる。</small><strong>PCboy</strong><p>借りた光の部屋から、朝へ。<br>画面が消えても、暖かさは残った。<br>音楽と動く世界を見る →</p></div></a>
+
+  </section>
 
   <section class="commission" id="mv-production" aria-labelledby="commission-title">
     <h2 id="commission-title">あなたの曲にも、小さな世界を。</h2>
@@ -201,7 +232,7 @@
 <nav>
   <a href="/">ひゅーまん</a><a href="/still/">/still/</a><a href="/omega/" aria-label="ωの部屋へ">(◍-ω-◍)</a>
 </nav>
-</div>
+</main>
 
 <script>
 (() => {
@@ -248,6 +279,7 @@
   const grid = document.getElementById("grid");
   SONGS.filter(s => !s.hidden).forEach((s, i) => {
     const fig = document.createElement("figure");
+    fig.dataset.search = s.title + " " + s.note;
     const fr = document.createElement("a"); fr.className = "frame";
     fr.href = "https://www.youtube.com/watch?v=" + s.id; fr.target = "_blank"; fr.rel = "noopener"; fr.setAttribute("aria-label", s.title + " のMVを観る");
     const im = document.createElement("img");
@@ -285,6 +317,25 @@
     fig.appendChild(cap);
     grid.appendChild(fig);
   });
+  const query = document.getElementById('song-query');
+  const clear = document.getElementById('clear-search');
+  const status = document.getElementById('search-status');
+  const filmResults = document.getElementById('film-results');
+  const cards = [...grid.children];
+  const films = [...document.querySelectorAll('.here-film')];
+  const normalize = text => text.normalize('NFKC').toLocaleLowerCase('ja').replace(/\s+/g,'');
+  function filterSongs(){
+    const term = normalize(query.value);
+    let songCount=0, filmCount=0;
+    for(const card of cards){card.hidden=!normalize(card.dataset.search).includes(term);if(!card.hidden)songCount++;}
+    for(const film of films){film.hidden=!normalize(film.textContent).includes(term);if(!film.hidden)filmCount++;}
+    clear.hidden=!term;filmResults.hidden=!term||!filmCount;
+    status.textContent = songCount+filmCount ? `曲紹介 ${songCount} 件 · 特設MV ${filmCount} 件` : '見つかりませんでした。別のことばで探すか、すべて表示してください。';
+  }
+  query.addEventListener('input',filterSongs);
+  clear.addEventListener('click',()=>{query.value='';filterSongs();query.focus();});
+  document.getElementById('song-search').hidden=false;
+  filterSongs();
 })();
 </script>
 </body>

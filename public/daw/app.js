@@ -1,6 +1,7 @@
 import {ROLES,ROLE_KEYS,PRESETS,STYLES,defaults,validate,generate,compose,explain,midi} from './composition.js';
-import {graph,automate,sound,render,encodeWav,loadKit} from './audio.js';
+import {graph,automate,sound,render,encodeWav,loadKit,compareFinish} from './audio.js';
 const $=id=>document.getElementById(id),STORE='hyuman-song-studio-v3',labels=['C','Db','D','Eb','E','F','Gb','G','Ab','A','Bb','B'];
+let ab=null,abRequest=0;
 let project=defaults(),song,selected=0,offset=0,ctx,run=null,starting=false,busy=false,urls=[];
 const message=s=>{$('status').textContent=s;},clock=s=>`${String(Math.floor(s/60)).padStart(2,'0')}:${String(Math.floor(s%60)).padStart(2,'0')}`;
 const encode=p=>btoa(String.fromCharCode(...new TextEncoder().encode(JSON.stringify(p)))),decode=s=>JSON.parse(new TextDecoder('utf-8',{fatal:true}).decode(Uint8Array.from(atob(s),c=>c.charCodeAt(0))));
@@ -23,6 +24,7 @@ function position(t=offset){
  document.querySelectorAll('#journey button').forEach((el,i)=>el.classList.toggle('active',sec.index===i));
 }
 async function play(){
+ stopAB();
  if(run){stop();return;}if(starting)return;starting=true;$('play').disabled=true;
  try{
   ctx??=new(window.AudioContext||window.webkitAudioContext)();await ctx.resume();try{await loadKit();}catch{}if(offset>=song.duration-.1)offset=0;
@@ -56,7 +58,7 @@ function controls(){
  for(const k of ['title','prompt','bpm','key','progression'])$(k).value=project[k];$('length').value=project.bars;document.querySelector(`input[name=style][value="${project.style}"]`).checked=true;
  for(const k of ['lift','swing','space','pump','glitch'])$(k).value=project[k]*100;mixer();
 }
-function rebuild(){stop();song=compose(project);offset=Math.min(offset,song.duration);journey();timeline();inspector();position();persist();$('songMeta').textContent=`${STYLES[project.style].tag} / ${project.bpm} BPM / ${labels[project.key%12]} minor / ${project.bars} BARS`;$('metrics').textContent=`${song.blocks.length}区間・音符 ${song.metrics.tonalNotes} / 打音 ${song.metrics.drumHits}。再生とWAVは同じ楽譜を使います。`;}
+function rebuild(){stopAB();stop();song=compose(project);offset=Math.min(offset,song.duration);journey();timeline();inspector();position();persist();$('songMeta').textContent=`${STYLES[project.style].tag} / ${project.bpm} BPM / ${labels[project.key%12]} minor / ${project.bars} BARS`;$('metrics').textContent=`${song.blocks.length}区間・音符 ${song.metrics.tonalNotes} / 打音 ${song.metrics.drumHits}。再生とWAVは同じ楽譜を使います。`;}
 function apply(p){stop(false);offset=0;project=validate(p);controls();rebuild();}
 function offer(blob,name){const url=URL.createObjectURL(blob),a=document.createElement('a');urls.push(url);a.href=url;a.download=name;a.textContent='↓ '+name;$('downloads').prepend(a);a.click();while(urls.length>8){URL.revokeObjectURL(urls.shift());$('downloads').lastElementChild?.remove();}}
 const filename=()=>project.title.replace(/[\\/:*?"<>|\x00-\x1f]/g,'_').trim().slice(0,60)||'ならす';
@@ -76,3 +78,13 @@ $('share').onclick=async()=>{const link=location.origin+location.pathname+'#p='+
 $('wav').onclick=async()=>{if(busy)return;busy=true;stop();$('wav').disabled=true;const p=structuredClone(project),name=filename();message('WAVを書き出しています…');try{const {buffer,scale,metrics}=await render(p,{onProgress:message});offer(encodeWav(buffer,scale),name+'.wav');message(`WAVを書き出しました。44.1 kHz / 24 bit / stereo${scale<1?'。歪み防止のため全体の音量を下げました。':''}`);}catch(e){message('WAVを書き出せませんでした。36小節で再度お試しください。');}finally{busy=false;$('wav').disabled=false;}};
 window.addEventListener('pagehide',()=>{stop();urls.forEach(u=>URL.revokeObjectURL(u));});
 controls();rebuild();
+
+
+function stopAB(){abRequest++;if(!ab)return;ab.sources.forEach(s=>{try{s.stop();}catch{}});ab.gains.forEach(g=>g.disconnect());ab=null;$('compareStop').disabled=true;}
+$('compare').onclick=async()=>{stop();stopAB();const request=abRequest;$('compare').disabled=true;$('compareState').textContent='同じサビ8秒を準備しています…';
+ try{ctx??=new(window.AudioContext||window.webkitAudioContext)();await ctx.resume();const pair=await compareFinish(JSON.parse(JSON.stringify(project)));if(request!==abRequest)return;stop();
+ const sources=[],gains=[];const when=ctx.currentTime+.05;pair.forEach((r,i)=>{const s=ctx.createBufferSource(),g=ctx.createGain();s.buffer=r.buffer;s.loop=true;g.gain.value=i===1?r.gain:0;s.connect(g);g.connect(ctx.destination);s.start(when);sources.push(s);gains.push(g);});ab={sources,gains,pair};$('compareStop').disabled=false;$('compareMode').value='1';$('compareState').textContent='サビ8秒をループ中。平均音量をそろえて比較します（RMS方式）。';
+ }catch(e){$('compareState').textContent='比較音声を準備できませんでした。';}finally{$('compare').disabled=false;}};
+$('compareMode').onchange=()=>{if(ab)ab.gains.forEach((g,i)=>g.gain.setTargetAtTime(i===+$('compareMode').value?ab.pair[i].gain:0,ctx.currentTime,.02));};
+$('compareStop').onclick=()=>{stopAB();$('compareState').textContent='比較を停止しました。';};
+$('play').addEventListener('click',stopAB);window.addEventListener('pagehide',stopAB);

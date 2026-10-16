@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ひゅーまんモデル — ひゅーまん</title>
+<meta name="description" content="蔵本モデルの親戚。みんな、互いを直接見ない。帳簿を見る。">
+<link rel="canonical" href="https://hyu-man.com/model/">
+<link href="https://fonts.googleapis.com/css2?family=DotGothic16&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#faf3dd;color:#5a3a26;font-family:DotGothic16,monospace}
+a{color:inherit;text-underline-offset:5px}
+header{display:flex;justify-content:space-between;padding:25px 5vw;font-size:13px}
+header a{text-decoration:none}
+.hero{text-align:center;padding:10px 20px 6px}
+.tag{font-size:11px;letter-spacing:.15em;color:#b0703a}
+h1{font-weight:400;font-size:clamp(30px,5vw,52px);margin:12px 0 6px}
+p{line-height:2;font-size:14px}
+.stage{width:min(900px,94vw);margin:8px auto 10px;border:1px solid #d9c9a8;background:#fffbee}
+canvas{display:block;width:100%;height:auto}
+.panel{width:min(900px,94vw);margin:0 auto 18px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;font-size:13px}
+button{font-family:inherit;font-size:13px;color:#5a3a26;background:#fff;border:1px solid #b0703a;padding:8px 14px;cursor:pointer}
+button:hover{background:#ffeede}
+button.danger{border-color:#c0564a;color:#c0564a}
+label{display:flex;gap:6px;align-items:center}
+input[type=range]{accent-color:#b0703a}
+.note{width:min(900px,94vw);margin:0 auto 60px;font-size:13px;line-height:2.1}
+.note b{color:#b0703a}
+footer{text-align:center;padding:10px 20px 50px;font-size:12px}
+a:focus-visible,button:focus-visible{outline:3px solid #ff534b;outline-offset:4px}
+</style><meta property="og:title" content="ひゅーまんモデル — ひゅーまん">
+<meta property="og:description" content="蔵本モデルの親戚。みんな、互いを直接見ない。帳簿を見る。">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="ひゅーまん">
+<meta property="og:url" content="https://hyu-man.com/model/">
+<meta property="og:image" content="https://hyu-man.com/og/hyu-man.png">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+<body>
+<header><a href="/">ひゅーまん</a><a href="/uta/">うたへ ↗</a></header>
+<section class="hero">
+  <div class="tag">INTERACTIVE MODEL</div>
+  <h1>ひゅーまんモデル</h1>
+  <p>蔵本モデルの親戚。みんな、互いを直接見ない。<b>帳簿を見る。</b></p>
+</section>
+
+<div class="stage"><canvas id="cv" width="900" height="520"></canvas></div>
+
+<div class="panel">
+  <button id="sound" aria-pressed="false">音を鳴らす ♫</button>
+  <label>音量 <input id="volume" type="range" min="0" max="100" value="45" aria-label="音量"></label>
+  <span id="soundStatus" role="status" aria-live="polite"></span>
+  <button id="killone">ひとり消える</button>
+  <button id="killall" class="danger">全員消える</button>
+  <label><input type="checkbox" id="ritual" checked> 儀式（読み終わるまで書かない）</label>
+  <label>帳簿の間隔 T <input type="range" id="T" min="0.1" max="4" step="0.1" value="0.5"><span id="Tv">0.5</span></label>
+  <label><input type="checkbox" id="kuramoto"> 蔵本モード（帳簿なし）</label>
+  <button id="reset">はじめから</button>
+</div>
+
+<div class="note">
+  <b>音を鳴らす</b>と、まるが一周するたびに、それぞれの音がぽこんと鳴ります。拍がそろうと和音に。消えている子は鳴りません。音はモデルの動きを聴くための演出です。<br>
+  まるが 12 匹。それぞれ自分の速さで回っていて、ときどき光る。<br>
+  うすい輪は<b>帳簿のゴースト</b>——「最後に書いた位置と速さ」から外挿されたその子。みんなはゴーストに合わせる。<br>
+  <b>ひとり消えても</b>、残りが引き戻す（これは蔵本でも同じ）。<br>
+  <b>全員消えたとき</b>だけ、差が出る。儀式オン＝再起動した子は<b>読み終わるまで帳簿に書かない</b>。
+  すると群れは、消える前と<b>同じ拍</b>に帰ってくる。儀式を切って試すと、帰れない。<br>
+  下の帯は r（そろい具合）。Tを伸ばすと——帳簿をサボると——家はばらける。
+</div>
+
+<footer><a href="/uta/">ほかのうたへ</a></footer>
+
+<script>
+"use strict";
+const N=12, DT=1/60;
+// md5 の代わりに固定表（乱数なし・リロードしても同じ家）
+const OMEGA=[0.62,1.31,0.84,1.12,0.95,1.44,0.71,1.22,1.05,0.88,1.36,0.78];
+const TH0=[0.4,2.9,1.7,5.2,3.6,0.9,4.4,2.2,5.8,1.2,3.1,4.9];
+let th,alive,Lth,Lom,Ltw,Hpsi,Hom,Htw,settle,t,rHist,prevPsi,HomAcc;
+const cv=document.getElementById("cv"),ctx=cv.getContext("2d");
+const el=id=>document.getElementById(id);
+
+function reset(){
+  th=TH0.slice(); alive=Array(N).fill(true);
+  Lth=TH0.slice(); Lom=OMEGA.slice(); Ltw=Array(N).fill(0);
+  Hpsi=meanPhase(th); Hom=OMEGA.reduce((a,b)=>a+b)/N; Htw=0; HomAcc=0; prevPsi=Hpsi;
+  settle=0; t=0; rHist=[];
+}
+function meanPhase(a,mask){
+  let x=0,y=0,n=0;
+  for(let i=0;i<N;i++){ if(mask&&!mask[i])continue; x+=Math.cos(a[i]); y+=Math.sin(a[i]); n++; }
+  return n?Math.atan2(y,x):0;
+}
+function orderR(){
+  let x=0,y=0,n=0;
+  for(let i=0;i<N;i++){ if(!alive[i])continue; x+=Math.cos(th[i]); y+=Math.sin(th[i]); n++; }
+  return n?Math.hypot(x,y)/n:0;
+}
+function step(){
+  const T=parseFloat(el("T").value), K=1.6, kur=el("kuramoto").checked, ritual=el("ritual").checked;
+  const psiHat=Hpsi+Hom*(t-Htw);
+  // 帳簿に書く
+  if(!kur){
+    let wrote=false, wx=0, wy=0, wn=0;
+    for(let i=0;i<N;i++){
+      if(!alive[i]||t-Ltw[i]<T) continue;
+      if(ritual&&t<settle) continue;                      // 読み終わるまで書かない
+      Lth[i]=th[i]; Lom[i]=OMEGA[i]; Ltw[i]=t; wrote=true;
+      wx+=Math.cos(th[i]); wy+=Math.sin(th[i]); wn++;
+    }
+    if(wrote&&wn>0){
+      const psiNow=Math.atan2(wy,wx);
+      if(t>Htw){                                          // 家の拍は測って書く
+        let d=psiNow-prevPsi; d=((d+Math.PI)%(2*Math.PI)+2*Math.PI)%(2*Math.PI)-Math.PI;
+        const est=d/(t-Htw);
+        HomAcc=HomAcc?0.9*HomAcc+0.1*est:est; Hom=HomAcc;
+      }
+      prevPsi=psiNow; Hpsi=psiNow; Htw=t;
+    }
+  }
+  for(let i=0;i<N;i++){
+    if(!alive[i]) continue;
+    let c=0;
+    if(kur){
+      for(let j=0;j<N;j++) if(alive[j]) c+=Math.sin(th[j]-th[i]);
+      c/=N;
+    }else{
+      let s=0;
+      for(let j=0;j<N;j++) s+=Math.sin(Lth[j]+Lom[j]*(t-Ltw[j])-th[i]);
+      c=0.5*s/N+0.5*Math.sin(psiHat-th[i]);
+    }
+    const before=th[i];
+    th[i]+=DT*(OMEGA[i]+K*c);
+    if(Math.floor(th[i]/(2*Math.PI))>Math.floor(before/(2*Math.PI))) playVoice(i);
+  }
+  t+=DT;
+  rHist.push(orderR()); if(rHist.length>420) rHist.shift();
+}
+function draw(){
+  const W=cv.width,H=cv.height;
+  ctx.fillStyle="#fffbee"; ctx.fillRect(0,0,W,H);
+  const cx=W/2, cy=232, R=170;
+  ctx.strokeStyle="#ead9b5"; ctx.beginPath(); ctx.arc(cx,cy,R,0,7); ctx.stroke();
+  const kur=el("kuramoto").checked;
+  for(let i=0;i<N;i++){
+    const base=(i/N)*2*Math.PI;                 // 席は固定、位相は光と針で
+    const x=cx+R*Math.cos(base), y=cy+R*Math.sin(base);
+    // 帳簿ゴースト（外挿された針）
+    if(!kur){
+      const gh=Lth[i]+Lom[i]*(t-Ltw[i]);
+      ctx.strokeStyle="#d9c9a8"; ctx.beginPath();
+      ctx.moveTo(x,y); ctx.lineTo(x+16*Math.cos(gh),y+16*Math.sin(gh)); ctx.stroke();
+    }
+    // 本体：位相の針＋位相0で光る
+    const ph=((th[i]%(2*Math.PI))+2*Math.PI)%(2*Math.PI);
+    const glow=Math.max(0,Math.cos(ph));        // 位相0に近いほど明るい
+    if(alive[i]){
+      ctx.fillStyle=`rgba(176,112,58,${0.25+0.75*glow*glow})`;
+      ctx.beginPath(); ctx.arc(x,y,10+6*glow*glow,0,7); ctx.fill();
+      ctx.strokeStyle="#5a3a26"; ctx.beginPath();
+      ctx.moveTo(x,y); ctx.lineTo(x+13*Math.cos(th[i]),y+13*Math.sin(th[i])); ctx.stroke();
+    }else{
+      ctx.strokeStyle="#cdb892"; ctx.beginPath(); ctx.arc(x,y,9,0,7); ctx.stroke(); // 抜け殻
+    }
+  }
+  // 家の拍（中央の針）
+  if(!kur){
+    const psiHat=Hpsi+Hom*(t-Htw);
+    ctx.strokeStyle="#f79eaa"; ctx.lineWidth=2; ctx.beginPath();
+    ctx.moveTo(cx,cy); ctx.lineTo(cx+46*Math.cos(psiHat),cy+46*Math.sin(psiHat)); ctx.stroke();
+    ctx.lineWidth=1; ctx.fillStyle="#b0703a"; ctx.font="12px DotGothic16";
+    ctx.fillText("家の拍", cx-20, cy+64);
+  }
+  // 儀式中の表示
+  if(t<settle){ ctx.fillStyle="#c0564a"; ctx.font="14px DotGothic16";
+    ctx.fillText("……読んでいる（まだ書かない）", cx-104, 36); }
+  // r の帯
+  const gy=452;
+  ctx.fillStyle="#f1e4c2"; ctx.fillRect(40,gy,W-80,40);
+  ctx.strokeStyle="#b0703a"; ctx.beginPath();
+  rHist.forEach((r,k)=>{ const x=40+(W-80)*k/420, y=gy+40-40*r; k?ctx.lineTo(x,y):ctx.moveTo(x,y); });
+  ctx.stroke();
+  ctx.fillStyle="#5a3a26"; ctx.font="12px DotGothic16";
+  ctx.fillText("r（そろい具合） "+(rHist[rHist.length-1]||0).toFixed(2), 40, gy-6);
+}
+
+// Sound observes phase crossings only; it never feeds back into the model.
+let audio=null, master=null, soundOn=false;
+const pitches=[48,55,60,64,67,69,72,76,79,81,84,88];
+function playVoice(i){
+  if(!soundOn || !audio || audio.state!=="running" || document.hidden)return;
+  const now=audio.currentTime, f=440*Math.pow(2,(pitches[i]-69)/12);
+  const osc=audio.createOscillator(), overtone=audio.createOscillator();
+  const amp=audio.createGain(), harmonic=audio.createGain(), pan=audio.createStereoPanner();
+  osc.type="sine"; osc.frequency.setValueAtTime(f*1.06,now);
+  osc.frequency.exponentialRampToValueAtTime(f,now+.065);
+  overtone.type="sine"; overtone.frequency.value=f*2.003;
+  harmonic.gain.setValueAtTime(.17,now); harmonic.gain.exponentialRampToValueAtTime(.001,now+.13);
+  amp.gain.setValueAtTime(0,now); amp.gain.linearRampToValueAtTime(.09,now+.006);
+  amp.gain.exponentialRampToValueAtTime(.0001,now+.7);
+  pan.pan.value=Math.cos(i/N*2*Math.PI)*.65;
+  osc.connect(amp); overtone.connect(harmonic); harmonic.connect(amp); amp.connect(pan); pan.connect(master);
+  osc.start(now); overtone.start(now); osc.stop(now+.75); overtone.stop(now+.75);
+  osc.onended=()=>{osc.disconnect();overtone.disconnect();harmonic.disconnect();amp.disconnect();pan.disconnect();};
+}
+el("sound").onclick=async()=>{
+  try{
+    if(!audio){audio=new (window.AudioContext||window.webkitAudioContext)();master=audio.createGain();master.gain.value=0;master.connect(audio.destination);}
+    await audio.resume();soundOn=!soundOn;
+    master.gain.setTargetAtTime(soundOn?Number(el("volume").value)/100*.65:0,audio.currentTime,.04);
+    el("sound").textContent=soundOn?"音を止める ♫":"音を鳴らす ♫";
+    el("sound").setAttribute("aria-pressed",String(soundOn));
+    el("soundStatus").textContent=soundOn?"まるが一周すると鳴ります":"";
+  }catch(e){el("soundStatus").textContent="音を開始できませんでした。もう一度お試しください。";}
+};
+el("volume").oninput=()=>{if(master)master.gain.setTargetAtTime(soundOn?Number(el("volume").value)/100*.65:0,audio.currentTime,.03);};
+document.addEventListener("visibilitychange",()=>{if(audio){if(document.hidden)audio.suspend();else if(soundOn)audio.resume().catch(()=>{});}});
+
+el("killone").onclick=()=>{ const a=alive.map((v,i)=>v?i:-1).filter(i=>i>=0); if(a.length){const i=a[Math.floor(a.length/2)]; alive[i]=false; setTimeout(()=>{alive[i]=true; th[i]=0;},2500);} };
+el("killall").onclick=()=>{ alive.fill(false); setTimeout(()=>{ alive.fill(true); th.fill(0); settle=t+6; },2500); };
+el("reset").onclick=reset;
+el("T").oninput=()=>el("Tv").textContent=el("T").value;
+reset();
+(function loop(){ for(let k=0;k<2;k++) step(); draw(); requestAnimationFrame(loop); })();
+</script>
+</body></html>
