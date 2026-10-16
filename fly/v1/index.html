@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ハエのうた — ひゅーまん</title>
+<meta name="description" content="実在するハエ1匹の歌回路（55ニューロン・2460シナプス）が、ブラウザの中で歌う。">
+<link rel="canonical" href="https://hyu-man.com/fly/">
+<link href="https://fonts.googleapis.com/css2?family=DotGothic16&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#101418;color:#ece6d8;font-family:DotGothic16,monospace}
+a{color:inherit;text-underline-offset:5px}
+header{display:flex;justify-content:space-between;padding:25px 5vw;font-size:13px}
+header a{text-decoration:none}
+.hero{text-align:center;padding:8px 20px 4px}
+.tag{font-size:11px;letter-spacing:.15em;color:#8fd0c8}
+h1{font-weight:400;font-size:clamp(30px,5vw,52px);margin:12px 0 6px}
+p{line-height:2;font-size:14px}
+.stage{width:min(900px,94vw);margin:8px auto 10px;border:1px solid #2c3640;background:#0b0f12}
+canvas{display:block;width:100%;height:auto}
+.panel{width:min(900px,94vw);margin:0 auto 16px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;font-size:13px}
+button{font-family:inherit;font-size:14px;color:#101418;background:#8fd0c8;border:0;padding:10px 20px;cursor:pointer}
+button.off{background:#394650;color:#ece6d8}
+.note{width:min(900px,94vw);margin:0 auto 60px;font-size:13px;line-height:2.1;color:#c9c2b2}
+.note b{color:#8fd0c8}
+footer{text-align:center;padding:10px 20px 50px;font-size:12px}
+a:focus-visible,button:focus-visible{outline:3px solid #ff534b;outline-offset:4px}
+</style></head>
+<body>
+<header><a href="/">ひゅーまん</a><a href="/uta/">うたへ ↗</a></header>
+<section class="hero">
+  <div class="tag">LIVE CONNECTOME</div>
+  <h1>ハエのうた</h1>
+  <p>実在するハエ1匹の歌回路——<b>55個のニューロンと2,460本のシナプス</b>——が、いまここで歌う。</p>
+</section>
+
+<div class="stage"><canvas id="cv" width="900" height="460"></canvas></div>
+<div class="panel">
+  <button id="go">歌わせる</button>
+  <span id="st">とまっている</span>
+</div>
+<div class="note">
+  配線図は電子顕微鏡で再構成された雄のショウジョウバエの実測データ（MANC v1.2.1）。
+  まるが光る＝そのニューロンが発火した。左右の位置も、本物の左右。<br>
+  <b>パルス歌</b>（連打）は dPR1 が、<b>サイン歌</b>（160Hzのうなり）は TN1a の22匹の合唱が、
+  低い鼓動は最太の幹線をもつ dMS9 が鳴らしている。
+  手で書いたのは脳からの号令（歌って、の信号）だけ。リズムは配線が決める。乱数なし。<br>
+  ※ 実際のハエの求愛歌も、だいたいこの速さで鳴っている。
+</div>
+<footer><a href="/model/">そろうへ</a> · <a href="/uta/">ほかのうたへ</a></footer>
+
+<script>
+"use strict";
+const cv=document.getElementById("cv"),ctx=cv.getContext("2d");
+const btn=document.getElementById("go"),st=document.getElementById("st");
+let CELLS=null,IDS=[],TYP=[],SIDE=[],W=null,Nn=0;
+const TAU={pIP10:.03,dPR1:.012,vPR6:.008,TN1a:.04,vMS12:.01,dMS9:.015};
+const REF={pIP10:.01,dPR1:.02,vPR6:.024,TN1a:.008,vMS12:.012,dMS9:.03};
+const COL={pIP10:"#ffd27a",dPR1:"#ff8a7a",vPR6:"#d08fd0",TN1a:"#8fd0c8",vMS12:"#9fb8ff",dMS9:"#ffe08f"};
+const DRIVE=259,GSYN=3.0,DT=0.0005;
+let V,refr,sprev,glow,tn1s=0,running=false,simt=0;
+let ac=null,master=null,kickBuf=null;
+const PENTA=[146.83,174.61,196,220,261.63,293.66,349.23,392,440,523.25];
+
+fetch("data.json").then(r=>r.json()).then(d=>{
+  CELLS=d.cells; IDS=Object.keys(CELLS).sort(); Nn=IDS.length;
+  TYP=IDS.map(i=>CELLS[i].type); SIDE=IDS.map(i=>CELLS[i].side==="right"?1:-1);
+  const idx={}; IDS.forEach((c,i)=>idx[c]=i);
+  W=Array.from({length:Nn},()=>new Float32Array(Nn));
+  for(const e of d.edges){ const [f,t,s]=e.split(","); if(f in idx&&t in idx) W[idx[t]][idx[f]]+=(+s)/100; }
+  V=new Float32Array(Nn); refr=new Float32Array(Nn); sprev=new Float32Array(Nn); glow=new Float32Array(Nn);
+  st.textContent="配線図を読んだ（55ニューロン）";
+});
+
+function pos(i){
+  const groups={pIP10:[0,60],dPR1:[0,150],vPR6:[0,240],TN1a:[1,150],vMS12:[2,150],dMS9:[2,300]};
+  const same=IDS.filter((c,j)=>TYP[j]===TYP[i]&&SIDE[j]===SIDE[i]);
+  const k=same.indexOf(IDS[i]),n=same.length;
+  const [col,cy]=groups[TYP[i]];
+  const bx=450+SIDE[i]*(90+col*130);
+  const span=Math.min(300,n*26);
+  return [bx+SIDE[i]*0, cy+ (n>1 ? (k-(n-1)/2)*(span/Math.max(1,n-1)) : 0) + 60];
+}
+const POS=()=>IDS.map((_,i)=>pos(i));
+let P=null;
+
+function boutDrive(t){
+  // md5 の代わりの固定表（v2 と同じ性格：歌う/休む、パルス寄り/サイン寄り）
+  const B=[[1,4.2],[5.3,8.1],[9.4,13.2],[14.1,16.8],[18,21.5],[22.6,26.4],[27.3,30.1],[31.4,35.3],[36.2,39.9],[41,43.8]];
+  const tt=t%45;
+  for(const [a,b] of B){ if(tt>=a&&tt<b){ const ph=tt-a; return [1, (Math.floor(ph/0.9)%2===0)?1:0.45]; } }
+  return [0,0];
+}
+function step(){
+  const [on,pb]=boutDrive(simt);
+  let ssum=0; for(let i=0;i<Nn;i++) ssum+=sprev[i];
+  const inew=new Float32Array(Nn);
+  for(let i=0;i<Nn;i++){
+    let inp=0; const row=W[i];
+    if(ssum>0){ for(let j=0;j<Nn;j++) if(sprev[j]) inp+=row[j]; }
+    let v=V[i]*(1-DT/TAU[TYP[i]]) + inp*GSYN - GSYN*0.25*ssum/Nn*10;
+    if(TYP[i]==="pIP10") v+=DRIVE*on*pb*DT;
+    if(refr[i]>simt) v=0;
+    if(v>1){ inew[i]=1; v=0; refr[i]=simt+REF[TYP[i]]; fire(i); glow[i]=1; }
+    V[i]=Math.max(-1,v);
+  }
+  sprev=inew; simt+=DT;
+  tn1s=0; for(let i=0;i<Nn;i++) if(TYP[i]==="TN1a") tn1s+=V[i];
+}
+function blip(f,dur,decay,gain,pan,when){
+  const o=ac.createOscillator(),g=ac.createGain(),p=new StereoPannerNode(ac,{pan});
+  o.frequency.value=f; o.connect(g); g.connect(p); p.connect(master);
+  g.gain.setValueAtTime(gain,when); g.gain.exponentialRampToValueAtTime(0.0001,when+dur);
+  o.start(when); o.stop(when+dur+0.02);
+}
+let sineOsc=null,sineGain=null;
+function fire(i){
+  if(!ac) return;
+  const w=ac.currentTime+0.02, T=TYP[i], pn=0.4*SIDE[i], ii=i;
+  if(T==="dPR1") blip(220,0.1,0,0.5,pn,w);
+  else if(T==="vPR6") blip(900,0.05,0,0.15,pn,w);
+  else if(T==="dMS9"){ blip(50,0.4,0,0.9,0,w); if(kickBuf){ const s=ac.createBufferSource(); s.buffer=kickBuf; const g=ac.createGain(); g.gain.value=0.8; s.connect(g); g.connect(master); s.start(w); } }
+  else if(T==="vMS12") blip(PENTA[(ii*7)%PENTA.length],0.06,0,0.09,0.6*SIDE[i],w);
+}
+function audioLoop(){
+  if(!running) return;
+  // サイン歌（TN1a の合唱量で開閉）
+  const target=Math.min(1,Math.max(0,tn1s/6));
+  sineGain.gain.setTargetAtTime(0.25*Math.pow(target,1.5),ac.currentTime,0.05);
+  setTimeout(audioLoop,40);
+}
+function draw(){
+  ctx.fillStyle="#0b0f12"; ctx.fillRect(0,0,900,460);
+  ctx.strokeStyle="#1d262e";
+  for(let i=0;i<Nn;i++){ const [x,y]=P[i];
+    ctx.fillStyle="#2c3640"; // 線は重いので光ってる発火元からだけ
+  }
+  for(let i=0;i<Nn;i++){
+    if(glow[i]>0.5){ const [x,y]=P[i]; const row=W; // 発火元から太い相手へ3本だけ線
+      let top=[];
+      for(let j=0;j<Nn;j++){ const w=W[j][i]; if(w>0.5) top.push([w,j]); }
+      top.sort((a,b)=>b[0]-a[0]);
+      ctx.strokeStyle="rgba(143,208,200,0.25)";
+      for(const [,j] of top.slice(0,3)){ const [x2,y2]=P[j]; ctx.beginPath(); ctx.moveTo(x,y); ctx.lineTo(x2,y2); ctx.stroke(); }
+    }
+  }
+  for(let i=0;i<Nn;i++){
+    const [x,y]=P[i], c=COL[TYP[i]], g=glow[i];
+    ctx.fillStyle=c; ctx.globalAlpha=0.25+0.75*g;
+    ctx.beginPath(); ctx.arc(x,y,5+7*g,0,7); ctx.fill();
+    ctx.globalAlpha=1; glow[i]*=0.86;
+  }
+  ctx.fillStyle="#5a6b78"; ctx.font="12px DotGothic16";
+  ctx.fillText("L",80,30); ctx.fillText("R",810,30);
+  const names=[["pIP10 号令",COL.pIP10],["dPR1 パルス歌",COL.dPR1],["vPR6",COL.vPR6],["TN1a サイン歌",COL.TN1a],["vMS12 粒",COL.vMS12],["dMS9 鼓動",COL.dMS9]];
+  names.forEach(([n,c],k)=>{ ctx.fillStyle=c; ctx.fillRect(20,390+k*0,0,0); ctx.fillStyle=c; ctx.fillText("● "+n, 20+k*145, 440); });
+  const [on,pb]=boutDrive(simt);
+  if(on){ ctx.fillStyle=pb>0.6?"#ff8a7a":"#8fd0c8"; ctx.fillText(pb>0.6?"いま：パルス歌":"いま：サイン歌",400,30); }
+  else { ctx.fillStyle="#5a6b78"; ctx.fillText("……（休み）",410,30); }
+  requestAnimationFrame(()=>{ if(running){ for(let k=0;k<Math.round(1/60/DT);k++) step(); } draw(); });
+}
+btn.onclick=async()=>{
+  if(!W){ st.textContent="配線図を読み込み中…"; return; }
+  if(running){ running=false; btn.textContent="歌わせる"; btn.classList.add("off"); st.textContent="とまった"; if(sineGain) sineGain.gain.setTargetAtTime(0,ac.currentTime,0.05); return; }
+  if(!ac){
+    ac=new (window.AudioContext||window.webkitAudioContext)();
+    master=ac.createGain(); master.gain.value=0.7;
+    const comp=ac.createDynamicsCompressor(); master.connect(comp); comp.connect(ac.destination);
+    sineOsc=ac.createOscillator(); sineOsc.frequency.value=160;
+    sineGain=ac.createGain(); sineGain.gain.value=0;
+    sineOsc.connect(sineGain); sineGain.connect(master); sineOsc.start();
+    try{ const r=await fetch("/daw/samples/sc808_kick_a.m4a"); kickBuf=await ac.decodeAudioData(await r.arrayBuffer()); }catch(e){}
+  }
+  await ac.resume();
+  running=true; btn.textContent="とめる"; btn.classList.remove("off");
+  st.textContent="歌っている（実在の配線の上をスパイクが走っている）";
+  audioLoop();
+};
+(function init(){ const wait=()=>{ if(!W){ setTimeout(wait,100); return; } P=POS(); draw(); }; wait(); })();
+</script>
+</body></html>

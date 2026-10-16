@@ -48,7 +48,7 @@ function warmth(ctx){
   for(let i=0;i<1024;i++){const x=i/511.5-1;shaperCurve[i]=Math.tanh(k*x)/norm;}}
  const n=ctx.createWaveShaper();n.curve=shaperCurve;n.oversample='2x';return n;
 }
-export function graph(ctx,p){
+export function graph(ctx,p,{finish=true}={}){
  const nodes=[],keep=(...v)=>(nodes.push(...v),v[0]);
  const sum=keep(ctx.createGain()),hp=keep(filter(ctx,'highpass',28)),glue=keep(compressor(ctx,-19,2.2,.02,.16));
  sum.connect(hp);hp.connect(glue);
@@ -58,7 +58,7 @@ export function graph(ctx,p){
  const drive=keep(ctx.createGain()),shape=keep(warmth(ctx)),post=keep(ctx.createGain());
  drive.gain.value=1.18;post.gain.value=.88;high.connect(drive);drive.connect(shape);shape.connect(post);
  const safety=keep(compressor(ctx,-3,12,.002,.08)),master=keep(ctx.createGain());master.gain.value=p.master;
- post.connect(safety);safety.connect(master);master.connect(ctx.destination);
+ if(finish){post.connect(safety);safety.connect(master);}else{sum.disconnect();sum.connect(master);}master.connect(ctx.destination);
  const analyser=ctx.createAnalyser?keep(ctx.createAnalyser()):null;if(analyser){analyser.fftSize=256;master.connect(analyser);}
  // stereo echo: a dotted-eighth left, half a beat longer right, lightly cross-fed
  const beat=60/p.bpm,delay=keep(ctx.createGain()),delayWet=keep(ctx.createGain());delayWet.gain.value=p.space*.3;
@@ -88,13 +88,19 @@ export function automate(ctx,g,song,start,offset=0){
  const now=Math.max(ctx.currentTime,start+offset),p=g.project,beat=60/p.bpm;
  for(let i=0;i<7;i++){
   const gain=g.pumps[i].gain,amount=p.pump*([.65,.8,1,.6,.75,.65,.4][i]);gain.setValueAtTime(1,now);
-  for(let b=Math.ceil(offset/beat);b<song.body/beat;b++){
+  for(let b=Math.ceil(offset/beat);i!==2&&i!==3&&b<song.body/beat;b++){
    const t=start+b*beat;if(t<now)continue;
    const sec=song.sections.find(s=>b/4>=s.start&&b/4<s.start+s.length);if([0,4,8].includes(sec.index))continue;
    gain.setValueAtTime(1-amount,t);gain.linearRampToValueAtTime(1,t+beat*.58);
   }
   for(const b of song.blocks){const t=start+(b.bar-1)*16*song.step;if(t<now)continue;const base=[7200,6000,3200,120,8200,5200,4200][i];if(i===3)continue;const f=g.tones[i].frequency;f.setValueAtTime(base*(.35+b.filter*.65),t);f.linearRampToValueAtTime(base*(.42+b.filter*.58),t+48*song.step);}
  }
+ // Bass/sub duck only at actual audible kick events, including off-beat kicks.
+ const kicks=[...new Set(song.evs.filter(e=>e.kind==='drums'&&e.drum==='kick'&&e.amp>0).map(e=>e.t))].sort((a,b)=>a-b);
+ for(const i of [2,3]){const gain=g.pumps[i].gain,depth=p.pump*(i===3?.85:.55);gain.setValueAtTime(1,now);
+ for(let k=0;k<kicks.length;k++){const t=start+kicks[k];if(t<now)continue;
+ const recovery=Math.min(beat*.42,Math.max(.012,((kicks[k+1]??Infinity)-kicks[k])*.85));
+ gain.setValueAtTime(1,t);gain.linearRampToValueAtTime(1-depth,t+.003);gain.linearRampToValueAtTime(1,t+recovery);}}
  // Sparse, explicitly scheduled transitions: a four-pulse gate on the final beat only.
  for(const b of song.blocks.filter(b=>b.glitch)){
   const t=start+(b.bar+2)*16*song.step+12*song.step;
@@ -136,10 +142,10 @@ export function sound(ctx,g,e,t){
   if(e.kind==='sub'){osc('sine',f,.95);osc('sine',2*f,e.preset==='soft'?.14:.07);attack=.012;}
   else if(e.kind==='bass'){
    if(e.preset==='reese'){osc('sawtooth',f,.26,env,-9,-.55);osc('sawtooth',f,.26,env,9,.55);osc('sine',f,.2);}
-   else{const carrier=osc('sine',f,.8);osc('sine',f*(e.preset==='wood'?2:1),f*.75,carrier.frequency);osc('triangle',f,.12,env,-5,-.3);osc('triangle',f,.12,env,5,.3);}
+   else{const carrier=osc('sine',f,.8);carrier.frequency.setValueAtTime(f*1.12,t);carrier.frequency.exponentialRampToValueAtTime(f,t+.065);const index=ctx.createGain();nodes.push(index);index.connect(carrier.frequency);index.gain.setValueAtTime(f*.9,t);index.gain.exponentialRampToValueAtTime(f*.12,t+Math.min(.24,dur));osc('sine',f*(e.preset==='wood'?2:1),1,index);osc('triangle',f,.12,env,-5,-.3);osc('triangle',f,.12,env,5,.3);}
   }else if(e.kind==='lead'){
    if(e.preset==='reed'){osc('triangle',f,.55);osc('triangle',f,.26,env,7,.5);osc('triangle',f,.26,env,-7,-.5);osc('sine',f*3,.1);}
-   else{const c=osc('sine',f,.72);osc('sine',f*(e.preset==='glass'?2.01:2),f*(e.preset==='glass'?.7:.3),c.frequency);osc('sine',f,.16,env,9,.6);osc('sine',f,.16,env,-9,-.6);}
+   else{const c=osc('sine',f,.72);c.frequency.setValueAtTime(f*(e.preset==='glass'?1.01:1.075),t);c.frequency.exponentialRampToValueAtTime(f,t+.045);const index=ctx.createGain();nodes.push(index);index.connect(c.frequency);index.gain.setValueAtTime(f*(e.preset==='glass'?.85:.6),t);index.gain.exponentialRampToValueAtTime(f*.035,t+Math.min(.3,dur));osc('sine',f*(e.preset==='glass'?2.01:2),1,index);osc('sine',f,.16,env,9,.6);osc('sine',f,.16,env,-9,-.6);}
    attack=.015;
   }else if(e.kind==='chord'){
    osc('sine',f,.55);osc('sine',f,.22,env,6,.55);osc('sine',f,.22,env,-6,-.55);osc('sine',f*2,.2);osc(e.preset==='hollow'?'triangle':'sine',f*3,.1);release=e.preset==='felt'?Math.max(.3,dur):dur;
@@ -185,4 +191,19 @@ export function encodeWav(buffer,scale=1){
  str(0,'RIFF');v.setUint32(4,36+bytes,true);str(8,'WAVE');str(12,'fmt ');v.setUint32(16,16,true);v.setUint16(20,1,true);v.setUint16(22,2,true);v.setUint32(24,buffer.sampleRate,true);v.setUint32(28,buffer.sampleRate*6,true);v.setUint16(32,6,true);v.setUint16(34,24,true);str(36,'data');v.setUint32(40,bytes,true);
  for(let i=0;i<n;i++)for(let c=0;c<2;c++){const x=Math.round(Math.max(-1,Math.min(1,buffer.getChannelData(c)[i]*scale))*8388607),at=44+(i*2+c)*3;v.setUint8(at,x&255);v.setUint8(at+1,x>>8&255);v.setUint8(at+2,x>>16&255);}
  return new Blob([v],{type:'audio/wav'});
+}
+
+// Render the same eight-second chorus twice, then match RMS with shared peak headroom.
+export async function compareFinish(p){
+ await loadKit();const song=compose(p),start=(song.sections.find(s=>s.index===3)?.start||0)*16*song.step;
+ const duration=8,sr=44100,results=[];
+ for(const finish of [false,true]){const c=new OfflineAudioContext(2,sr*duration,sr),g=graph(c,p,{finish});automate(c,g,song,.05-start,start);
+ for(const e of song.evs)if(e.t>=start&&e.t<start+duration-.05)sound(c,g,e,.05+e.t-start);
+ const b=await c.startRendering();let sum=0,peak=0;
+ for(let ch=0;ch<2;ch++){const a=b.getChannelData(ch);for(let j=0;j<a.length;j++)a[j]*=Math.min(1,j/(sr*.005),(a.length-1-j)/(sr*.02));}
+ for(let ch=0;ch<2;ch++)for(const x of b.getChannelData(ch)){if(!Number.isFinite(x))throw Error('Invalid comparison audio');sum+=x*x;peak=Math.max(peak,Math.abs(x));}
+ results.push({buffer:b,rms:Math.sqrt(sum/(2*b.length)),peak});}
+ const target=Math.min(.1,...results.map(r=>r.rms)),gains=results.map(r=>r.rms>1e-9?target/r.rms:0);
+ const headroom=Math.min(1,.9/Math.max(1e-9,...results.map((r,i)=>r.peak*gains[i])));
+ return results.map((r,i)=>({...r,gain:gains[i]*headroom}));
 }

@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ひゅーまんAI — えらぶだけ。</title>
+<meta name="description" content="ことばを入れると、ひゅーまんの作品からひとつ返ってくる。作らない。学習しない。規則で選ぶだけ。">
+<link rel="canonical" href="https://hyu-man.com/ai/">
+<link href="https://fonts.googleapis.com/css2?family=DotGothic16&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#f7f0e4;color:#8a3a2e;font-family:DotGothic16,monospace;font-size:14px;line-height:1.9}
+a{color:inherit;text-underline-offset:5px}
+header{display:flex;justify-content:space-between;padding:25px 5vw;font-size:13px}
+header a{text-decoration:none}
+.hero{text-align:center;padding:26px 20px 10px}
+.tag{font-size:11px;letter-spacing:.15em;color:#956f65}
+h1{font-weight:400;font-size:clamp(34px,6vw,64px);margin:12px 0 6px}
+h1 span{color:#ff678e}
+.sub{font-size:14px;color:#956f65}
+.box{width:min(640px,92vw);margin:22px auto;border:1px solid #dec9ba;background:#fffaf2;padding:28px}
+.ask{display:flex;gap:10px}
+input{flex:1;font:inherit;color:inherit;background:#f7f0e4;border:1px solid #dec9ba;padding:12px 14px;min-width:0}
+input:focus-visible,button:focus-visible,a:focus-visible{outline:3px solid #ff678e;outline-offset:3px}
+button{font:inherit;cursor:pointer;border:1px solid #8a3a2e;background:#8a3a2e;color:#fffaf2;padding:12px 20px;white-space:nowrap}
+button:hover{background:#a04436}
+.hint{font-size:11px;color:#956f65;margin-top:10px}
+.answer{margin-top:26px;border-top:1px solid #dec9ba;padding-top:22px;display:none}
+.answer.on{display:block}
+.a-eyebrow{font-size:10px;letter-spacing:.14em;color:#ff678e}
+.a-title{font-size:26px;margin:8px 0 2px}
+.a-line{color:#956f65;font-size:13px;margin:0 0 12px}
+.a-why{font-size:12px;background:#f5e7df;padding:10px 14px;margin:12px 0}
+.a-why b{color:#ff678e;font-weight:400}
+.a-link{display:inline-block;border:1px solid #8a3a2e;padding:10px 18px;text-decoration:none;margin-right:14px}
+.a-link:hover{background:#ffedf0}
+.again{border:0;background:transparent;color:#8a3a2e;text-decoration:underline;padding:10px 0}
+.note{width:min(640px,92vw);margin:10px auto 70px;font-size:12px;color:#956f65;line-height:2.1}
+.note b{color:#8a3a2e;font-weight:400}
+footer{text-align:center;padding:10px 20px 50px;font-size:12px}
+@media(max-width:500px){.ask{flex-direction:column}.box{padding:20px}}
+</style></head>
+<body>
+<header><a href="/">ひゅーまん</a><a href="/uta/">うたへ ↗</a></header>
+<section class="hero">
+  <div class="tag">HYU-MAN AI / CHOOSES, NEVER MAKES</div>
+  <h1>ひゅーまんAI<span>。</span></h1>
+  <p class="sub">ことばを、ひとつ。作品が、ひとつ。</p>
+</section>
+
+<div class="box">
+  <div class="ask">
+    <input id="q" type="text" maxlength="60" placeholder="いまの気分や、すきなことば（例：地下、こわい、ふたり、眠れない）" aria-label="ことばを入れる">
+    <button id="go">えらんでもらう</button>
+  </div>
+  <p class="hint">なんでもいい。日本語でも、絵文字でも。</p>
+  <div class="answer" id="ans">
+    <span class="a-eyebrow" id="a-eyebrow">あなたには、これ。</span>
+    <h2 class="a-title" id="a-title"></h2>
+    <p class="a-line" id="a-line"></p>
+    <div class="a-why" id="a-why"></div>
+    <a class="a-link" id="a-link" href="#">きく・みる ↗</a>
+    <button class="again" id="again">ちがうのがいい</button>
+  </div>
+</div>
+
+<div class="note">
+  <b>これは、えらぶだけのAIです。</b>何も作らない。何も学習しない。<br>
+  ことばと作品の札合わせの規則で、ひゅーまんの家の作品からひとつ選びます。
+  同じことばを入れれば、いつでも同じ答え。乱数はひとつも使っていません。<br>
+  入れたことばは、このページの外に出ません。
+</div>
+<footer><a href="/">ひゅーまんへ</a> · <a href="/uta/">うたへ</a></footer>
+
+<script>
+"use strict";
+// 作品の札。tags = 札合わせのことば。url はうちのページか公開済みリンクだけ。
+const LIB=[
+ {t:"mogura",line:"上では、何も起きていない。下では、ずっと動いている。",url:"/mogura/",
+  tags:["地下","もぐら","ひみつ","かわいい","土","夜","しずか","穴","暗い","こっそり"]},
+ {t:"l o u d e r",line:"小さな部屋から、音の遊園地へ。外しても、声は残った。",url:"/louder/",
+  tags:["うるさい","ヘッドホン","音","大きい","遊園地","部屋","ミント","叫ぶ","きこえる"]},
+ {t:"Notitle.",line:"戻ってきて。世界が壊れても、もう一度。",url:"/notitle/",
+  tags:["壊れる","世界","戻る","こわい","夜","扉","4k","もう一度","おわり","暗い"]},
+ {t:"PCboy",line:"青い部屋で、みる。",url:"/pcboy/",
+  tags:["青","ゲーム","部屋","パソコン","ひとり","夜ふかし","ドット"]},
+ {t:"ウチ。ウチら。",line:"ひとりの足跡から、ふたりの遊園地へ。",url:"/uchira/",
+  tags:["ふたり","蟻","あり","友だち","遊園地","いっしょ","足跡","うちら"]},
+ {t:"It's Over!",line:"もう平気。（ちがう）",url:"/over/",
+  tags:["おわり","ハート","失恋","平気","泣く","だいじょうぶ","うそ"]},
+ {t:"うたう。（ハエの合唱団）",line:"55個のニューロンが、木琴とオルゴールで歌う。",url:"/fly/",
+  tags:["ハエ","はえ","虫","脳","うた","合唱","かわいい","科学","ニューロン","配線"]},
+ {t:"ならされる。",line:"ハエのうたに、指で返事をする30秒。",url:"/narasareru/",
+  tags:["リズム","たたく","返事","あそぶ","実験","30秒","指","ゲーム"]},
+ {t:"そろう（ひゅーまんモデル）",line:"全員消えても、帳簿が残れば同じ拍に帰れる。",url:"/model/",
+  tags:["そろう","同期","帳簿","蛍","数学","消える","帰る","モデル","振動"]},
+ {t:"ならす（景色から、一曲を。）",line:"音色とコードとリズムを育てて、WAVで持ち帰る。",url:"/daw/",
+  tags:["つくる","作る","景色","自分で","daw","曲","持ち帰る","あそぶ"]},
+ {t:"1にかえる",line:"どんな数も、いつか1へ帰る。たぶん。",url:"/collatz/",
+  tags:["数","かえる","帰る","コラッツ","迷子","数学","いつか","証明"]},
+ {t:"とまる",line:"止まれる？　その先を見にいく。",url:"/halt/",
+  tags:["とまる","止まる","停止","計算","テープ","歩く","休む","疲れた"]},
+ {t:"わける",line:"分けて、名づけて、夕となり、朝となる。",url:"/wakeru/",
+  tags:["わける","創世記","はじまり","名前","朝","夕","光","7日"]},
+ {t:"ふるえる",line:"ひもをはじく。できた音を持ち帰る。",url:"/furueru/",
+  tags:["ふるえる","弦","ひも","はじく","震える","物理","音"]},
+ {t:"もえる",line:"ずっと眺める火。",url:"/moeru/",
+  tags:["火","もえる","燃える","焚き火","あたたかい","冬","ぼーっと","眺める"]},
+ {t:"Already",line:"同じ形をずらして重ねると、消える。はじめから、ひとつ。",url:"https://www.youtube.com/watch?v=VScvvTu9CVg",
+  tags:["ふたつ","ひとつ","重なる","きみ","規則","セルオートマトン","already","最初から","鏡"]},
+ {t:"α",line:"初期条件がふたつ。恋愛じゃなくて、あくまで数学の歌。",url:"https://www.youtube.com/watch?v=xfSFLSo7vJE",
+  tags:["カオス","バタフライ","ふたり","離れる","数式","アトラクタ","恋","距離"]},
+ {t:"λ あとすこし。",line:"同じ道なのに、君が遠い。",url:"https://www.youtube.com/watch?v=Ets2qxJ1Shw",
+  tags:["あとすこし","届かない","追いかける","リャプノフ","遠い","近づく","らむだ"]},
+ {t:"RVT GRFX",line:"形が、音より先に壊れた。",url:"https://www.audiotool.com/track/9q85bc63",
+  tags:["グリッチ","idm","壊れる","はげしい","鉄","スネア","機械","かっこいい","リベット","808"]},
+ {t:"XRECAMÁN",line:"戻れない時だけ、前に進んだ。",url:"https://www.audiotool.com/track/5wlcm5qd",
+  tags:["戻れない","前へ","進む","数列","レカマン","オルゴール","ドリル","すすむ"]},
+];
+// 乱数なしのサイコロ（FNV-1a）
+const H=s=>{let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)>>>0;}return h;};
+function rank(q){
+  const base=q.normalize("NFKC").toLowerCase();
+  const scored=LIB.map((e,i)=>{
+    let score=0,hits=[];
+    for(const tg of e.tags){const t=tg.toLowerCase();
+      if(base.includes(t)||t.includes(base)&&base.length>=2){score+=t.length>=base.length?3:2;hits.push(tg);}}
+    if(base.includes(e.t.toLowerCase()))score+=4,hits.push(e.t);
+    return {e,score,hits,tie:H(base+"|"+e.t)};
+  });
+  scored.sort((a,b)=>b.score-a.score||a.tie-b.tie);
+  return scored;
+}
+let ranked=null,cursor=0,lastQ="";
+const el=id=>document.getElementById(id);
+function show(){
+  const {e,score,hits}=ranked[cursor%ranked.length];
+  el("a-eyebrow").textContent=cursor===0?"あなたには、これ。":"それなら、こっち。";
+  el("a-title").textContent=e.t;
+  el("a-line").textContent=e.line;
+  el("a-link").href=e.url;
+  el("a-why").innerHTML=score>0
+    ?`えらんだ理由：「${lastQ}」の中の <b>${hits.slice(0,3).join("・")}</b> が、この作品の札と合いました（札合わせ ${score} 点）。`
+    :`えらんだ理由：札は合いませんでした。なので「${lastQ}」ということば自体をサイコロにして（md5ではなくFNV、でも乱数ではありません）、この作品が出ました。同じことばなら、いつでもこれです。`;
+  el("ans").classList.add("on");
+}
+el("go").onclick=()=>{
+  const q=el("q").value.trim();
+  if(!q)return;
+  lastQ=q;ranked=rank(q);cursor=0;show();
+};
+el("q").addEventListener("keydown",ev=>{if(ev.key==="Enter")el("go").click();});
+el("again").onclick=()=>{cursor++;show();};
+</script>
+</body></html>
