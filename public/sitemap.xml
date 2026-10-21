@@ -1,195 +1,44 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-
-  <url>
-    <loc>https://hyu-man.com/</loc>
-    <lastmod>2026-09-07</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>1.0</priority>
-  </url>
-
-  <url>
-    <loc>https://hyu-man.com/uta/</loc>
-    <lastmod>2026-09-09</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <url>
-    <loc>https://hyu-man.com/film/</loc>
-    <lastmod>2026-09-07</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <url>
-    <loc>https://hyu-man.com/still/</loc>
-    <lastmod>2026-09-02</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <url>
-    <loc>https://hyu-man.com/omega/</loc>
-    <lastmod>2026-09-07</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <url>
-    <loc>https://hyu-man.com/both/</loc>
-    <lastmod>2026-09-02</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <url>
-    <loc>https://hyu-man.com/collatz/</loc>
-    <lastmod>2026-09-02</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <url>
-    <loc>https://hyu-man.com/life/</loc>
-    <lastmod>2026-09-02</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <url>
-    <loc>https://hyu-man.com/daw/</loc>
-    <lastmod>2026-09-05</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <url>
-    <loc>https://hyu-man.com/moeru/</loc>
-    <lastmod>2026-09-11</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <url>
-    <loc>https://hyu-man.com/tataku/</loc>
-    <lastmod>2026-09-05</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <url>
-    <loc>https://hyu-man.com/kisekae/</loc>
-    <lastmod>2026-09-14</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <url>
-    <loc>https://hyu-man.com/yuzuru/</loc>
-    <lastmod>2026-09-22</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <url>
-    <loc>https://hyu-man.com/kuberu/</loc>
-    <lastmod>2026-09-21</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <url>
-    <loc>https://hyu-man.com/furueru/</loc>
-    <lastmod>2026-09-20</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <url>
-    <loc>https://hyu-man.com/wakeru/</loc>
-    <lastmod>2026-09-06</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <url>
-    <loc>https://hyu-man.com/tsuriai/</loc>
-    <lastmod>2026-09-02</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <url>
-    <loc>https://hyu-man.com/ant/</loc>
-    <lastmod>2026-09-02</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <url>
-    <loc>https://hyu-man.com/read/</loc>
-    <lastmod>2026-09-02</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <url>
-    <loc>https://hyu-man.com/play/</loc>
-    <lastmod>2026-09-02</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <url>
-    <loc>https://hyu-man.com/loop/</loc>
-    <lastmod>2026-09-02</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <url>
-    <loc>https://hyu-man.com/chop/</loc>
-    <lastmod>2026-09-02</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <url>
-    <loc>https://hyu-man.com/halt/</loc>
-    <lastmod>2026-09-02</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <url>
-    <loc>https://hyu-man.com/liar/</loc>
-    <lastmod>2026-09-02</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <url>
-    <loc>https://hyu-man.com/matsu/</loc>
-    <lastmod>2026-09-02</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <url>
-    <loc>https://hyu-man.com/burn/</loc>
-    <lastmod>2026-09-02</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <url>
-    <loc>https://hyu-man.com/toad/</loc>
-    <lastmod>2026-09-02</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <url><loc>https://hyu-man.com/uchira/</loc><lastmod>2026-09-27</lastmod></url>
-  <url><loc>https://hyu-man.com/pcboy/</loc><lastmod>2026-10-15</lastmod></url>
+  <url><loc>https://hyu-man.com/</loc></url>
+  <url><loc>https://hyu-man.com/ant/</loc></url>
+  <url><loc>https://hyu-man.com/august/</loc></url>
+  <url><loc>https://hyu-man.com/both/</loc></url>
+  <url><loc>https://hyu-man.com/burn/</loc></url>
+  <url><loc>https://hyu-man.com/canvas/</loc></url>
+  <url><loc>https://hyu-man.com/chop/</loc></url>
+  <url><loc>https://hyu-man.com/collatz/</loc></url>
+  <url><loc>https://hyu-man.com/count/</loc></url>
+  <url><loc>https://hyu-man.com/daw/</loc></url>
+  <url><loc>https://hyu-man.com/film/</loc></url>
+  <url><loc>https://hyu-man.com/fly/</loc></url>
+  <url><loc>https://hyu-man.com/furueru/</loc></url>
+  <url><loc>https://hyu-man.com/halt/</loc></url>
+  <url><loc>https://hyu-man.com/kazaru/</loc></url>
+  <url><loc>https://hyu-man.com/kisekae/</loc></url>
+  <url><loc>https://hyu-man.com/kuberu/</loc></url>
+  <url><loc>https://hyu-man.com/liar/</loc></url>
+  <url><loc>https://hyu-man.com/life/</loc></url>
+  <url><loc>https://hyu-man.com/loop/</loc></url>
+  <url><loc>https://hyu-man.com/louder/</loc></url>
+  <url><loc>https://hyu-man.com/matsu/</loc></url>
+  <url><loc>https://hyu-man.com/midi/</loc></url>
+  <url><loc>https://hyu-man.com/model/</loc></url>
+  <url><loc>https://hyu-man.com/moeru/</loc></url>
+  <url><loc>https://hyu-man.com/mogura/</loc></url>
+  <url><loc>https://hyu-man.com/narasareru/</loc></url>
+  <url><loc>https://hyu-man.com/notitle/</loc></url>
+  <url><loc>https://hyu-man.com/omega/</loc></url>
+  <url><loc>https://hyu-man.com/over/</loc></url>
+  <url><loc>https://hyu-man.com/pcboy/</loc></url>
+  <url><loc>https://hyu-man.com/play/</loc></url>
+  <url><loc>https://hyu-man.com/read/</loc></url>
+  <url><loc>https://hyu-man.com/still/</loc></url>
+  <url><loc>https://hyu-man.com/tataku/</loc></url>
+  <url><loc>https://hyu-man.com/toad/</loc></url>
+  <url><loc>https://hyu-man.com/tsuriai/</loc></url>
+  <url><loc>https://hyu-man.com/uchira/</loc></url>
+  <url><loc>https://hyu-man.com/uta/</loc></url>
+  <url><loc>https://hyu-man.com/wakeru/</loc></url>
+  <url><loc>https://hyu-man.com/yuzuru/</loc></url>
 </urlset>
