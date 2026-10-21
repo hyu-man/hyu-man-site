@@ -8,4 +8,4 @@ binding = "ASSETS"
 run_worker_first = ["/august/august-v2.mp4", "/pcboy/song.m4a", "/over/its-over-v2.mp4", "/over/song.m4a", "/uchira/highway.mp4", "/uchira/highway-portrait.mp4", "/uchira/uchira.m4a", "/uchira/uchira-mv.mp4"]
 
 [build]
-command = "node scripts/check-pcboy-assets.mjs"
+command = "node scripts/prepare-assets.mjs"

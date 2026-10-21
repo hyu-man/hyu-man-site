@@ -402,7 +402,7 @@
     const tr = document.createElement("div"); tr.className = "tr" + (state.on[i] ? "" : " off");
     tr.innerHTML =
       '<canvas width="96" height="96"></canvas>' +
-      '<div><div class="head"><span class="nm"></span><span class="en"><a href="' + m.en + '">' + m.en + '</a></span>' +
+      '<div><div class="head"><span class="nm"></span><span class="en"><a></a></span>' +
       '<span class="st"></span></div>' +
       '<p class="rl">' + m.rule + '</p>' +
       '<div class="ctl"><label>種 <input type="number" min="' + m.min + '" max="' + m.max + '" value="' + state.seeds[i] + '"></label>' +
@@ -429,6 +429,9 @@
   function rebuild(i) {
     const m = MAKE[i]; rows[i].track = m.make(state.seeds[i]);
     rows[i].nm.textContent = rows[i].track.name;
+    const link = rows[i].el.querySelector(".en a");
+    link.href = rows[i].track.en;
+    link.textContent = rows[i].track.en;
     paint(i);
   }
   function paint(i) {

@@ -82,6 +82,15 @@
 `wrangler.toml` に名前と `./public` が書いてあるので、引数は要りません。
 Cloudflare Workers の静的アセットとして出ています。
 
+デプロイ前に、公開ファイルの確認とサイトマップの更新が自動で走ります。
+`public/` 内の `index.html` のうち、自分自身を canonical に指定したページを
+`sitemap.xml` と `public/sitemap.xml` に載せます。`noindex` と旧版は除外します。
+新しい公開ページには `https://hyu-man.com/部屋名/` の canonical を付けてください。
+更新日を推測しないため、サイトマップの `lastmod` は省略しています。
+
+    node scripts/build-sitemap.mjs
+    node scripts/build-sitemap.mjs --check
+
 PowerShell では `&&` が使えません。繋ぐときは `;` です。
 
 ---
