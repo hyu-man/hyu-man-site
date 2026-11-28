@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>とどく。光のあいだの小さな宇宙 — ひゅーまん</title>
+<meta name="description" content="もし、この量子重力の提案が正しかったら。光の境界をひらき、ゆらし、つないで眺めるインタラクティブ作品。">
+<link rel="canonical" href="https://hyu-man.com/todoku/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="ひゅーまん">
+<meta property="og:title" content="とどく。光のあいだの小さな宇宙">
+<meta property="og:description" content="ふたつの瞬間。そのあいだに、光でできた部屋がひらく。">
+<meta property="og:url" content="https://hyu-man.com/todoku/">
+<meta property="og:image" content="https://hyu-man.com/todoku/poster.png">
+<meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#090f19">
+<link rel="icon" href="/og/hyu-man.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DotGothic16&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./style.css">
+<script type="module" src="./app.js"></script>
+</head>
+<body>
+<a class="skip" href="#controls">操作へ</a>
+<header class="sitehead"><a class="brand" href="/">ひゅーまん<span>▪</span></a><span class="edition">A WORLD, IF. / 01</span><a href="#about">この世界について <span aria-hidden="true">↘</span></a></header>
+<main>
+<section class="experience" aria-labelledby="title">
+  <div class="intro">
+    <p class="kicker">LIGHT BETWEEN TWO MOMENTS</p>
+    <h1 id="title">とどく<span>。</span></h1>
+    <p class="lead">このあいだを、<br>宇宙と呼ぶ。</p>
+    <p class="invitation">はじまりから光が届き、<br>そのあとへ光を届けられる場所。<br>その輪郭に、ふれてみる。</p>
+    <p class="premise"><span class="small-dot" aria-hidden="true"></span>もし、この量子重力の提案が正しかったら。</p>
+    <div class="chapters" aria-label="見方を選ぶ">
+      <button type="button" class="chapter active" data-mode="0" aria-pressed="true"><span>01</span> ひらく <i aria-hidden="true">↗</i></button>
+      <button type="button" class="chapter" data-mode="1" aria-pressed="false"><span>02</span> ゆらす <i aria-hidden="true">≈</i></button>
+      <button type="button" class="chapter" data-mode="2" aria-pressed="false"><span>03</span> つなぐ <i aria-hidden="true">⋈</i></button>
+    </div>
+  </div>
+  <figure class="world">
+    <div class="viewhead"><span id="viewName">01 / CAUSAL DIAMOND</span><span class="live-indicator" id="motionState">うごいています</span></div>
+    <div class="viewport" id="viewport">
+      <canvas id="world" tabindex="0" aria-label="光の境界の立体図。ドラッグか矢印キーで回転。クリックかEnterで光を送ります。">光がふたつの瞬間を結ぶ、ひし形の領域を描きます。</canvas>
+      <span class="event-label future" aria-hidden="true">そのあと<span>FUTURE</span></span>
+      <span class="event-label past" aria-hidden="true">はじまり<span>PAST</span></span>
+      <span class="touchhint" aria-hidden="true">ドラッグでまわす · クリックで光を送る</span>
+      <p id="fallback" hidden>このブラウザでは映像を表示できません。下の解説から、この作品の考え方を読めます。</p>
+    </div>
+    <figcaption><span id="sceneText" aria-live="polite">ひとつの光がひらく。もうひとつの光が、むかえる。</span><span class="axis-note">時間 ↑ / 空間を2次元に省略</span></figcaption>
+  </figure>
+</section>
+<section class="controls" id="controls" aria-label="映像の操作">
+  <div class="sliders">
+    <label for="interval"><span>ふたつの瞬間のあいだ <output id="intervalValue" for="interval">1.0</output></span><input id="interval" type="range" min="0.65" max="1.4" step="0.01" value="1" aria-describedby="units"></label>
+    <label for="ripple"><span>かたちのゆらぎ <output id="rippleValue" for="ripple">35</output></span><input id="ripple" type="range" min="0" max="100" step="1" value="35" aria-describedby="units"></label>
+  </div>
+  <div class="buttons"><button type="button" id="pulse" class="primary">光を送る <span aria-hidden="true">↗</span></button><button type="button" id="pause" aria-pressed="false">止める</button><button type="button" id="reset">はじめから</button></div>
+  <p id="units" class="control-note">つまみは作品内の相対値です。物理量の測定値ではありません。音は出ません。</p>
+</section>
+<noscript><p class="nojs">動かすにはJavaScriptが必要です。作品の解説と参照論文はこのまま読めます。</p></noscript>
+<section class="about" id="about" aria-labelledby="aboutTitle">
+  <div class="about-title"><p class="kicker">THE IDEA BEHIND THE LIGHT</p><h2 id="aboutTitle">光を境に、<br>世界を考える。</h2><p>ここからは、作品の外の話。</p></div>
+  <div class="reading">
+    <p class="opening">これは、ある提案を「もし正しかったら」と受け取ってつくった、触れる思考実験です。</p>
+    <dl>
+      <div><dt>01　借りた考え方</dt><dd>Venkatesa Chandrasekaranの<a href="https://arxiv.org/abs/2611.34924" target="_blank" rel="noopener noreferrer">2026年11月25日公開の論文</a>は、交わる光の境界から、4次元の真空重力を量子化する方法を提案しています。大きさに上限を設けた巨視的な因果ダイヤモンドでは、区別できる独立な量子状態の数が有限になる、と論じています。</dd></div>
+      <div><dt>02　もし成り立つなら</dt><dd>限られた領域に、どれだけの異なる状態がありうるのか。その問いを、重力そのものの量子論で扱う道が開ける。ここでは、その可能性を眺めます。</dd></div>
+      <div><dt>03　この作品でつくったもの</dt><dd>「ひらく」は、はじまりから届く光と、そのあとへ届く光が囲む領域の模式図。「ゆらす」の変形と「つなぐ」の光の受け渡しは、論文の境界・重ね合わせ・領域の接合から着想した演出です。色や粒の数は量子状態の数を表しません。</dd></div>
+    </dl>
+    <details><summary>原文と、この作品の範囲</summary><div class="source">
+      <cite>An algebraic quantization of gravity from the null cone</cite>
+      <p>Venkatesa Chandrasekaran · arXiv:2611.34924v1<br>初回投稿：2026年11月25日 · 参照日：2026年11月29日</p>
+      <p>原文の第1・3・5節を参照。このページは理論の成立を検証したものではなく、提案の一部を視覚化した作品です。重力場の方程式や量子振幅を数値的に解いてはいません。物質を含む宇宙全体の再現でもありません。</p>
+      <div class="source-links"><a href="https://arxiv.org/html/2611.34924v1" target="_blank" rel="noopener noreferrer">論文を読む ↗</a><a href="https://arxiv.org/pdf/2611.34924" target="_blank" rel="noopener noreferrer">PDF ↗</a></div>
+    </div></details>
+  </div>
+</section>
+</main>
+<footer><a href="/">← ほかの小さな世界へ</a><span>ひゅーまん / hyu-man</span><a href="#title">もう一度、ふれる ↑</a></footer>
+</body>
+</html>
